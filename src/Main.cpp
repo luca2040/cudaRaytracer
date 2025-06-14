@@ -1,7 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 
-#include "DrawLoop.h"
+#include "utils/DrawLoop.h"
 
 const int WIDTH = 1400;
 const int HEIGHT = 1400;
