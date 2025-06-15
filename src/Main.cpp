@@ -1,7 +1,9 @@
 #include <iostream>
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_ttf.h>
 
 #include "utils/DrawLoop.h"
+#include "utils/FpsCounter.h"
 
 const int WIDTH = 1400;
 const int HEIGHT = 1400;
@@ -15,12 +17,23 @@ int main()
     std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
     return 1;
   }
+  if (TTF_Init() < 0)
+  {
+    std::cout << "Couldn't initialize TTF lib: " << TTF_GetError() << std::endl;
+    return 1;
+  }
 
   SDL_Window *window = SDL_CreateWindow("SDL2 Input Example",
                                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                         WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
-
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+
+  TTF_Font *font = TTF_OpenFont("./font.ttf", 24);
+  if (!font)
+  {
+    SDL_Log("Font load error: %s", TTF_GetError());
+    return 1;
+  }
 
   SDL_Event event;
   bool running = true;
@@ -63,7 +76,14 @@ int main()
       }
     }
 
+    // Main draw logic
     drawFrame(renderer, WIDTH, HEIGHT);
+
+    // Draw frame counter
+    renderFpsTag(renderer, font);
+
+    // Actually print to screen
+    SDL_RenderPresent(renderer);
   }
 
   SDL_DestroyRenderer(renderer);

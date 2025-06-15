@@ -13,11 +13,9 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
   SDL_RenderClear(renderer);
 
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-  for (int x = 0; x < WIDTH; x++)
-    for (int y = 0; y < HEIGHT; y++)
-    {
-      SDL_RenderDrawPoint(renderer, x, y);
-    }
-
-  SDL_RenderPresent(renderer);
+  //  for (int x = 0; x < WIDTH; x++)
+  //    for (int y = 0; y < HEIGHT; y++)
+  //    {
+  //      SDL_RenderDrawPoint(renderer, x, y);
+  //    }
 }

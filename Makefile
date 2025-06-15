@@ -1,7 +1,7 @@
 # === CONFIG ===
 CXX = g++
 CXXFLAGS = -Wall -std=c++17
-LDFLAGS = -lSDL2
+LDFLAGS = -lSDL2 -lSDL2_ttf
 
 SRC_DIR = src
 BUILD_DIR = build
