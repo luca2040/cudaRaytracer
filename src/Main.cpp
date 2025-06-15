@@ -23,7 +23,7 @@ int main()
     return 1;
   }
 
-  SDL_Window *window = SDL_CreateWindow("SDL2 Input Example",
+  SDL_Window *window = SDL_CreateWindow("The Best 3D Renderer Ever",
                                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                         WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
