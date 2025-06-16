@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <iostream>
 
 #include "../math/mathUtils.h"
 
@@ -79,7 +80,7 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
       {0.0f, cos(xrot), -sin(xrot)},
       {0.0f, sin(xrot), cos(xrot)}};
 
-  for (int i = 0; i < pointsRows; i++)
+  for (size_t i = 0; i < pointsRows; i++)
   {
     matMult(pointarray[i], yrotmat);
     matMult(pointarray[i], xrotmat);
@@ -93,7 +94,7 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
 
   float points2d[pointsRows][2];
 
-  for (int i = 0; i < pointsRows; i++)
+  for (size_t i = 0; i < pointsRows; i++)
   {
     float xr = (camZ * pointarray[i][0]) / (camZ + pointarray[i][2]);
     float yr = (camZ * pointarray[i][1]) / (camZ + pointarray[i][2]);
@@ -111,7 +112,7 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
 
   size_t connectionsRows = sizeof(connectionscube) / sizeof(connectionscube[0]);
 
-  for (int i = 0; i < connectionsRows; i++)
+  for (size_t i = 0; i < connectionsRows; i++)
   {
     float x1 = points2d[connectionscube[i][0]][0];
     float y1 = points2d[connectionscube[i][0]][1];
@@ -125,4 +126,9 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
 
 void keyPressed(SDL_Keycode key)
 {
+  // Testing
+
+  float result = triangleInterpolate(0, 0, 10, 0, 5, 10, 6, 8, 1, 2, 3);
+
+  std::cout << result << std::endl;
 }
