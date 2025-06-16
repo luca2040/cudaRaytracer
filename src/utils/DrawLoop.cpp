@@ -100,8 +100,8 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
 
     // Shift for the window, because it assumes 0,0 is top left, not center
     // Not important for the calculations
-    xr += float(WIDTH) / 2.0f;
-    yr += float(HEIGHT) / 2.0f;
+    xr += static_cast<float>(WIDTH) / 2.0f;
+    yr += static_cast<float>(HEIGHT) / 2.0f;
 
     points2d[i][0] = xr;
     points2d[i][1] = yr;
