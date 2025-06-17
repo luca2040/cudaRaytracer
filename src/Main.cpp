@@ -27,6 +27,8 @@ int main()
                                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                         WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
   SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+  SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
+                                           SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
 
   TTF_Font *font = TTF_OpenFont("./font.ttf", 24);
   if (!font)
@@ -77,7 +79,7 @@ int main()
     }
 
     // Main draw logic
-    drawFrame(renderer, WIDTH, HEIGHT);
+    drawFrame(renderer, texture, WIDTH, HEIGHT);
 
     // Draw frame counter
     renderFpsTag(renderer, font);

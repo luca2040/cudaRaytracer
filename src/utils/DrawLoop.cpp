@@ -44,16 +44,13 @@ int triangles[12][4] = {
     {2, 7, 6, 0x00FFFF},
 };
 
-void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
+void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture, int WIDTH, int HEIGHT)
 {
-  Uint32 time = SDL_GetTicks();
-
-  // Reset background
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-  SDL_RenderClear(renderer);
+  int TOTAL_PIXEL_NUM = WIDTH * HEIGHT;
 
   // Rotations
 
+  Uint32 time = SDL_GetTicks();
   xrot = fmod((float(time) / 2000.0f), (2.0f * M_PI));
   yrot = fmod((float(time) / 1000.0f), (2.0f * M_PI));
 
@@ -103,14 +100,40 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
     float yr = (camZ * pointarray[i][1]) / (camZ + pointarray[i][2]);
 
     // Shift for the window, because it assumes 0,0 is top left, not center
-    // Not important for the calculations
-    xr += static_cast<float>(WIDTH) / 2.0f;
-    yr += static_cast<float>(HEIGHT) / 2.0f;
+    // Not important for the calculations [TODO] optimize this thing
+    xr += static_cast<float>(WIDTH / 2);
+    yr += static_cast<float>(HEIGHT / 2);
 
     points2d[i][0] = xr;
     points2d[i][1] = yr;
     points2d[i][2] = pointarray[i][2];
   }
+
+  // Lock texture
+
+  void *pixels;
+  int texturePitch;
+  SDL_LockTexture(texture, NULL, &pixels, &texturePitch);
+
+  // Uint32 *pixel_ptr = (Uint32 *)pixels;
+  // for (int y = 0; y < HEIGHT; ++y)
+  // {
+  //   for (int x = 0; x < WIDTH; ++x)
+  //   {
+  //     float percent = float(y * WIDTH + x) / float(HEIGHT * WIDTH);
+  //     int val = static_cast<int>(percent * 0xFF);
+  //     val = val << 16 | val << 8 | val;
+
+  //     pixel_ptr[y * (texturePitch / 4) + x] = val;
+  //   }
+  // }
+
+  // Init "drawing depth buffer" - idk how to call this abomination of an idea
+
+  float drawDepthBuffer[TOTAL_PIXEL_NUM];
+  std::fill_n(drawDepthBuffer, TOTAL_PIXEL_NUM, std::nanf(""));
+
+  // To use this: drawDepthBuffer[y * WIDTH + x]
 
   // Draw borders
 
@@ -118,27 +141,36 @@ void drawFrame(SDL_Renderer *renderer, int WIDTH, int HEIGHT)
 
   for (size_t i = 0; i < triangleNum; i++)
   {
+    // The x and y are already projected, the z is just to get priority on drawing
+
     float x1 = points2d[triangles[i][0]][0];
     float y1 = points2d[triangles[i][0]][1];
+    float z1 = points2d[triangles[i][0]][2];
 
     float x2 = points2d[triangles[i][1]][0];
     float y2 = points2d[triangles[i][1]][1];
+    float z2 = points2d[triangles[i][1]][2];
 
     float x3 = points2d[triangles[i][2]][0];
     float y3 = points2d[triangles[i][2]][1];
+    float z3 = points2d[triangles[i][2]][2];
 
     int color = triangles[i][3];
 
-    Uint8 blue = color & 0xFF;
-    Uint8 green = (color >> 8) & 0xFF;
-    Uint8 red = (color >> 16) & 0xFF;
+    // SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
 
-    SDL_SetRenderDrawColor(renderer, red, green, blue, 255);
+    // Render it
 
-    SDL_RenderDrawLine(renderer, static_cast<int>(x1), static_cast<int>(y1), static_cast<int>(x2), static_cast<int>(y2));
-    SDL_RenderDrawLine(renderer, static_cast<int>(x2), static_cast<int>(y2), static_cast<int>(x3), static_cast<int>(y3));
-    SDL_RenderDrawLine(renderer, static_cast<int>(x3), static_cast<int>(y3), static_cast<int>(x1), static_cast<int>(y1));
+    // SDL_RenderDrawLine(renderer, static_cast<int>(x1), static_cast<int>(y1), static_cast<int>(x2), static_cast<int>(y2));
+    // SDL_RenderDrawLine(renderer, static_cast<int>(x2), static_cast<int>(y2), static_cast<int>(x3), static_cast<int>(y3));
+    // SDL_RenderDrawLine(renderer, static_cast<int>(x3), static_cast<int>(y3), static_cast<int>(x1), static_cast<int>(y1));
   }
+
+  // Unlock and render texture
+
+  SDL_UnlockTexture(texture);
+  SDL_RenderClear(renderer);
+  SDL_RenderCopy(renderer, texture, NULL, NULL);
 }
 
 void keyPressed(SDL_Keycode key)
