@@ -175,9 +175,4 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture, int WIDTH, int HEIG
 
 void keyPressed(SDL_Keycode key)
 {
-  // Testing
-
-  float result = triangleInterpolate(0, 0, 10, 0, 5, 10, 6, 8, 1, 2, 3);
-
-  std::cout << result << std::endl;
 }
