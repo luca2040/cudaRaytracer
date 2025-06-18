@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "../math/mathUtils.h"
+#include "DrawingUtils.h"
 
 // Camera settings
 float camZ = 600;
@@ -115,18 +116,15 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture, int WIDTH, int HEIG
   int texturePitch;
   SDL_LockTexture(texture, NULL, &pixels, &texturePitch);
 
-  // Uint32 *pixel_ptr = (Uint32 *)pixels;
-  // for (int y = 0; y < HEIGHT; ++y)
-  // {
-  //   for (int x = 0; x < WIDTH; ++x)
-  //   {
-  //     float percent = float(y * WIDTH + x) / float(HEIGHT * WIDTH);
-  //     int val = static_cast<int>(percent * 0xFF);
-  //     val = val << 16 | val << 8 | val;
+  Uint32 *pixel_ptr = (Uint32 *)pixels;
 
-  //     pixel_ptr[y * (texturePitch / 4) + x] = val;
-  //   }
-  // }
+  for (int y = 0; y < HEIGHT; ++y)
+  {
+    for (int x = 0; x < WIDTH; ++x)
+    {
+      pixel_ptr[y * (texturePitch / 4) + x] = 0;
+    }
+  }
 
   // Init "drawing depth buffer" - idk how to call this abomination of an idea
 
@@ -164,6 +162,8 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture, int WIDTH, int HEIG
     // SDL_RenderDrawLine(renderer, static_cast<int>(x1), static_cast<int>(y1), static_cast<int>(x2), static_cast<int>(y2));
     // SDL_RenderDrawLine(renderer, static_cast<int>(x2), static_cast<int>(y2), static_cast<int>(x3), static_cast<int>(y3));
     // SDL_RenderDrawLine(renderer, static_cast<int>(x3), static_cast<int>(y3), static_cast<int>(x1), static_cast<int>(y1));
+
+    depthFillTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, pixel_ptr, texturePitch, drawDepthBuffer, color, WIDTH, HEIGHT);
   }
 
   // Unlock and render texture
