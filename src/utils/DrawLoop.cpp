@@ -117,14 +117,7 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture, int WIDTH, int HEIG
   SDL_LockTexture(texture, NULL, &pixels, &texturePitch);
 
   Uint32 *pixel_ptr = (Uint32 *)pixels;
-
-  for (int y = 0; y < HEIGHT; ++y)
-  {
-    for (int x = 0; x < WIDTH; ++x)
-    {
-      pixel_ptr[y * (texturePitch / 4) + x] = 0;
-    }
-  }
+  memset(pixel_ptr, 0, texturePitch * HEIGHT);
 
   // Init "drawing depth buffer" - idk how to call this abomination of an idea
 
