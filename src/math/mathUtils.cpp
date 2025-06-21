@@ -52,10 +52,10 @@ float triangleInterpolate(float ax, float ay, float bx, float by, float cx, floa
 
   // Third round: AB - C
 
-  abcLineDistance = pointLineDistance(ax, ay, bx, by, cx, cy);
-  pLineDistance = pointLineDistance(ax, ay, bx, by, px, py);
+  // abcLineDistance = pointLineDistance(ax, ay, bx, by, cx, cy);
+  // pLineDistance = pointLineDistance(ax, ay, bx, by, px, py);
 
-  float cTermPercent = pLineDistance / abcLineDistance;
+  float cTermPercent = 1.0f - aTermPercent - bTermPercent;
 
   return aVal * aTermPercent + bVal * bTermPercent + cVal * cTermPercent;
 }
