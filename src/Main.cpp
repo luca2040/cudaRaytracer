@@ -1,12 +1,10 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <glm/glm.hpp>
 
 #include "utils/DrawLoop.h"
 #include "utils/FpsCounter.h"
-
-const int WIDTH = 1400;
-const int HEIGHT = 1400;
 
 int main()
 {
@@ -40,8 +38,8 @@ int main()
   SDL_Event event;
   bool running = true;
 
-  int mouseX = 0, mouseY = 0;
-  int pmouseX = 0, pmouseY = 0;
+  glm::ivec2 mouse(0, 0);
+  glm::ivec2 pMouse(0, 0);
 
   while (running)
   {
@@ -64,10 +62,8 @@ int main()
         break;
 
       case SDL_MOUSEMOTION:
-        pmouseX = mouseX;
-        pmouseY = mouseY;
-        mouseX = event.motion.x;
-        mouseY = event.motion.y;
+        pMouse = mouse;
+        mouse = glm::ivec2(event.motion.x, event.motion.y);
         break;
 
       case SDL_MOUSEBUTTONDOWN:
@@ -79,7 +75,7 @@ int main()
     }
 
     // Main draw logic
-    drawFrame(renderer, texture, WIDTH, HEIGHT);
+    drawFrame(renderer, texture);
 
     // Draw frame counter
     renderFpsTag(renderer, font);
