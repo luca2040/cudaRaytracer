@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "../math/mathUtils.h"
+#include "../math/names.h"
 #include "DrawLoop.h"
 #include "DrawingUtils.h"
 
@@ -11,9 +12,9 @@
 float camZ = 600;
 
 // Rotations
-glm::vec3 rotcenter(0.0f, 0.0f, 3000.0f);
+float3 rotcenter(0.0f, 0.0f, 3000.0f);
 
-glm::vec3 points[] = {
+float3 points[] = {
     // Front face
     {-1000.0f, -1000.0f, 2000.0f},
     {1000.0f, -1000.0f, 2000.0f},
@@ -26,7 +27,7 @@ glm::vec3 points[] = {
     {-1000.0f, 1000.0f, 4000.0f}};
 
 // Vertex intexes [3], color
-glm::uvec4 triangles[] = {
+triangleidx triangles[] = {
     {0, 1, 3, 0xFF0000},
     {1, 3, 2, 0xFF0000},
 
@@ -60,8 +61,18 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   constexpr size_t pointsCount = sizeof(points) / sizeof(points[0]);
 
-  glm::vec3 pointarray[pointsCount];
+  float3 pointarray[pointsCount];
   std::copy(std::begin(points), std::end(points), pointarray);
+
+  float3 yrotmat[3] = {
+      {cos(yrot), 0.0f, sin(yrot)},
+      {0.0f, 1.0f, 0.0f},
+      {-sin(yrot), 0.0f, cos(yrot)}};
+
+  float3 xrotmat[3] = {
+      {1.0f, 0.0f, 0.0f},
+      {0.0f, cos(xrot), -sin(xrot)},
+      {0.0f, sin(xrot), cos(xrot)}};
 
   glm::mat3 xrotmat = glm::mat3(glm::rotate(glm::mat4(1.0f), xrot, glm::vec3(1, 0, 0)));
   glm::mat3 yrotmat = glm::mat3(glm::rotate(glm::mat4(1.0f), yrot, glm::vec3(0, 1, 0)));
@@ -106,14 +117,14 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   {
     // The x and y here are the projected ones, the z is for the depth buffer
 
-    glm::uvec4 triangle = triangles[i];
+    triangleidx triangle = triangles[i];
 
     rasterizeFullTriangle(
-        pointarray[triangle.x],                   // First vertex
-        pointarray[triangle.y],                   // Second vertex
-        pointarray[triangle.z],                   // Third vertex
+        pointarray[triangle.v1],                  // First vertex
+        pointarray[triangle.v2],                  // Second vertex
+        pointarray[triangle.v3],                  // Third vertex
         pixel_ptr, texturePitch, drawDepthBuffer, // Drawing utils
-        triangle.w);                              // Color
+        triangle.col);                            // Color
   }
 
   // Unlock and render texture

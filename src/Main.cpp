@@ -1,10 +1,10 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
-#include <glm/glm.hpp>
 
 #include "utils/DrawLoop.h"
-#include "utils/FpsCounter.h"
+#include "utils/generic/FpsCounter.h"
+#include "math/names.h"
 
 int main()
 {
@@ -38,8 +38,8 @@ int main()
   SDL_Event event;
   bool running = true;
 
-  glm::ivec2 mouse(0, 0);
-  glm::ivec2 pMouse(0, 0);
+  int2 mouse(0, 0);
+  int2 pMouse(0, 0);
 
   while (running)
   {
@@ -63,7 +63,7 @@ int main()
 
       case SDL_MOUSEMOTION:
         pMouse = mouse;
-        mouse = glm::ivec2(event.motion.x, event.motion.y);
+        mouse = int2(event.motion.x, event.motion.y);
         break;
 
       case SDL_MOUSEBUTTONDOWN:

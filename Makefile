@@ -28,3 +28,5 @@ run: all
 # Clean
 clean:
 	rm -rf $(BUILD_DIR)
+clear:
+	rm -rf $(BUILD_DIR)

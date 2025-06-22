@@ -1,0 +1,60 @@
+struct int2
+{
+  int x;
+  int y;
+
+  int2() = default;
+  int2(int x, int y) : x(x), y(y) {}
+};
+
+struct triangleidx
+{
+  unsigned long v1;
+  unsigned long v2;
+  unsigned long v3;
+
+  int col;
+
+  triangleidx() = default;
+  triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col)
+      : v1(v1), v2(v2), v3(v3), col(col) {}
+};
+
+struct float3
+{
+  float x;
+  float y;
+  float z;
+
+  float3() = default;
+  float3(float x, float y, float z) : x(x), y(y), z(z) {}
+};
+
+struct mat3x3
+{
+  float3 rows[3];
+
+  inline const float3 &operator[](int i) const { return rows[i]; }
+  inline float3 &operator[](int i) { return rows[i]; }
+
+  inline float3 operator*(const float3 &v) const
+  {
+    return {
+        rows[0].x * v.x + rows[0].y * v.y + rows[0].z * v.z,
+        rows[1].x * v.x + rows[1].y * v.y + rows[1].z * v.z,
+        rows[2].x * v.x + rows[2].y * v.y + rows[2].z * v.z};
+  }
+
+  inline mat3x3 operator*(const mat3x3 &b) const
+  {
+    mat3x3 r;
+    for (int i = 0; i < 3; ++i)
+    {
+      r.rows[i] = {
+          rows[i].x * b[0].x + rows[i].y * b[1].x + rows[i].z * b[2].x,
+          rows[i].x * b[0].y + rows[i].y * b[1].y + rows[i].z * b[2].y,
+          rows[i].x * b[0].z + rows[i].y * b[1].z + rows[i].z * b[2].z};
+    }
+    return r;
+  }
+};
