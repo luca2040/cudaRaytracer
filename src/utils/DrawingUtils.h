@@ -1,9 +1,9 @@
 #include <SDL2/SDL.h>
+#include <glm/glm.hpp>
 
-void depthFillTriangle(
-    float x1, float y1, float z1,
-    float x2, float y2, float z2,
-    float x3, float y3, float z3,
+void rasterizeFullTriangle(
+    glm::vec3 v1,
+    glm::vec3 v2,
+    glm::vec3 v3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
-    int color,
-    int WIDTH, int HEIGHT);
+    int color);

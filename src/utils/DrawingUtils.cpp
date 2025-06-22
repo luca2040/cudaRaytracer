@@ -1,43 +1,21 @@
 #include <algorithm>
 #include <SDL2/SDL.h>
+#include <glm/glm.hpp>
 
 #include "../math/mathUtils.h"
-
-void sortVerticesByY(
-    float *x1, float *y1, float *z1,
-    float *x2, float *y2, float *z2,
-    float *x3, float *y3, float *z3)
-{
-  if (*y1 > *y2)
-  {
-    std::swap(*x1, *x2);
-    std::swap(*y1, *y2);
-    std::swap(*z1, *z2);
-  }
-  if (*y2 > *y3)
-  {
-    std::swap(*x2, *x3);
-    std::swap(*y2, *y3);
-    std::swap(*z2, *z3);
-  }
-  if (*y1 > *y2)
-  {
-    std::swap(*x1, *x2);
-    std::swap(*y1, *y2);
-    std::swap(*z1, *z2);
-  }
-}
+#include "DrawLoop.h"
 
 void drawHorizontalLine(int xStart, int xEnd, int lineY,
-                        float bigger_x1, float bigger_y1, float z1,
-                        float bigger_x2, float bigger_y2, float z2,
-                        float bigger_x3, float bigger_y3, float z3,
+                        glm::vec3 t_v1,
+                        glm::vec3 t_v2,
+                        glm::vec3 t_v3,
                         Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
                         int color,
-                        int WIDTH, int HEIGHT)
+                        glm::vec2 &b_v0, glm::vec2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
 {
   if (lineY > HEIGHT || lineY < 0)
     return;
+
   if (xStart > xEnd)
     std::swap(xStart, xEnd);
 
@@ -46,7 +24,9 @@ void drawHorizontalLine(int xStart, int xEnd, int lineY,
     if (pointX > WIDTH || pointX < 0)
       continue;
 
-    float pointZ = triangleInterpolate(bigger_x1, bigger_y1, bigger_x2, bigger_y2, bigger_x3, bigger_y3, pointX, lineY, z1, z2, z3);
+    float pointZ = triangleInterpolate(t_v1, t_v2, t_v3,
+                                       pointX, lineY,
+                                       b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
     float &actualZ = drawDepthBuffer[lineY * WIDTH + pointX];
 
     if (actualZ < pointZ)
@@ -58,15 +38,15 @@ void drawHorizontalLine(int xStart, int xEnd, int lineY,
 }
 
 void fillBottomFlatTriangle(
-    float bigger_x1, float bigger_y1, float z1,
-    float bigger_x2, float bigger_y2, float z2,
-    float bigger_x3, float bigger_y3, float z3,
+    glm::vec3 t_v1,
+    glm::vec3 t_v2,
+    glm::vec3 t_v3,
     float x1, float y1,
     float x2, float y2,
     float x3, float y3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
     int color,
-    int WIDTH, int HEIGHT)
+    glm::vec2 &b_v0, glm::vec2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
 {
   float invslope1 = (x2 - x1) / (y2 - y1);
   float invslope2 = (x3 - x1) / (y3 - y1);
@@ -76,14 +56,11 @@ void fillBottomFlatTriangle(
 
   for (int scanlineY = y1; scanlineY <= y2; scanlineY++)
   {
-    // Another abomination again :)
     drawHorizontalLine(static_cast<int>(curx1), static_cast<int>(curx2), scanlineY,
-                       bigger_x1, bigger_y1, z1,
-                       bigger_x2, bigger_y2, z2,
-                       bigger_x3, bigger_y3, z3,
+                       t_v1, t_v2, t_v3,
                        pixel_ptr, texturePitch, drawDepthBuffer,
                        color,
-                       WIDTH, HEIGHT);
+                       b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
 
     curx1 += invslope1;
     curx2 += invslope2;
@@ -91,15 +68,15 @@ void fillBottomFlatTriangle(
 }
 
 void fillTopFlatTriangle(
-    float bigger_x1, float bigger_y1, float z1,
-    float bigger_x2, float bigger_y2, float z2,
-    float bigger_x3, float bigger_y3, float z3,
+    glm::vec3 t_v1,
+    glm::vec3 t_v2,
+    glm::vec3 t_v3,
     float x1, float y1,
     float x2, float y2,
     float x3, float y3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
     int color,
-    int WIDTH, int HEIGHT)
+    glm::vec2 &b_v0, glm::vec2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
 {
   float invslope1 = (x3 - x1) / (y3 - y1);
   float invslope2 = (x3 - x2) / (y3 - y2);
@@ -109,78 +86,82 @@ void fillTopFlatTriangle(
 
   for (int scanlineY = y3; scanlineY > y1; scanlineY--)
   {
-    // Another abomination again :)
     drawHorizontalLine(static_cast<int>(curx1), static_cast<int>(curx2), scanlineY,
-                       bigger_x1, bigger_y1, z1,
-                       bigger_x2, bigger_y2, z2,
-                       bigger_x3, bigger_y3, z3,
+                       t_v1, t_v2, t_v3,
                        pixel_ptr, texturePitch, drawDepthBuffer,
                        color,
-                       WIDTH, HEIGHT);
+                       b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
 
     curx1 -= invslope1;
     curx2 -= invslope2;
   }
 }
 
-// Yes this is a part of that abomination idea in DrawLoop
-void depthFillTriangle(
-    float x1, float y1, float z1,
-    float x2, float y2, float z2,
-    float x3, float y3, float z3,
+void rasterizeFullTriangle(
+    glm::vec3 v1,
+    glm::vec3 v2,
+    glm::vec3 v3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
-    int color,
-    int WIDTH, int HEIGHT)
+    int color)
 {
-  sortVerticesByY(&x1, &y1, &z1, &x2, &y2, &z2, &x3, &y3, &z3);
 
-  if (y2 == y3)
+  // Sort vertices by y
+
+  if (v1.y > v2.y)
+    std::swap(v1, v2);
+  if (v2.y > v3.y)
+    std::swap(v2, v3);
+  if (v1.y > v2.y)
+    std::swap(v1, v2);
+
+  // Pre-calc values for barycentric coordinates
+
+  glm::vec2 b_v0 = v2 - v1, b_v1 = v3 - v1;
+  float b_d00 = glm::dot(b_v0, b_v0);
+  float b_d01 = glm::dot(b_v0, b_v1);
+  float b_d11 = glm::dot(b_v1, b_v1);
+  float b_invDenom = 1.0 / (b_d00 * b_d11 - b_d01 * b_d01);
+
+  // Rasterize triangles based on the type
+
+  if (v2.y == v3.y)
   {
-    fillBottomFlatTriangle(x1, y1, z1,
-                           x2, y2, z2,
-                           x3, y3, z3,
-                           x1, y1,
-                           x2, y2,
-                           x3, y3,
+    fillBottomFlatTriangle(v1, v2, v3,
+                           v1.x, v1.y,
+                           v2.x, v2.y,
+                           v3.x, v3.y,
                            pixel_ptr, texturePitch, drawDepthBuffer,
                            color,
-                           WIDTH, HEIGHT);
+                           b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
   }
-  else if (y1 == y2)
+  else if (v1.y == v2.y)
   {
-    fillTopFlatTriangle(x1, y1, z1,
-                        x2, y2, z2,
-                        x3, y3, z3,
-                        x1, y1,
-                        x2, y2,
-                        x3, y3,
+    fillTopFlatTriangle(v1, v2, v3,
+                        v1.x, v1.y,
+                        v2.x, v2.y,
+                        v3.x, v3.y,
                         pixel_ptr, texturePitch, drawDepthBuffer,
                         color,
-                        WIDTH, HEIGHT);
+                        b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
   }
   else
   {
-    int newX = static_cast<int>(x1 + (static_cast<float>(y2 - y1) / static_cast<float>(y3 - y1)) * (x3 - x1));
-    int newY = y2;
+    float newX = v1.x + ((v2.y - v1.y) / (v3.y - v1.y)) * (v3.x - v1.x);
 
-    fillBottomFlatTriangle(x1, y1, z1,
-                           x2, y2, z2,
-                           x3, y3, z3,
-                           x1, y1,
-                           x2, y2,
-                           newX, newY,
+    fillBottomFlatTriangle(v1, v2, v3,
+                           v1.x, v1.y,
+                           v2.x, v2.y,
+                           newX, v2.y, // New x and y
                            pixel_ptr, texturePitch, drawDepthBuffer,
                            color,
-                           WIDTH, HEIGHT);
+                           b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
 
-    fillTopFlatTriangle(x1, y1, z1,
-                        x2, y2, z2,
-                        x3, y3, z3,
-                        x2, y2,
-                        newX, newY,
-                        x3, y3,
+    fillTopFlatTriangle(v1, v2, v3,
+                        v2.x, v2.y,
+                        newX, v2.y, // New x and y
+                        v3.x, v3.y,
                         pixel_ptr, texturePitch, drawDepthBuffer,
                         color,
-                        WIDTH, HEIGHT);
+                        b_v0, b_v1, b_d00, b_d01, b_d11, b_invDenom);
   }
 }

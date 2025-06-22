@@ -104,23 +104,16 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   for (size_t i = 0; i < triangleNum; i++)
   {
-    // The x and y are the projected ones, the z is for the depth buffer
+    // The x and y here are the projected ones, the z is for the depth buffer
 
-    float x1 = pointarray[triangles[i][0]][0];
-    float y1 = pointarray[triangles[i][0]][1];
-    float z1 = pointarray[triangles[i][0]][2];
+    glm::uvec4 triangle = triangles[i];
 
-    float x2 = pointarray[triangles[i][1]][0];
-    float y2 = pointarray[triangles[i][1]][1];
-    float z2 = pointarray[triangles[i][1]][2];
-
-    float x3 = pointarray[triangles[i][2]][0];
-    float y3 = pointarray[triangles[i][2]][1];
-    float z3 = pointarray[triangles[i][2]][2];
-
-    int color = triangles[i][3];
-
-    depthFillTriangle(x1, y1, z1, x2, y2, z2, x3, y3, z3, pixel_ptr, texturePitch, drawDepthBuffer, color, WIDTH, HEIGHT);
+    rasterizeFullTriangle(
+        pointarray[triangle.x],                   // First vertex
+        pointarray[triangle.y],                   // Second vertex
+        pointarray[triangle.z],                   // Third vertex
+        pixel_ptr, texturePitch, drawDepthBuffer, // Drawing utils
+        triangle.w);                              // Color
   }
 
   // Unlock and render texture
