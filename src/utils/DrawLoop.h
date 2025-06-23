@@ -1,3 +1,6 @@
+#ifndef DRAW_LOOP
+#define DRAW_LOOP
+
 #include <SDL2/SDL.h>
 
 const unsigned int WIDTH = 1400;
@@ -10,3 +13,5 @@ constexpr unsigned int TOTAL_PIXELS = WIDTH * HEIGHT;
 
 void keyPressed(SDL_Keycode key);
 void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture);
+
+#endif

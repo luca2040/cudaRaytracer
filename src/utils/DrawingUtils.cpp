@@ -1,17 +1,17 @@
 #include <algorithm>
 #include <SDL2/SDL.h>
-#include <glm/glm.hpp>
 
 #include "../math/mathUtils.h"
+#include "../math/names.h"
 #include "DrawLoop.h"
 
 void drawHorizontalLine(int xStart, int xEnd, int lineY,
-                        glm::vec3 t_v1,
-                        glm::vec3 t_v2,
-                        glm::vec3 t_v3,
+                        float3 t_v1,
+                        float3 t_v2,
+                        float3 t_v3,
                         Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
                         int color,
-                        glm::vec2 &b_v0, glm::vec2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
+                        float2 &b_v0, float2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
 {
   if (lineY > HEIGHT || lineY < 0)
     return;
@@ -38,15 +38,15 @@ void drawHorizontalLine(int xStart, int xEnd, int lineY,
 }
 
 void fillBottomFlatTriangle(
-    glm::vec3 t_v1,
-    glm::vec3 t_v2,
-    glm::vec3 t_v3,
+    float3 t_v1,
+    float3 t_v2,
+    float3 t_v3,
     float x1, float y1,
     float x2, float y2,
     float x3, float y3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
     int color,
-    glm::vec2 &b_v0, glm::vec2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
+    float2 &b_v0, float2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
 {
   float invslope1 = (x2 - x1) / (y2 - y1);
   float invslope2 = (x3 - x1) / (y3 - y1);
@@ -68,15 +68,15 @@ void fillBottomFlatTriangle(
 }
 
 void fillTopFlatTriangle(
-    glm::vec3 t_v1,
-    glm::vec3 t_v2,
-    glm::vec3 t_v3,
+    float3 t_v1,
+    float3 t_v2,
+    float3 t_v3,
     float x1, float y1,
     float x2, float y2,
     float x3, float y3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
     int color,
-    glm::vec2 &b_v0, glm::vec2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
+    float2 &b_v0, float2 &b_v1, float &b_d00, float &b_d01, float &b_d11, float &b_invDenom)
 {
   float invslope1 = (x3 - x1) / (y3 - y1);
   float invslope2 = (x3 - x2) / (y3 - y2);
@@ -98,9 +98,9 @@ void fillTopFlatTriangle(
 }
 
 void rasterizeFullTriangle(
-    glm::vec3 v1,
-    glm::vec3 v2,
-    glm::vec3 v3,
+    float3 v1,
+    float3 v2,
+    float3 v3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
     int color)
 {
@@ -116,10 +116,10 @@ void rasterizeFullTriangle(
 
   // Pre-calc values for barycentric coordinates
 
-  glm::vec2 b_v0 = v2 - v1, b_v1 = v3 - v1;
-  float b_d00 = glm::dot(b_v0, b_v0);
-  float b_d01 = glm::dot(b_v0, b_v1);
-  float b_d11 = glm::dot(b_v1, b_v1);
+  float2 b_v0 = v2 - v1, b_v1 = v3 - v1;
+  float b_d00 = dot(b_v0, b_v0);
+  float b_d01 = dot(b_v0, b_v1);
+  float b_d11 = dot(b_v1, b_v1);
   float b_invDenom = 1.0 / (b_d00 * b_d11 - b_d01 * b_d01);
 
   // Rasterize triangles based on the type

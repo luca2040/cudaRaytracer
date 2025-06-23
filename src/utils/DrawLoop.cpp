@@ -1,7 +1,5 @@
 #include <SDL2/SDL.h>
 #include <iostream>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include "../math/mathUtils.h"
 #include "../math/names.h"
@@ -64,19 +62,17 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   float3 pointarray[pointsCount];
   std::copy(std::begin(points), std::end(points), pointarray);
 
-  float3 yrotmat[3] = {
-      {cos(yrot), 0.0f, sin(yrot)},
-      {0.0f, 1.0f, 0.0f},
-      {-sin(yrot), 0.0f, cos(yrot)}};
+  mat3x3 yrotmat = {
+      float3(cos(yrot), 0.0f, sin(yrot)),
+      float3(0.0f, 1.0f, 0.0f),
+      float3(-sin(yrot), 0.0f, cos(yrot))};
 
-  float3 xrotmat[3] = {
-      {1.0f, 0.0f, 0.0f},
-      {0.0f, cos(xrot), -sin(xrot)},
-      {0.0f, sin(xrot), cos(xrot)}};
+  mat3x3 xrotmat = {
+      float3(1.0f, 0.0f, 0.0f),
+      float3(0.0f, cos(xrot), -sin(xrot)),
+      float3(0.0f, sin(xrot), cos(xrot))};
 
-  glm::mat3 xrotmat = glm::mat3(glm::rotate(glm::mat4(1.0f), xrot, glm::vec3(1, 0, 0)));
-  glm::mat3 yrotmat = glm::mat3(glm::rotate(glm::mat4(1.0f), yrot, glm::vec3(0, 1, 0)));
-  glm::mat3 rotCombined = xrotmat * yrotmat;
+  mat3x3 rotCombined = xrotmat * yrotmat;
 
   for (size_t i = 0; i < pointsCount; i++)
   {
