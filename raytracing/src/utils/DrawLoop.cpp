@@ -4,6 +4,8 @@
 #include "../math/Definitions.h"
 #include "DrawLoop.h"
 
+#include "cuda/test.cuh"
+
 // Camera settings
 float camZ = 600;
 
@@ -156,4 +158,5 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
 void keyPressed(SDL_Keycode key)
 {
+  testCUDA();
 }
