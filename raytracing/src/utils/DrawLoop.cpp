@@ -7,13 +7,22 @@
 
 #include "cuda/test.cuh"
 
-// Camera settings
-float camZ = 600;
-float camGridSize = 1;
-float3 camPos = {0, 0, 0};
-float3 camRotation = {0, 0, M_PI};
+// ######################### Camera settings ##########################
 
-// Rotations
+const float camFOVdeg = 90;
+
+float3 camPos = {0, 0, 0};
+float3 camLookingPoint = {0, 0, 1};
+
+// ####################################################################
+
+const float camFOV = camFOVdeg * M_PI / 180.0f;
+const float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
+const float imagePlaneWidth = imagePlaneHeight * ASPECT;
+
+// ####################################################################
+
+// Objects
 float3 rotcenter(0.0f, 0.0f, 3000.0f);
 
 float3 points[] = {
@@ -99,37 +108,32 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   ray *rays = new ray[TOTAL_PIXELS];
   // rays[y * WIDTH + x]
 
-  // Camera rotation
+  // Camera setup
 
-  mat3x3 xCamRotmat = {
-      float3(1.0f, 0.0f, 0.0f),
-      float3(0.0f, cos(camRotation.x), -sin(camRotation.x)),
-      float3(0.0f, sin(camRotation.x), cos(camRotation.x))};
+  float3 camForward = normalize(camLookingPoint - camPos);
+  float3 camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
+  float3 camUp = cross3(camRight, camForward);
 
-  mat3x3 yCamRotmat = {
-      float3(cos(camRotation.y), 0.0f, sin(camRotation.y)),
-      float3(0.0f, 1.0f, 0.0f),
-      float3(-sin(camRotation.y), 0.0f, cos(camRotation.y))};
+  // Camera placement
 
-  mat3x3 zCamRotmat = {
-      float3(cos(camRotation.z), -sin(camRotation.z), 0.0f),
-      float3(sin(camRotation.z), cos(camRotation.z), 0.0f),
-      float3(0.0f, 0.0f, 1.0f)};
-
-  mat3x3 rotCamCombined = xCamRotmat * yCamRotmat * zCamRotmat;
+  float3 imageCenter = camPos + camForward;
+  float3 imageX = camRight * imagePlaneWidth;
+  float3 imageY = camUp * imagePlaneHeight;
+  float3 camViewOrigin = imageCenter - imageX * 0.5f - imageY * 0.5f;
 
   for (int y = 0; y < HEIGHT; y++)
   {
     for (int x = 0; x < WIDTH; x++)
     {
-      float xGridCoord = (x - HALF_WIDTH + 0.5f) * camGridSize;
-      float yGridCoord = (y - HALF_HEIGHT + 0.5f) * camGridSize;
+      // [TODO] take out the divisions and add option for zoom
 
-      // Vector to xGridCoord, yGridCoord, camZ
-      float3 normalizedDir = normalize({xGridCoord, yGridCoord, camZ});
-      normalizedDir = rotCamCombined * normalizedDir;
+      float u = static_cast<float>(x) / static_cast<float>(WIDTH - 1);
+      float v = static_cast<float>(y) / static_cast<float>(HEIGHT - 1);
 
-      rays[y * WIDTH + x] = ray(camPos, normalizedDir);
+      float3 pixelPos = camViewOrigin + imageX * u + imageY * v;
+      float3 rayDir = pixelPos - camPos;
+
+      rays[y * WIDTH + x] = ray(camPos, rayDir);
     }
   }
 
@@ -169,16 +173,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
       }
     }
   }
-
-  // pixel_ptr[y0 * (texturePitch / 4) + x0] = color;
-
-  // for (size_t i = 0; i < triangleNum; i++)
-  // {
-  //   // The x and y here are the projected ones, the z is for the depth buffer
-
-  //   // triangleidx triangle = triangles[i];
-  //   // pointarray[triangle.v1]
-  // }
 
   // Clean up
 
