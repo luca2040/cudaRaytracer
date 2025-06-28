@@ -133,41 +133,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
            pointarray, triangles, triangleNum,
            pointsSize, triangleSize);
 
-  for (int y = 0; y < HEIGHT; y++)
-  {
-    for (int x = 0; x < WIDTH; x++)
-    {
-      ray currentRay = ray(
-          camPos,
-          camViewOrigin + imageX * (static_cast<float>(x) * inverseWidthMinus) + imageY * (static_cast<float>(y) * inverseHeightMinus) - camPos);
-
-      // Bruteforce all the triangles
-      float currentZbuf = INFINITY;
-      for (size_t i = 0; i < triangleNum; i++)
-      {
-        triangleidx triangle = triangles[i];
-
-        float3_L v1 = pointarray[triangle.v1];
-        float3_L v2 = pointarray[triangle.v2];
-        float3_L v3 = pointarray[triangle.v3];
-        unsigned int color = triangle.col;
-
-        std::optional<float3_L> intersectionPoint = ray_intersects_triangle(currentRay.origin, currentRay.direction, v1, v2, v3);
-        if (intersectionPoint)
-        {
-          float3_L intrstPoint = intersectionPoint.value();
-
-          float distanceToCamera = distance(camPos, intrstPoint);
-          if (distanceToCamera < currentZbuf)
-          {
-            currentZbuf = distanceToCamera;
-            pixel_ptr[y * (texturePitch / 4) + x] = color;
-          }
-        }
-      }
-    }
-  }
-
   // Clean up
 
   delete[] pointarray;
