@@ -49,7 +49,7 @@ inline float3 operator-(const float3 &a, const float3 &b) noexcept
   return {a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
-float3 normalize(float3 v)
+inline float3 normalize(float3 v) noexcept
 {
   __m128 vec = _mm_set_ps(0.0f, v.z, v.y, v.x); // Set _, z, y, x
 
@@ -88,11 +88,11 @@ inline float distance(const float3 &a, const float3 &b) noexcept
 }
 
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-std::optional<float3> ray_intersects_triangle(const float3 &ray_origin,
-                                              const float3 &ray_vector,
-                                              const float3 &tri_a,
-                                              const float3 &tri_b,
-                                              const float3 &tri_c)
+inline std::optional<float3> ray_intersects_triangle(const float3 &ray_origin,
+                                                     const float3 &ray_vector,
+                                                     const float3 &tri_a,
+                                                     const float3 &tri_b,
+                                                     const float3 &tri_c) noexcept
 {
   constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
