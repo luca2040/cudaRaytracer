@@ -38,8 +38,8 @@ int main()
   SDL_Event event;
   bool running = true;
 
-  int2 mouse(0, 0);
-  int2 pMouse(0, 0);
+  int2_L mouse(0, 0);
+  int2_L pMouse(0, 0);
 
   while (running)
   {
@@ -63,7 +63,7 @@ int main()
 
       case SDL_MOUSEMOTION:
         pMouse = mouse;
-        mouse = int2(event.motion.x, event.motion.y);
+        mouse = int2_L(event.motion.x, event.motion.y);
         break;
 
       case SDL_MOUSEBUTTONDOWN:

@@ -1,13 +1,13 @@
 #ifndef NAMES_STRUCTS
 #define NAMES_STRUCTS
 
-struct int2
+struct int2_L
 {
   int x;
   int y;
 
-  int2() = default;
-  int2(int x, int y) : x(x), y(y) {}
+  int2_L() = default;
+  int2_L(int x, int y) : x(x), y(y) {}
 };
 
 struct triangleidx
@@ -23,22 +23,22 @@ struct triangleidx
       : v1(v1), v2(v2), v3(v3), col(col) {}
 };
 
-struct float2
+struct float2_L
 {
   float x;
   float y;
 
-  float2() = default;
-  float2(float x, float y) : x(x), y(y) {}
+  float2_L() = default;
+  float2_L(float x, float y) : x(x), y(y) {}
 
-  inline float2 &operator+=(const float2 &rhs) noexcept
+  inline float2_L &operator+=(const float2_L &rhs) noexcept
   {
     x += rhs.x;
     y += rhs.y;
     return *this;
   }
 
-  inline float2 &operator-=(const float2 &rhs) noexcept
+  inline float2_L &operator-=(const float2_L &rhs) noexcept
   {
     x -= rhs.x;
     y -= rhs.y;
@@ -46,31 +46,31 @@ struct float2
   }
 };
 
-inline float2 operator+(const float2 &a, const float2 &b) noexcept
+inline float2_L operator+(const float2_L &a, const float2_L &b) noexcept
 {
   return {a.x + b.x, a.y + b.y};
 }
 
-inline float2 operator-(const float2 &a, const float2 &b) noexcept
+inline float2_L operator-(const float2_L &a, const float2_L &b) noexcept
 {
   return {a.x - b.x, a.y - b.y};
 }
 
-inline float dot(const float2 &a, const float2 &b) noexcept
+inline float dot(const float2_L &a, const float2_L &b) noexcept
 {
   return a.x * b.x + a.y * b.y;
 }
 
-struct float3
+struct float3_L
 {
   float x;
   float y;
   float z;
 
-  float3() = default;
-  float3(float x, float y, float z) : x(x), y(y), z(z) {}
+  float3_L() = default;
+  float3_L(float x, float y, float z) : x(x), y(y), z(z) {}
 
-  inline float3 &operator+=(const float3 &rhs) noexcept
+  inline float3_L &operator+=(const float3_L &rhs) noexcept
   {
     x += rhs.x;
     y += rhs.y;
@@ -78,7 +78,7 @@ struct float3
     return *this;
   }
 
-  inline float3 &operator-=(const float3 &rhs) noexcept
+  inline float3_L &operator-=(const float3_L &rhs) noexcept
   {
     x -= rhs.x;
     y -= rhs.y;
@@ -86,30 +86,30 @@ struct float3
     return *this;
   }
 
-  inline operator float2() const
+  inline operator float2_L() const
   {
-    return float2{x, y};
+    return float2_L{x, y};
   }
 };
 
-inline float3 operator+(const float3 &a, const float3 &b) noexcept
+inline float3_L operator+(const float3_L &a, const float3_L &b) noexcept
 {
   return {a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
-inline float3 operator-(const float3 &a, const float3 &b) noexcept
+inline float3_L operator-(const float3_L &a, const float3_L &b) noexcept
 {
   return {a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
 struct mat3x3
 {
-  float3 rows[3];
+  float3_L rows[3];
 
-  inline const float3 &operator[](int i) const { return rows[i]; }
-  inline float3 &operator[](int i) { return rows[i]; }
+  inline const float3_L &operator[](int i) const { return rows[i]; }
+  inline float3_L &operator[](int i) { return rows[i]; }
 
-  inline float3 operator*(const float3 &v) const
+  inline float3_L operator*(const float3_L &v) const
   {
     return {
         rows[0].x * v.x + rows[0].y * v.y + rows[0].z * v.z,

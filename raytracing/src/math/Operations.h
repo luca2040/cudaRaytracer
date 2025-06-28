@@ -6,27 +6,27 @@
 
 #include "Definitions.h"
 
-inline float2 operator+(const float2 &a, const float2 &b) noexcept
+inline float2_L operator+(const float2_L &a, const float2_L &b) noexcept
 {
   return {a.x + b.x, a.y + b.y};
 }
 
-inline float2 operator-(const float2 &a, const float2 &b) noexcept
+inline float2_L operator-(const float2_L &a, const float2_L &b) noexcept
 {
   return {a.x - b.x, a.y - b.y};
 }
 
-inline float dot2(const float2 &a, const float2 &b) noexcept
+inline float dot2(const float2_L &a, const float2_L &b) noexcept
 {
   return a.x * b.x + a.y * b.y;
 }
 
-inline float dot3(const float3 &a, const float3 &b) noexcept
+inline float dot3(const float3_L &a, const float3_L &b) noexcept
 {
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-inline float3 cross3(const float3 &a, const float3 &b) noexcept
+inline float3_L cross3(const float3_L &a, const float3_L &b) noexcept
 {
   return {
       a.y * b.z - a.z * b.y,
@@ -34,22 +34,22 @@ inline float3 cross3(const float3 &a, const float3 &b) noexcept
       a.x * b.y - a.y * b.x};
 }
 
-inline float3 operator*(const float3 &a, const float &b) noexcept
+inline float3_L operator*(const float3_L &a, const float &b) noexcept
 {
   return {a.x * b, a.y * b, a.z * b};
 }
 
-inline float3 operator+(const float3 &a, const float3 &b) noexcept
+inline float3_L operator+(const float3_L &a, const float3_L &b) noexcept
 {
   return {a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
-inline float3 operator-(const float3 &a, const float3 &b) noexcept
+inline float3_L operator-(const float3_L &a, const float3_L &b) noexcept
 {
   return {a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
-inline float3 normalize(float3 v) noexcept
+inline float3_L normalize(float3_L v) noexcept
 {
   __m128 vec = _mm_set_ps(0.0f, v.z, v.y, v.x); // Set _, z, y, x
 
@@ -66,14 +66,14 @@ inline float3 normalize(float3 v) noexcept
   __m128 normalized = _mm_mul_ps(vec, inv_sqrt); // Multiply by inverse sqrt
 
   // Get the result back in a float3
-  float3 result;
+  float3_L result;
   _mm_store_ss(&result.x, normalized);
   _mm_store_ss(&result.y, _mm_shuffle_ps(normalized, normalized, _MM_SHUFFLE(1, 1, 1, 1)));
   _mm_store_ss(&result.z, _mm_shuffle_ps(normalized, normalized, _MM_SHUFFLE(2, 2, 2, 2)));
   return result;
 }
 
-inline float distance(const float3 &a, const float3 &b) noexcept
+inline float distance(const float3_L &a, const float3_L &b) noexcept
 {
   __m128 va = _mm_set_ps(0.0f, a.z, a.y, a.x);
   __m128 vb = _mm_set_ps(0.0f, b.z, b.y, b.x);
@@ -88,30 +88,30 @@ inline float distance(const float3 &a, const float3 &b) noexcept
 }
 
 // https://en.wikipedia.org/wiki/M%C3%B6ller%E2%80%93Trumbore_intersection_algorithm
-inline std::optional<float3> ray_intersects_triangle(const float3 &ray_origin,
-                                                     const float3 &ray_vector,
-                                                     const float3 &tri_a,
-                                                     const float3 &tri_b,
-                                                     const float3 &tri_c) noexcept
+inline std::optional<float3_L> ray_intersects_triangle(const float3_L &ray_origin,
+                                                     const float3_L &ray_vector,
+                                                     const float3_L &tri_a,
+                                                     const float3_L &tri_b,
+                                                     const float3_L &tri_c) noexcept
 {
   constexpr float epsilon = std::numeric_limits<float>::epsilon();
 
-  float3 edge1 = tri_b - tri_a;
-  float3 edge2 = tri_c - tri_a;
-  float3 ray_cross_e2 = cross3(ray_vector, edge2);
+  float3_L edge1 = tri_b - tri_a;
+  float3_L edge2 = tri_c - tri_a;
+  float3_L ray_cross_e2 = cross3(ray_vector, edge2);
   float det = dot3(edge1, ray_cross_e2);
 
   if (det > -epsilon && det < epsilon)
     return std::nullopt; // This ray is parallel to this triangle.
 
   float inv_det = 1.0 / det;
-  float3 s = ray_origin - tri_a;
+  float3_L s = ray_origin - tri_a;
   float u = inv_det * dot3(s, ray_cross_e2);
 
   if ((u < 0 && abs(u) > epsilon) || (u > 1 && abs(u - 1) > epsilon))
     return std::nullopt;
 
-  float3 s_cross_e1 = cross3(s, edge1);
+  float3_L s_cross_e1 = cross3(s, edge1);
   float v = inv_det * dot3(ray_vector, s_cross_e1);
 
   if ((v < 0 && abs(v) > epsilon) || (u + v > 1 && abs(u + v - 1) > epsilon))
@@ -122,7 +122,7 @@ inline std::optional<float3> ray_intersects_triangle(const float3 &ray_origin,
 
   if (t > epsilon) // ray intersection
   {
-    return float3(ray_origin + ray_vector * t);
+    return float3_L(ray_origin + ray_vector * t);
   }
   else // This means that there is a line intersection but not a ray intersection.
     return std::nullopt;

@@ -5,14 +5,15 @@
 #include "../math/Operations.h"
 #include "DrawLoop.h"
 
-#include "cuda/test.cuh"
+#include "cuda/RayTracer.cuh"
 
 // ######################### Camera settings ##########################
 
-const float camFOVdeg = 90;
+const float camFOVdeg = 60;
 
-float3 camPos = {0, 0, 0};
-float3 camLookingPoint = {0, 0, 1};
+float camZoom = 2.0f;
+float3_L camPos = {0, 0, 0};
+float3_L camLookingPoint = {0, 0, 1};
 
 // ####################################################################
 
@@ -23,9 +24,9 @@ const float imagePlaneWidth = imagePlaneHeight * ASPECT;
 // ####################################################################
 
 // Objects
-float3 rotcenter(0.0f, 0.0f, 3000.0f);
+float3_L rotcenter(0.0f, 0.0f, 3000.0f);
 
-float3 points[] = {
+float3_L points[] = {
     // Front face
     {-1000.0f, -1000.0f, 2000.0f},
     {1000.0f, -1000.0f, 2000.0f},
@@ -69,21 +70,22 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   // Copy vertexes array
 
   constexpr size_t pointsCount = sizeof(points) / sizeof(points[0]);
+  constexpr size_t pointsSize = sizeof(float3_L) * pointsCount;
 
-  float3 *pointarray = new float3[pointsCount];
+  float3_L *pointarray = new float3_L[pointsCount];
   std::copy(std::begin(points), std::end(points), pointarray);
 
   // Apply rotations to copied list
 
   mat3x3 yrotmat = {
-      float3(cos(yrot), 0.0f, sin(yrot)),
-      float3(0.0f, 1.0f, 0.0f),
-      float3(-sin(yrot), 0.0f, cos(yrot))};
+      float3_L(cos(yrot), 0.0f, sin(yrot)),
+      float3_L(0.0f, 1.0f, 0.0f),
+      float3_L(-sin(yrot), 0.0f, cos(yrot))};
 
   mat3x3 xrotmat = {
-      float3(1.0f, 0.0f, 0.0f),
-      float3(0.0f, cos(xrot), -sin(xrot)),
-      float3(0.0f, sin(xrot), cos(xrot))};
+      float3_L(1.0f, 0.0f, 0.0f),
+      float3_L(0.0f, cos(xrot), -sin(xrot)),
+      float3_L(0.0f, sin(xrot), cos(xrot))};
 
   mat3x3 rotCombined = xrotmat * yrotmat;
 
@@ -103,49 +105,41 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   Uint32 *pixel_ptr = (Uint32 *)pixels;
   memset(pixel_ptr, 0, texturePitch * HEIGHT);
 
-  // Generate rays
-
-  ray *rays = new ray[TOTAL_PIXELS];
-  // rays[y * WIDTH + x]
-
   // Camera setup
 
-  float3 camForward = normalize(camLookingPoint - camPos);
-  float3 camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
-  float3 camUp = cross3(camRight, camForward);
+  float3_L camForward = normalize(camLookingPoint - camPos);
+  float3_L camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
+  float3_L camUp = cross3(camRight, camForward);
 
   // Camera placement
 
-  float3 imageCenter = camPos + camForward;
-  float3 imageX = camRight * imagePlaneWidth;
-  float3 imageY = camUp * imagePlaneHeight;
-  float3 camViewOrigin = imageCenter - imageX * 0.5f - imageY * 0.5f;
+  float3_L imageCenter = camPos + camForward;
+  float3_L imageX = camRight * imagePlaneWidth * camZoom;
+  float3_L imageY = camUp * imagePlaneHeight * camZoom;
+  float3_L camViewOrigin = imageCenter - imageX * 0.5f - imageY * 0.5f;
 
-  for (int y = 0; y < HEIGHT; y++)
-  {
-    for (int x = 0; x < WIDTH; x++)
-    {
-      // [TODO] take out the divisions and add option for zoom
+  constexpr float inverseWidthMinus = 1.0f / static_cast<float>(WIDTH - 1);
+  constexpr float inverseHeightMinus = 1.0f / static_cast<float>(HEIGHT - 1);
 
-      float u = static_cast<float>(x) / static_cast<float>(WIDTH - 1);
-      float v = static_cast<float>(y) / static_cast<float>(HEIGHT - 1);
-
-      float3 pixelPos = camViewOrigin + imageX * u + imageY * v;
-      float3 rayDir = pixelPos - camPos;
-
-      rays[y * WIDTH + x] = ray(camPos, rayDir);
-    }
-  }
-
-  // Trace the rays
+  // Generate and trace rays
 
   constexpr size_t triangleNum = sizeof(triangles) / sizeof(triangles[0]);
+  constexpr size_t triangleSize = sizeof(triangleidx) * triangleNum;
+
+  rayTrace(pixel_ptr, texturePitch,
+           camPos, camViewOrigin,
+           imageX, imageY,
+           inverseWidthMinus, inverseHeightMinus,
+           pointarray, triangles, triangleNum,
+           pointsSize, triangleSize);
 
   for (int y = 0; y < HEIGHT; y++)
   {
     for (int x = 0; x < WIDTH; x++)
     {
-      ray currentRay = rays[y * WIDTH + x];
+      ray currentRay = ray(
+          camPos,
+          camViewOrigin + imageX * (static_cast<float>(x) * inverseWidthMinus) + imageY * (static_cast<float>(y) * inverseHeightMinus) - camPos);
 
       // Bruteforce all the triangles
       float currentZbuf = INFINITY;
@@ -153,15 +147,15 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
       {
         triangleidx triangle = triangles[i];
 
-        float3 v1 = pointarray[triangle.v1];
-        float3 v2 = pointarray[triangle.v2];
-        float3 v3 = pointarray[triangle.v3];
+        float3_L v1 = pointarray[triangle.v1];
+        float3_L v2 = pointarray[triangle.v2];
+        float3_L v3 = pointarray[triangle.v3];
         unsigned int color = triangle.col;
 
-        std::optional<float3> intersectionPoint = ray_intersects_triangle(currentRay.origin, currentRay.direction, v1, v2, v3);
+        std::optional<float3_L> intersectionPoint = ray_intersects_triangle(currentRay.origin, currentRay.direction, v1, v2, v3);
         if (intersectionPoint)
         {
-          float3 intrstPoint = intersectionPoint.value();
+          float3_L intrstPoint = intersectionPoint.value();
 
           float distanceToCamera = distance(camPos, intrstPoint);
           if (distanceToCamera < currentZbuf)
@@ -176,7 +170,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   // Clean up
 
-  delete[] rays;
   delete[] pointarray;
 
   // Unlock and render texture
@@ -188,5 +181,4 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
 void keyPressed(SDL_Keycode key)
 {
-  testCUDA();
 }

@@ -10,9 +10,9 @@
 float camZ = 600;
 
 // Rotations
-float3 rotcenter(0.0f, 0.0f, 3000.0f);
+float3_L rotcenter(0.0f, 0.0f, 3000.0f);
 
-float3 points[] = {
+float3_L points[] = {
     // Front face
     {-1000.0f, -1000.0f, 2000.0f},
     {1000.0f, -1000.0f, 2000.0f},
@@ -59,18 +59,18 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   constexpr size_t pointsCount = sizeof(points) / sizeof(points[0]);
 
-  float3 pointarray[pointsCount];
+  float3_L pointarray[pointsCount];
   std::copy(std::begin(points), std::end(points), pointarray);
 
   mat3x3 yrotmat = {
-      float3(cos(yrot), 0.0f, sin(yrot)),
-      float3(0.0f, 1.0f, 0.0f),
-      float3(-sin(yrot), 0.0f, cos(yrot))};
+      float3_L(cos(yrot), 0.0f, sin(yrot)),
+      float3_L(0.0f, 1.0f, 0.0f),
+      float3_L(-sin(yrot), 0.0f, cos(yrot))};
 
   mat3x3 xrotmat = {
-      float3(1.0f, 0.0f, 0.0f),
-      float3(0.0f, cos(xrot), -sin(xrot)),
-      float3(0.0f, sin(xrot), cos(xrot))};
+      float3_L(1.0f, 0.0f, 0.0f),
+      float3_L(0.0f, cos(xrot), -sin(xrot)),
+      float3_L(0.0f, sin(xrot), cos(xrot))};
 
   mat3x3 rotCombined = xrotmat * yrotmat;
 

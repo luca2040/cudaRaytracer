@@ -5,9 +5,9 @@
 #include "../math/names.h"
 
 void rasterizeFullTriangle(
-    float3 v1,
-    float3 v2,
-    float3 v3,
+    float3_L v1,
+    float3_L v2,
+    float3_L v3,
     Uint32 *pixel_ptr, int texturePitch, float *drawDepthBuffer,
     int color);
 
