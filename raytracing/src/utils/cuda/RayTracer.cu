@@ -61,6 +61,34 @@ __global__ void rayTraceKernel(
   pixelBuffer[y * texturePitchFourth + x] = x * y / 100 % 0xFFFFFF; // Something just to test
 }
 
+// ######## Device parameters ########
+
+float3_L *d_pointarray;
+triangleidx *d_triangles;
+uint32_t *d_pixelBuffer;
+
+void cudaAllocateAndCopy(size_t pointsSize,
+                         size_t triangleSize,
+                         size_t pixelBufferSize,
+
+                         const triangleidx *triangles)
+{
+  // Allocate all the memory needed
+  cudaMalloc(&d_pointarray, pointsSize);
+  cudaMalloc(&d_triangles, triangleSize);
+  cudaMalloc(&d_pixelBuffer, pixelBufferSize);
+
+  // Copy the triangles index array, since its always static
+  cudaMemcpy(d_triangles, triangles, triangleSize, cudaMemcpyHostToDevice);
+}
+
+void cudaCleanup()
+{
+  cudaFree(d_pixelBuffer);
+  cudaFree(d_pointarray);
+  cudaFree(d_triangles);
+}
+
 void rayTrace(
     uint32_t *pixelBuffer,
     int texturePitch,
@@ -73,27 +101,14 @@ void rayTrace(
     float inverseHeightMinus,
 
     const float3_L *pointarray,
-    const triangleidx *triangles,
     size_t triangleNum,
 
     size_t pointarraySize,
-    size_t trianglesSize)
+    size_t trianglesSize,
+    size_t pixelBufferSize)
 {
-  // ######## Device parameters ########
-
-  uint32_t *d_pixelBuffer;
-  float3_L *d_pointarray;
-  triangleidx *d_triangles;
-
-  size_t pixelBufferSize = texturePitch * HEIGHT;
-
-  cudaMalloc(&d_pixelBuffer, pixelBufferSize);
-  cudaMalloc(&d_pointarray, pointarraySize);
-  cudaMalloc(&d_triangles, trianglesSize);
-
-  cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
+  // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pointarray, pointarray, pointarraySize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_triangles, triangles, trianglesSize, cudaMemcpyHostToDevice);
 
   dim3 blockDim(16, 16);
   dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
@@ -108,12 +123,5 @@ void rayTrace(
 
   // Get results back
 
-  cudaDeviceSynchronize();
   cudaMemcpy(pixelBuffer, d_pixelBuffer, pixelBufferSize, cudaMemcpyDeviceToHost);
-
-  // Clean up
-
-  cudaFree(d_pixelBuffer);
-  cudaFree(d_pointarray);
-  cudaFree(d_triangles);
 }

@@ -5,6 +5,14 @@
 
 extern "C"
 {
+  void cudaAllocateAndCopy(size_t pointsSize,
+                           size_t triangleSize,
+                           size_t pixelBufferSize,
+
+                           const triangleidx *triangles);
+
+  void cudaCleanup();
+
   void rayTrace(
       uint32_t *pixelBuffer,
       int texturePitch,
@@ -17,9 +25,9 @@ extern "C"
       float inverseHeightMinus,
 
       const float3_L *pointarray,
-      const triangleidx *triangles,
       size_t triangleNum,
 
       size_t pointarraySize,
-      size_t trianglesSize);
+      size_t trianglesSize,
+      size_t pixelBufferSize);
 }

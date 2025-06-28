@@ -59,6 +59,41 @@ triangleidx triangles[] = {
     {2, 7, 6, 0x00FFFF},
 };
 
+// ########### Variables to setup on start ###########
+
+size_t pointsCount;
+size_t pointsSize;
+
+size_t triangleNum;
+size_t triangleSize;
+
+size_t pixelBufferSize;
+
+void onSetupFrame(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+  pointsCount = sizeof(points) / sizeof(points[0]);
+  pointsSize = sizeof(float3_L) * pointsCount;
+
+  triangleNum = sizeof(triangles) / sizeof(triangles[0]);
+  triangleSize = sizeof(triangleidx) * triangleNum;
+
+  // Get the texturePitch needed to allocate the right size on CUDA
+
+  void *pixelsPlaceholder;
+  int texturePitch;
+  SDL_LockTexture(texture, NULL, &pixelsPlaceholder, &texturePitch);
+  SDL_UnlockTexture(texture);
+
+  pixelBufferSize = HEIGHT * texturePitch;
+
+  cudaAllocateAndCopy(pointsSize, triangleSize, pixelBufferSize, triangles);
+}
+
+void onClose(SDL_Renderer *renderer, SDL_Texture *texture)
+{
+  cudaCleanup();
+}
+
 void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 {
   // Rotations
@@ -68,9 +103,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   float yrot = fmod((static_cast<float>(time) * 0.0001f), TWO_PI);
 
   // Copy vertexes array
-
-  constexpr size_t pointsCount = sizeof(points) / sizeof(points[0]);
-  constexpr size_t pointsSize = sizeof(float3_L) * pointsCount;
 
   float3_L *pointarray = new float3_L[pointsCount];
   std::copy(std::begin(points), std::end(points), pointarray);
@@ -123,15 +155,12 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   // Generate and trace rays
 
-  constexpr size_t triangleNum = sizeof(triangles) / sizeof(triangles[0]);
-  constexpr size_t triangleSize = sizeof(triangleidx) * triangleNum;
-
   rayTrace(pixel_ptr, texturePitch,
            camPos, camViewOrigin,
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
-           pointarray, triangles, triangleNum,
-           pointsSize, triangleSize);
+           pointarray, triangleNum,
+           pointsSize, triangleSize, pixelBufferSize);
 
   // Clean up
 

@@ -41,6 +41,8 @@ int main()
   int2_L mouse(0, 0);
   int2_L pMouse(0, 0);
 
+  onSetupFrame(renderer, texture);
+
   while (running)
   {
     while (SDL_PollEvent(&event))
@@ -83,6 +85,8 @@ int main()
     // Actually print to screen
     SDL_RenderPresent(renderer);
   }
+
+  onClose(renderer, texture);
 
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
