@@ -46,21 +46,6 @@ struct float2
   }
 };
 
-inline float2 operator+(const float2 &a, const float2 &b) noexcept
-{
-  return {a.x + b.x, a.y + b.y};
-}
-
-inline float2 operator-(const float2 &a, const float2 &b) noexcept
-{
-  return {a.x - b.x, a.y - b.y};
-}
-
-inline float dot(const float2 &a, const float2 &b) noexcept
-{
-  return a.x * b.x + a.y * b.y;
-}
-
 struct float3
 {
   float x;
@@ -92,16 +77,6 @@ struct float3
   }
 };
 
-inline float3 operator+(const float3 &a, const float3 &b) noexcept
-{
-  return {a.x + b.x, a.y + b.y, a.z + b.z};
-}
-
-inline float3 operator-(const float3 &a, const float3 &b) noexcept
-{
-  return {a.x - b.x, a.y - b.y, a.z - b.z};
-}
-
 struct mat3x3
 {
   float3 rows[3];
@@ -129,6 +104,15 @@ struct mat3x3
     }
     return r;
   }
+};
+
+struct ray
+{
+  float3 origin;
+  float3 direction; // Normalized direction vector
+
+  ray() = default;
+  ray(float3 origin, float3 direction) : origin(origin), direction(direction) {}
 };
 
 #endif

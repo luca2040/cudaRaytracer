@@ -2,12 +2,16 @@
 #include <iostream>
 
 #include "../math/Definitions.h"
+#include "../math/Operations.h"
 #include "DrawLoop.h"
 
 #include "cuda/test.cuh"
 
 // Camera settings
 float camZ = 600;
+float camGridSize = 1;
+float3 camPos = {0, 0, 0};
+float3 camRotation = {0, 0, M_PI};
 
 // Rotations
 float3 rotcenter(0.0f, 0.0f, 3000.0f);
@@ -49,8 +53,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 {
   // Rotations
 
-  constexpr float TWO_PI = 2.0f * M_PI;
-
   Uint32 time = SDL_GetTicks();
   float xrot = fmod((static_cast<float>(time) * 0.0005f), TWO_PI);
   float yrot = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
@@ -59,8 +61,10 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   constexpr size_t pointsCount = sizeof(points) / sizeof(points[0]);
 
-  float3 pointarray[pointsCount];
+  float3 *pointarray = new float3[pointsCount];
   std::copy(std::begin(points), std::end(points), pointarray);
+
+  // Apply rotations to copied list
 
   mat3x3 yrotmat = {
       float3(cos(yrot), 0.0f, sin(yrot)),
@@ -76,17 +80,9 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   for (size_t i = 0; i < pointsCount; i++)
   {
-
-    // Vertex calculations and projection all compressed into a single cycle now
-
     pointarray[i] -= rotcenter;
     pointarray[i] = rotCombined * pointarray[i];
     pointarray[i] += rotcenter;
-
-    float depthCamInverse = 1.0f / (camZ + pointarray[i].z);
-
-    pointarray[i].x = pointarray[i].x * depthCamInverse * camZ + HALF_WIDTH;
-    pointarray[i].y = pointarray[i].y * depthCamInverse * camZ + HALF_HEIGHT;
   }
 
   // Lock texture
@@ -98,56 +94,96 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   Uint32 *pixel_ptr = (Uint32 *)pixels;
   memset(pixel_ptr, 0, texturePitch * HEIGHT);
 
-  // Draw borders
+  // Generate rays
+
+  ray *rays = new ray[TOTAL_PIXELS];
+  // rays[y * WIDTH + x]
+
+  // Camera rotation
+
+  mat3x3 xCamRotmat = {
+      float3(1.0f, 0.0f, 0.0f),
+      float3(0.0f, cos(camRotation.x), -sin(camRotation.x)),
+      float3(0.0f, sin(camRotation.x), cos(camRotation.x))};
+
+  mat3x3 yCamRotmat = {
+      float3(cos(camRotation.y), 0.0f, sin(camRotation.y)),
+      float3(0.0f, 1.0f, 0.0f),
+      float3(-sin(camRotation.y), 0.0f, cos(camRotation.y))};
+
+  mat3x3 zCamRotmat = {
+      float3(cos(camRotation.z), -sin(camRotation.z), 0.0f),
+      float3(sin(camRotation.z), cos(camRotation.z), 0.0f),
+      float3(0.0f, 0.0f, 1.0f)};
+
+  mat3x3 rotCamCombined = xCamRotmat * yCamRotmat * zCamRotmat;
+
+  for (int y = 0; y < HEIGHT; y++)
+  {
+    for (int x = 0; x < WIDTH; x++)
+    {
+      float xGridCoord = (x - HALF_WIDTH + 0.5f) * camGridSize;
+      float yGridCoord = (y - HALF_HEIGHT + 0.5f) * camGridSize;
+
+      // Vector to xGridCoord, yGridCoord, camZ
+      float3 normalizedDir = normalize({xGridCoord, yGridCoord, camZ});
+      normalizedDir = rotCamCombined * normalizedDir;
+
+      rays[y * WIDTH + x] = ray(camPos, normalizedDir);
+    }
+  }
+
+  // Trace the rays
 
   constexpr size_t triangleNum = sizeof(triangles) / sizeof(triangles[0]);
 
-  for (size_t i = 0; i < triangleNum; i++)
+  for (int y = 0; y < HEIGHT; y++)
   {
-    // The x and y here are the projected ones, the z is for the depth buffer
-
-    triangleidx triangle = triangles[i];
-
-    // Placeholder line implementation - can cause crashes
-
-    auto drawLine = [](float2 point1, float2 point2, int color,
-                       Uint32 *pixel_ptr, int texturePitch)
+    for (int x = 0; x < WIDTH; x++)
     {
-      int x0 = static_cast<int>(point1.x);
-      int y0 = static_cast<int>(point1.y);
-      int x1 = static_cast<int>(point2.x);
-      int y1 = static_cast<int>(point2.y);
+      ray currentRay = rays[y * WIDTH + x];
 
-      int dx = abs(x1 - x0);
-      int dy = abs(y1 - y0);
-      int sx = (x0 < x1) ? 1 : -1;
-      int sy = (y0 < y1) ? 1 : -1;
-      int err = dx - dy;
-
-      while (true)
+      // Bruteforce all the triangles
+      float currentZbuf = INFINITY;
+      for (size_t i = 0; i < triangleNum; i++)
       {
-        pixel_ptr[y0 * (texturePitch / 4) + x0] = color;
+        triangleidx triangle = triangles[i];
 
-        if (x0 == x1 && y0 == y1)
-          break;
-        int e2 = 2 * err;
-        if (e2 > -dy)
+        float3 v1 = pointarray[triangle.v1];
+        float3 v2 = pointarray[triangle.v2];
+        float3 v3 = pointarray[triangle.v3];
+        unsigned int color = triangle.col;
+
+        std::optional<float3> intersectionPoint = ray_intersects_triangle(currentRay.origin, currentRay.direction, v1, v2, v3);
+        if (intersectionPoint)
         {
-          err -= dy;
-          x0 += sx;
-        }
-        if (e2 < dx)
-        {
-          err += dx;
-          y0 += sy;
+          float3 intrstPoint = intersectionPoint.value();
+
+          float distanceToCamera = distance(camPos, intrstPoint);
+          if (distanceToCamera < currentZbuf)
+          {
+            currentZbuf = distanceToCamera;
+            pixel_ptr[y * (texturePitch / 4) + x] = color;
+          }
         }
       }
-    };
-
-    drawLine(pointarray[triangle.v1], pointarray[triangle.v2], triangle.col, pixel_ptr, texturePitch);
-    drawLine(pointarray[triangle.v2], pointarray[triangle.v3], triangle.col, pixel_ptr, texturePitch);
-    drawLine(pointarray[triangle.v1], pointarray[triangle.v3], triangle.col, pixel_ptr, texturePitch);
+    }
   }
+
+  // pixel_ptr[y0 * (texturePitch / 4) + x0] = color;
+
+  // for (size_t i = 0; i < triangleNum; i++)
+  // {
+  //   // The x and y here are the projected ones, the z is for the depth buffer
+
+  //   // triangleidx triangle = triangles[i];
+  //   // pointarray[triangle.v1]
+  // }
+
+  // Clean up
+
+  delete[] rays;
+  delete[] pointarray;
 
   // Unlock and render texture
 
