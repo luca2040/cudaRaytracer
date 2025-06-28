@@ -29,5 +29,7 @@ extern "C"
 
       size_t pointarraySize,
       size_t trianglesSize,
-      size_t pixelBufferSize);
+      size_t pixelBufferSize,
+
+      const unsigned int bgColor);
 }

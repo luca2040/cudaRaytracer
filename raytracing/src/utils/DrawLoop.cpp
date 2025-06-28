@@ -160,7 +160,8 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
            pointarray, triangleNum,
-           pointsSize, triangleSize, pixelBufferSize);
+           pointsSize, triangleSize, pixelBufferSize,
+           BG_COLOR);
 
   // Clean up
 

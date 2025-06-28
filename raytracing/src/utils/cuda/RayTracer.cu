@@ -20,8 +20,10 @@ __global__ void rayTraceKernel(
     const triangleidx *triangles,
     size_t triangleNum,
 
-    int imageWidth,
-    int imageHeight)
+    const int imageWidth,
+    const int imageHeight,
+
+    const unsigned int bgColor)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -105,7 +107,9 @@ void rayTrace(
 
     size_t pointarraySize,
     size_t trianglesSize,
-    size_t pixelBufferSize)
+    size_t pixelBufferSize,
+
+    const unsigned int bgColor)
 {
   // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pointarray, pointarray, pointarraySize, cudaMemcpyHostToDevice);
@@ -119,7 +123,8 @@ void rayTrace(
       camPos, camViewOrigin, imageX, imageY,
       inverseWidthMinus, inverseHeightMinus,
       d_pointarray, d_triangles, triangleNum,
-      WIDTH, HEIGHT);
+      WIDTH, HEIGHT,
+      bgColor);
 
   // Get results back
 
