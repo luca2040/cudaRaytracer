@@ -16,4 +16,6 @@ constexpr float ASPECT = static_cast<float>(WIDTH) / static_cast<float>(HEIGHT);
 constexpr unsigned int TOTAL_PIXELS = WIDTH * HEIGHT;
 constexpr float TWO_PI = 2.0f * M_PI;
 
+#define EPSILON 1.1920929e-07f
+
 #endif

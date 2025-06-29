@@ -106,13 +106,4 @@ struct mat3x3
   }
 };
 
-struct ray
-{
-  float3_L origin;
-  float3_L direction; // Normalized direction vector
-
-  ray() = default;
-  ray(float3_L origin, float3_L direction) : origin(origin), direction(direction) {}
-};
-
 #endif

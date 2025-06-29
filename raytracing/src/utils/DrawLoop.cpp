@@ -99,8 +99,8 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   // Rotations
 
   Uint32 time = SDL_GetTicks();
-  float xrot = fmod((static_cast<float>(time) * 0.00005f), TWO_PI);
-  float yrot = fmod((static_cast<float>(time) * 0.0001f), TWO_PI);
+  float xrot = fmod((static_cast<float>(time) * 0.0005f), TWO_PI);
+  float yrot = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
 
   // Copy vertexes array
 
