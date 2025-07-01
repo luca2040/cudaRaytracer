@@ -1,5 +1,4 @@
-#ifndef MATH_OPERATIONS
-#define MATH_OPERATIONS
+#pragma once
 
 #include <xmmintrin.h>
 
@@ -71,5 +70,3 @@ inline float3_L normalize(float3_L v) noexcept
   _mm_store_ss(&result.z, _mm_shuffle_ps(normalized, normalized, _MM_SHUFFLE(2, 2, 2, 2)));
   return result;
 }
-
-#endif

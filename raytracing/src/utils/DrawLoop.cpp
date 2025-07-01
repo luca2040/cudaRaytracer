@@ -109,17 +109,36 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   // Apply rotations to copied list
 
-  mat3x3 yrotmat = {
-      float3_L(cos(yrot), 0.0f, sin(yrot)),
-      float3_L(0.0f, 1.0f, 0.0f),
-      float3_L(-sin(yrot), 0.0f, cos(yrot))};
+  // mat3x3 yrotmat = {
+  //     float3_L(cos(yrot), 0.0f, sin(yrot)),
+  //     float3_L(0.0f, 1.0f, 0.0f),
+  //     float3_L(-sin(yrot), 0.0f, cos(yrot))};
 
-  mat3x3 xrotmat = {
-      float3_L(1.0f, 0.0f, 0.0f),
-      float3_L(0.0f, cos(xrot), -sin(xrot)),
-      float3_L(0.0f, sin(xrot), cos(xrot))};
+  // mat3x3 xrotmat = {
+  //     float3_L(1.0f, 0.0f, 0.0f),
+  //     float3_L(0.0f, cos(xrot), -sin(xrot)),
+  //     float3_L(0.0f, sin(xrot), cos(xrot))};
 
-  mat3x3 rotCombined = xrotmat * yrotmat;
+  // mat3x3 rotCombined = xrotmat * yrotmat;
+
+  float cx = cos(xrot), sx = sin(xrot);
+  float cy = cos(yrot), sy = sin(yrot);
+  float cz = cos(0), sz = sin(0);
+
+  // Combined rotation matrix: xrot * yrot * zrot
+  mat3x3 rotCombined = {
+      float3_L(
+          cy * cz,
+          -cy * sz,
+          sy),
+      float3_L(
+          sx * sy * cz + cx * sz,
+          -sx * sy * sz + cx * cz,
+          -sx * cy),
+      float3_L(
+          -cx * sy * cz + sx * sz,
+          cx * sy * sz + sx * cz,
+          cx * cy)};
 
   for (size_t i = 0; i < pointsCount; i++)
   {

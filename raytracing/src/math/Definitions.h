@@ -1,25 +1,26 @@
-#ifndef NAMES_STRUCTS
-#define NAMES_STRUCTS
+#pragma once
+
+#include <cmath>
 
 struct int2_L
 {
   int x;
   int y;
 
-  int2_L() = default;
-  int2_L(int x, int y) : x(x), y(y) {}
+  inline int2_L() = default;
+  inline int2_L(int x, int y) : x(x), y(y) {}
 };
 
 struct triangleidx
 {
-  unsigned long v1;
-  unsigned long v2;
-  unsigned long v3;
+  size_t v1;
+  size_t v2;
+  size_t v3;
 
   int col;
 
-  triangleidx() = default;
-  triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col)
+  inline triangleidx() = default;
+  inline triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col)
       : v1(v1), v2(v2), v3(v3), col(col) {}
 };
 
@@ -28,8 +29,8 @@ struct float2_L
   float x;
   float y;
 
-  float2_L() = default;
-  float2_L(float x, float y) : x(x), y(y) {}
+  inline float2_L() = default;
+  inline float2_L(float x, float y) : x(x), y(y) {}
 
   inline float2_L &operator+=(const float2_L &rhs) noexcept
   {
@@ -52,8 +53,8 @@ struct float3_L
   float y;
   float z;
 
-  float3_L() = default;
-  float3_L(float x, float y, float z) : x(x), y(y), z(z) {}
+  inline float3_L() = default;
+  inline float3_L(float x, float y, float z) : x(x), y(y), z(z) {}
 
   inline float3_L &operator+=(const float3_L &rhs) noexcept
   {
@@ -105,5 +106,3 @@ struct mat3x3
     return r;
   }
 };
-
-#endif

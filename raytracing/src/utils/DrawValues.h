@@ -1,5 +1,4 @@
-#ifndef DRAW_VALUES
-#define DRAW_VALUES
+#pragma once
 
 #include <math.h>
 
@@ -18,4 +17,7 @@ constexpr float TWO_PI = 2.0f * M_PI;
 
 #define EPSILON 1.1920929e-07f
 
-#endif
+struct DrawingLoopValues
+{
+  size_t simpleCubeIndex;
+};
