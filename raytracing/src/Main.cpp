@@ -41,6 +41,7 @@ int main()
   int2_L mouse(0, 0);
   int2_L pMouse(0, 0);
 
+  onSceneComposition();
   onSetupFrame(renderer, texture);
 
   while (running)

@@ -3,6 +3,7 @@
 
 #include "../math/Definitions.h"
 #include "../math/Operations.h"
+#include "../scene/composition/SceneCompositor.h"
 #include "DrawLoop.h"
 
 #include "cuda/RayTracer.cuh"
@@ -21,60 +22,33 @@ const float camFOV = camFOVdeg * M_PI / 180.0f;
 const float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
 const float imagePlaneWidth = imagePlaneHeight * ASPECT;
 
-// ####################################################################
+// ########### Variables initialized on start ###########
 
-// Objects
-float3_L rotcenter(0.0f, 0.0f, 3000.0f);
+DrawingLoopValues drawLoopValues;
 
-float3_L points[] = {
-    // Front face
-    {-1000.0f, -1000.0f, 2000.0f},
-    {1000.0f, -1000.0f, 2000.0f},
-    {1000.0f, 1000.0f, 2000.0f},
-    {-1000.0f, 1000.0f, 2000.0f},
-    // Back face
-    {-1000.0f, -1000.0f, 4000.0f},
-    {1000.0f, -1000.0f, 4000.0f},
-    {1000.0f, 1000.0f, 4000.0f},
-    {-1000.0f, 1000.0f, 4000.0f}};
-
-// Vertex intexes [3], color
-triangleidx triangles[] = {
-    {0, 1, 3, 0xFF0000},
-    {1, 3, 2, 0xFF0000},
-
-    {1, 5, 2, 0x00FF00},
-    {5, 2, 6, 0x00FF00},
-
-    {0, 3, 4, 0x0000FF},
-    {4, 3, 7, 0x0000FF},
-
-    {4, 7, 5, 0xFFFF00},
-    {5, 7, 6, 0xFFFF00},
-
-    {0, 1, 4, 0xFF00FF},
-    {1, 4, 5, 0xFF00FF},
-
-    {3, 2, 7, 0x00FFFF},
-    {2, 7, 6, 0x00FFFF},
-};
-
-// ########### Variables to setup on start ###########
+float3_L *points;
+triangleidx *triangles;
+transformIndexPair *trIndexPairs;
 
 size_t pointsCount;
-size_t pointsSize;
-
 size_t triangleNum;
-size_t triangleSize;
+size_t trIndexPairCount;
 
+size_t pointsSize;
+size_t triangleSize;
 size_t pixelBufferSize;
+
+void onSceneComposition()
+{
+  composeScene(points, pointsCount,
+               triangles, triangleNum,
+               trIndexPairs, trIndexPairCount,
+               drawLoopValues);
+}
 
 void onSetupFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 {
-  pointsCount = sizeof(points) / sizeof(points[0]);
   pointsSize = sizeof(float3_L) * pointsCount;
-
-  triangleNum = sizeof(triangles) / sizeof(triangles[0]);
   triangleSize = sizeof(triangleidx) * triangleNum;
 
   // Get the texturePitch needed to allocate the right size on CUDA
@@ -105,46 +79,28 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   // Copy vertexes array
 
   float3_L *pointarray = new float3_L[pointsCount];
-  std::copy(std::begin(points), std::end(points), pointarray);
+  std::copy(points, points + pointsCount, pointarray);
+
+  // Custom single-object rotations apply
+
+  trIndexPairs[drawLoopValues.simpleCubeIndex].transform.rotationAngles = {xrot, yrot, 0.0f};
 
   // Apply rotations to copied list
 
-  // mat3x3 yrotmat = {
-  //     float3_L(cos(yrot), 0.0f, sin(yrot)),
-  //     float3_L(0.0f, 1.0f, 0.0f),
-  //     float3_L(-sin(yrot), 0.0f, cos(yrot))};
-
-  // mat3x3 xrotmat = {
-  //     float3_L(1.0f, 0.0f, 0.0f),
-  //     float3_L(0.0f, cos(xrot), -sin(xrot)),
-  //     float3_L(0.0f, sin(xrot), cos(xrot))};
-
-  // mat3x3 rotCombined = xrotmat * yrotmat;
-
-  float cx = cos(xrot), sx = sin(xrot);
-  float cy = cos(yrot), sy = sin(yrot);
-  float cz = cos(0), sz = sin(0);
-
-  // Combined rotation matrix: xrot * yrot * zrot
-  mat3x3 rotCombined = {
-      float3_L(
-          cy * cz,
-          -cy * sz,
-          sy),
-      float3_L(
-          sx * sy * cz + cx * sz,
-          -sx * sy * sz + cx * cz,
-          -sx * cy),
-      float3_L(
-          -cx * sy * cz + sx * sz,
-          cx * sy * sz + sx * cz,
-          cx * cy)};
-
-  for (size_t i = 0; i < pointsCount; i++)
+  for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
   {
-    pointarray[i] -= rotcenter;
-    pointarray[i] = rotCombined * pointarray[i];
-    pointarray[i] += rotcenter;
+
+    std::cout << "here";
+
+    transformIndexPair currentPair = trIndexPairs[indexPairI];
+    mat3x3 currentMat = currentPair.transform.getRotationMatrix();
+
+    for (size_t i = currentPair.startIdx; i < currentPair.endIdx; i++)
+    {
+      pointarray[i] -= currentPair.transform.rotationCenter;
+      pointarray[i] = currentMat * pointarray[i];
+      pointarray[i] += currentPair.transform.rotationCenter;
+    }
   }
 
   // Lock texture
@@ -191,6 +147,8 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   SDL_UnlockTexture(texture);
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+  exit(5);
 }
 
 void keyPressed(SDL_Keycode key)

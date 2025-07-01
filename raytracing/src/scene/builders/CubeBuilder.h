@@ -4,12 +4,12 @@
 #include "../../math/Operations.h"
 
 SceneObject generateCube(float3_L center, float sideLenght,
-                         unsigned int face1Col,
-                         unsigned int face2Col,
-                         unsigned int face3Col,
-                         unsigned int face4Col,
-                         unsigned int face5Col,
-                         unsigned int face6Col)
+                         int face1Col,
+                         int face2Col,
+                         int face3Col,
+                         int face4Col,
+                         int face5Col,
+                         int face6Col)
 {
   std::vector<float3_L> cubePoints;
 
@@ -46,7 +46,7 @@ SceneObject generateCube(float3_L center, float sideLenght,
 }
 
 SceneObject generateCube(float3_L center, float sideLenght,
-                         unsigned int color)
+                         int color)
 {
   return generateCube(center, sideLenght,
                       color, color, color, color, color, color);
