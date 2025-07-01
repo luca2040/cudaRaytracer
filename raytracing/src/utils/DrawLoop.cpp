@@ -76,6 +76,8 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   float xrot = fmod((static_cast<float>(time) * 0.0005f), TWO_PI);
   float yrot = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
 
+  float ymov = std::sin(yrot) * 1.25f;
+
   // Copy vertexes array
 
   float3_L *pointarray = new float3_L[pointsCount];
@@ -84,6 +86,7 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   // Custom single-object rotations apply
 
   trIndexPairs[drawLoopValues.simpleCubeIndex].transform.rotationAngles = {xrot, yrot, 0.0f};
+  trIndexPairs[drawLoopValues.movingCubeIndex].transform.relativePos = {0.0f, ymov, 0.0f};
 
   // Apply rotations to copied list
 
@@ -96,7 +99,7 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
     {
       pointarray[i] -= currentPair.transform.rotationCenter;
       pointarray[i] = currentMat * pointarray[i];
-      pointarray[i] += currentPair.transform.rotationCenter;
+      pointarray[i] += currentPair.transform.rotationCenter + currentPair.transform.relativePos;
     }
   }
 

@@ -20,4 +20,5 @@ constexpr float TWO_PI = 2.0f * M_PI;
 struct DrawingLoopValues
 {
   size_t simpleCubeIndex;
+  size_t movingCubeIndex;
 };

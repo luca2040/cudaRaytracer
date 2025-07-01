@@ -9,14 +9,16 @@ class SceneObject
 {
 public:
   float3_L rotationCenter;
+  float3_L defaultRot;
 
   std::vector<float3_L> points;
   std::vector<triangleidx> triangles;
 
-  SceneObject(float3_L rotationCenter_,
+  SceneObject(float3_L rotationCenter_, float3_L defaultRot_,
               std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
   {
     rotationCenter = rotationCenter_;
+    defaultRot = defaultRot_;
     points = points_;
     triangles = triangles_;
   }
@@ -27,6 +29,7 @@ class ObjTransform
 public:
   float3_L rotationCenter;
   float3_L rotationAngles;
+  float3_L relativePos = {0, 0, 0};
 
   ObjTransform() : rotationCenter{0, 0, 0}, rotationAngles{0, 0, 0} {}
   ObjTransform(float3_L rotationCenter_, float3_L rotationAngles_)

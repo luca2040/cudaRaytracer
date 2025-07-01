@@ -24,7 +24,7 @@ public:
 
   size_t addObjectToScene(SceneObject objToAdd)
   {
-    ObjTransform objTransform = ObjTransform(objToAdd.rotationCenter, {0, 0, 0});
+    ObjTransform objTransform = ObjTransform(objToAdd.rotationCenter, objToAdd.defaultRot);
 
     std::vector<float3_L> objPoints = objToAdd.points;
     size_t currentPointIndex = scenePoints.size();

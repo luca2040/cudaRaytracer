@@ -4,6 +4,7 @@
 #include "../../math/Operations.h"
 
 SceneObject generateCube(float3_L center, float sideLenght,
+                         float3_L defaultRot,
                          int face1Col,
                          int face2Col,
                          int face3Col,
@@ -42,12 +43,14 @@ SceneObject generateCube(float3_L center, float sideLenght,
       {2, 7, 6, face6Col},
   };
 
-  return SceneObject(center, cubePoints, cubeTriangles);
+  return SceneObject(center, defaultRot, cubePoints, cubeTriangles);
 }
 
 SceneObject generateCube(float3_L center, float sideLenght,
+                         float3_L defaultRot,
                          int color)
 {
   return generateCube(center, sideLenght,
+                      defaultRot,
                       color, color, color, color, color, color);
 }
