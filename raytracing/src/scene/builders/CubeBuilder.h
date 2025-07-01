@@ -15,9 +15,9 @@ SceneObject generateCube(float3_L center, float sideLenght,
 
   float sideLenghtHalf = sideLenght / 2.0f;
 
-  for (float frontRear = -1.0f; frontRear == -1.0f; frontRear = 1.0f)
-    for (float upDown = -1.0f; upDown == -1.0f; upDown = 1.0f)
-      for (float leftRight = -1.0f; leftRight == -1.0f; leftRight = 1.0f)
+  for (float frontRear = -1.0f; frontRear <= 1.0f; frontRear += 2.0f)
+    for (float upDown = -1.0f; upDown <= 1.0f; upDown += 2.0f)
+      for (float leftRight = -1.0f; leftRight <= 1.0f; leftRight += 2.0f)
       {
         cubePoints.push_back(center + float3_L(leftRight, upDown, frontRear) * sideLenghtHalf);
       }

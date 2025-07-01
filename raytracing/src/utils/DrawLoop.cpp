@@ -89,9 +89,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
   {
-
-    std::cout << "here";
-
     transformIndexPair currentPair = trIndexPairs[indexPairI];
     mat3x3 currentMat = currentPair.transform.getRotationMatrix();
 
@@ -147,8 +144,6 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   SDL_UnlockTexture(texture);
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
-
-  exit(5);
 }
 
 void keyPressed(SDL_Keycode key)
