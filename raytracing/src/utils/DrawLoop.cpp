@@ -8,8 +8,8 @@
 
 #include "cuda/RayTracer.cuh"
 
-#define TRACY_ENABLE
 #include "../third_party/tracy/tracy/Tracy.hpp"
+#include "../third_party/tracy/tracy/TracyC.h"
 
 // ######################### Camera settings ##########################
 
@@ -73,7 +73,11 @@ void onClose(SDL_Renderer *renderer, SDL_Texture *texture)
 
 void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 {
+  ZoneScopedN("drawFrame function");
+
   // Rotations
+
+  TracyCZoneN(timeFromSDL, "Get movements from SDL time", true);
 
   Uint32 time = SDL_GetTicks();
   float xrot = fmod((static_cast<float>(time) * 0.0005f), TWO_PI);
@@ -81,17 +85,29 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   float ymov = std::sin(yrot) * 1.25f;
 
+  TracyCZoneEnd(timeFromSDL);
+
   // Copy vertexes array
+
+  TracyCZoneN(copyPointArray, "Copy points array", true);
 
   float3_L *pointarray = new float3_L[pointsCount];
   std::copy(points, points + pointsCount, pointarray);
 
+  TracyCZoneEnd(copyPointArray);
+
   // Custom single-object rotations apply
+
+  TracyCZoneN(setRotationsToObjects, "Set rotations to objects", true);
 
   trIndexPairs[drawLoopValues.simpleCubeIndex].transform.rotationAngles = {xrot, yrot, 0.0f};
   trIndexPairs[drawLoopValues.movingCubeIndex].transform.relativePos = {0.0f, ymov, 0.0f};
 
+  TracyCZoneEnd(setRotationsToObjects);
+
   // Apply rotations to copied list
+
+  TracyCZoneN(matRotateVerts, "Matrix rotate vertices", true);
 
   for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
   {
@@ -106,7 +122,11 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
     }
   }
 
+  TracyCZoneEnd(matRotateVerts);
+
   // Lock texture
+
+  TracyCZoneN(lockTexture, "Lock texture", true);
 
   void *pixels;
   int texturePitch;
@@ -115,7 +135,11 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   Uint32 *pixel_ptr = (Uint32 *)pixels;
   memset(pixel_ptr, 0, texturePitch * HEIGHT);
 
+  TracyCZoneEnd(lockTexture);
+
   // Camera setup
+
+  TracyCZoneN(cameraSettings, "Camera settings", true);
 
   float3_L camForward = normalize(camLookingPoint - camPos);
   float3_L camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
@@ -131,7 +155,11 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   constexpr float inverseWidthMinus = 1.0f / static_cast<float>(WIDTH - 1);
   constexpr float inverseHeightMinus = 1.0f / static_cast<float>(HEIGHT - 1);
 
+  TracyCZoneEnd(cameraSettings);
+
   // Generate and trace rays
+
+  TracyCZoneN(raytraceFunction, "drawFrame rayTrace function call", true);
 
   rayTrace(pixel_ptr, texturePitch,
            camPos, camViewOrigin,
@@ -141,15 +169,21 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
            pointsSize, triangleSize, pixelBufferSize,
            BG_COLOR);
 
+  TracyCZoneEnd(raytraceFunction);
+
   // Clean up
 
   delete[] pointarray;
 
   // Unlock and render texture
 
+  TracyCZoneN(finalCleanup, "SDL texture render", true);
+
   SDL_UnlockTexture(texture);
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+  TracyCZoneEnd(finalCleanup);
 
   FrameMark;
 }

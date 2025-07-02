@@ -6,6 +6,8 @@
 #include "utils/generic/FpsCounter.h"
 #include "math/Definitions.h"
 
+#include "third_party/tracy/tracy/Tracy.hpp"
+
 int main()
 {
   std::cout << "Starting the best 3D renderer ever - Now RTX!" << std::endl;
@@ -46,6 +48,8 @@ int main()
 
   while (running)
   {
+    ZoneScopedN("Main SDL while cycle");
+
     while (SDL_PollEvent(&event))
     {
       switch (event.type)
