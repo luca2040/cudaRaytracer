@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
+#include <GL/glew.h>
 
 #include "utils/DrawLoop.h"
 #include "utils/generic/FpsCounter.h"
@@ -19,16 +20,39 @@ int main()
   }
   if (TTF_Init() < 0)
   {
-    std::cout << "Couldn't initialize TTF lib: " << TTF_GetError() << std::endl;
+    std::cerr << "Couldn't initialize TTF lib: " << TTF_GetError() << std::endl;
     return 1;
   }
 
   SDL_Window *window = SDL_CreateWindow("The Best 3D Renderer Ever - RTX edition",
                                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                                         WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
-  SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED); // | SDL_RENDERER_PRESENTVSYNC);
-  SDL_Texture *texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_RGB888,
-                                           SDL_TEXTUREACCESS_STREAMING, WIDTH, HEIGHT);
+
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+
+  SDL_GLContext glContext = SDL_GL_CreateContext(window);
+
+  if (glewInit() != GLEW_OK)
+  {
+    std::cerr << "GLEW failed to initialize" << std::endl;
+    return -1;
+  }
+
+  glViewport(0, 0, WIDTH, HEIGHT);
+
+  GLuint pbo, tex;
+
+  glGenBuffers(1, &pbo);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+  glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 4, nullptr, GL_STREAM_DRAW);
+
+  glGenTextures(1, &tex);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   TTF_Font *font = TTF_OpenFont("./font.ttf", 24);
   if (!font)
@@ -44,7 +68,7 @@ int main()
   int2_L pMouse(0, 0);
 
   onSceneComposition();
-  onSetupFrame(renderer, texture);
+  onSetupFrame(pbo);
 
   while (running)
   {
@@ -82,18 +106,17 @@ int main()
     }
 
     // Main draw logic
-    drawFrame(renderer, texture);
+    drawFrame(tex, pbo);
 
     // Draw frame counter
-    renderFpsTag(renderer, font);
+    // renderFpsTag(renderer, font);
 
     // Actually print to screen
-    SDL_RenderPresent(renderer);
+    // SDL_RenderPresent(renderer);
   }
 
-  onClose(renderer, texture);
+  onClose();
 
-  SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   SDL_Quit();
 

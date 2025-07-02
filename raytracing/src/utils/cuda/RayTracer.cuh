@@ -5,20 +5,18 @@
 
 void cudaAllocateAndCopy(size_t pointsSize,
                          size_t triangleSize,
-                         size_t pixelBufferSize,
 
                          const triangleidx *triangles);
 
 void cudaCleanup();
 
 void rayTrace(
-    uint32_t *pixelBuffer,
-    int texturePitch,
+    uchar4 *pixelBuffer,
 
-    float3_L camPos,
-    float3_L camViewOrigin,
-    float3_L imageX,
-    float3_L imageY,
+    const float3_L camPos,
+    const float3_L camViewOrigin,
+    const float3_L imageX,
+    const float3_L imageY,
     float inverseWidthMinus,
     float inverseHeightMinus,
 
@@ -27,6 +25,5 @@ void rayTrace(
 
     size_t pointarraySize,
     size_t trianglesSize,
-    size_t pixelBufferSize,
 
-    const unsigned int bgColor);
+    const int bgColor);
