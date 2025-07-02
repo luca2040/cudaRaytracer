@@ -8,6 +8,9 @@
 
 #include "cuda/RayTracer.cuh"
 
+#define TRACY_ENABLE
+#include "../third_party/tracy/tracy/Tracy.hpp"
+
 // ######################### Camera settings ##########################
 
 const float camFOVdeg = 60;
@@ -147,6 +150,8 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
   SDL_UnlockTexture(texture);
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
+
+  FrameMark;
 }
 
 void keyPressed(SDL_Keycode key)
