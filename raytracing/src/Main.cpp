@@ -1,6 +1,5 @@
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
 #include <GL/glew.h>
 
 #include "utils/DrawLoop.h"
@@ -16,11 +15,6 @@ int main()
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
-    return 1;
-  }
-  if (TTF_Init() < 0)
-  {
-    std::cerr << "Couldn't initialize TTF lib: " << TTF_GetError() << std::endl;
     return 1;
   }
 
@@ -61,13 +55,6 @@ int main()
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, WIDTH, HEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-  TTF_Font *font = TTF_OpenFont("./font.ttf", 24);
-  if (!font)
-  {
-    SDL_Log("Font load error: %s", TTF_GetError());
-    return 1;
-  }
 
   SDL_Event event;
   bool running = true;
@@ -116,8 +103,8 @@ int main()
     // Main draw logic
     drawFrame(tex, pbo);
 
-    // Draw frame counter
-    // renderFpsTag(renderer, font);
+    // Print FPS each second
+    printFpsTag();
 
     // Swap buffer
     SDL_GL_SwapWindow(window);
