@@ -52,14 +52,16 @@ __device__ __forceinline__ float3_L cross3_cuda(const float3_L &a, const float3_
       a.x * b.y - a.y * b.x);
 }
 
-__device__ __forceinline__ uchar4 make_uchar4_from_int(int c)
+__device__ __forceinline__ uchar4 make_uchar4_from_int(const int c)
 {
-  return make_uchar4(
-      (c >> 16) & 0xFF, // red
-      (c >> 8) & 0xFF,  // green
-      c & 0xFF,         // blue
-      255               // alpha
-  );
+  uchar4 retVal;
+
+  retVal.x = (c >> 16) & 0xFF; // red
+  retVal.y = (c >> 8) & 0xFF;  // green
+  retVal.z = c & 0xFF;         // blue
+  retVal.w = 255;              // alpha
+
+  return retVal;
 }
 
 // Möller–Trumbore intersection algorithm for ray-triangle intersection
