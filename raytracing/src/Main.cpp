@@ -24,23 +24,31 @@ int main()
     return 1;
   }
 
-  SDL_Window *window = SDL_CreateWindow("The Best 3D Renderer Ever - RTX edition",
-                                        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                        WIDTH, HEIGHT, SDL_WINDOW_SHOWN);
-
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+  SDL_Window *window = SDL_CreateWindow("The Best 3D Renderer Ever - RTX edition",
+                                        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+                                        WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+
   SDL_GLContext glContext = SDL_GL_CreateContext(window);
+
+  if (!glContext)
+  {
+    std::cerr << "OpenGL context creation failed: " << SDL_GetError() << std::endl;
+    return 1;
+  }
+
+  SDL_GL_MakeCurrent(window, glContext);
+
+  glViewport(0, 0, WIDTH, HEIGHT);
 
   if (glewInit() != GLEW_OK)
   {
     std::cerr << "GLEW failed to initialize" << std::endl;
     return -1;
   }
-
-  glViewport(0, 0, WIDTH, HEIGHT);
 
   GLuint pbo, tex;
 
@@ -111,8 +119,8 @@ int main()
     // Draw frame counter
     // renderFpsTag(renderer, font);
 
-    // Actually print to screen
-    // SDL_RenderPresent(renderer);
+    // Swap buffer
+    SDL_GL_SwapWindow(window);
   }
 
   onClose();

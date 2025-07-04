@@ -5,7 +5,7 @@ CXXFLAGS = -Wall -std=c++17
 NVCCFLAGS = -Xcompiler "-Wall -std=c++17"
 LDFLAGS = -lSDL2 -lSDL2_ttf -lpthread
 
-LDFLAGS += -lGLEW
+LDFLAGS += -lGLEW -lGL
 
 SRC_DIR = src
 BUILD_DIR = build

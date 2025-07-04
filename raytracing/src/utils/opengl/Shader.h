@@ -2,7 +2,7 @@
 
 #include <GL/glew.h>
 
-const char *vertexShaderSrc = R"(
+inline const char *vertexShaderSrc = R"(
 #version 330 core
 layout(location = 0) in vec2 aPos;       // vertex position
 layout(location = 1) in vec2 aTexCoord;  // texture coordinate
@@ -16,7 +16,7 @@ void main()
 }
 )";
 
-const char *fragmentShaderSrc = R"(
+inline const char *fragmentShaderSrc = R"(
 #version 330 core
 in vec2 TexCoord;
 out vec4 FragColor;
