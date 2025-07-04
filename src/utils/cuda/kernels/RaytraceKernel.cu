@@ -17,7 +17,7 @@ __global__ void rayTraceKernel(
     const int imageWidth,
     const int imageHeight,
 
-    const int bgColor)
+    const uchar4 bgColor)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -52,6 +52,6 @@ __global__ void rayTraceKernel(
 
   if (currentZbuf == INFINITY)
   {
-    pixelBuffer[y * imageWidth + x] = make_uchar4_from_int(bgColor);
+    pixelBuffer[y * imageWidth + x] = bgColor;
   }
 }

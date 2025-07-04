@@ -52,7 +52,7 @@ __device__ __forceinline__ float3_L cross3_cuda(const float3_L &a, const float3_
       a.x * b.y - a.y * b.x);
 }
 
-__device__ __forceinline__ uchar4 make_uchar4_from_int(const int c)
+__host__ __device__ __forceinline__ uchar4 make_uchar4_from_int(const int c)
 {
   uchar4 retVal;
 

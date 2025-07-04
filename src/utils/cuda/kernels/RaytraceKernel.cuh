@@ -21,4 +21,4 @@ __global__ void rayTraceKernel(
     const int imageWidth,
     const int imageHeight,
 
-    const int bgColor);
+    const uchar4 bgColor);
