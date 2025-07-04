@@ -1,11 +1,12 @@
 #pragma once
 
+#include "../math/Definitions.h"
 #include <math.h>
 
 const unsigned int WIDTH = 1400;
 const unsigned int HEIGHT = 1400;
 
-const unsigned int BG_COLOR = 0x000000;
+const int BG_COLOR = 0x000000;
 
 constexpr float HALF_WIDTH = static_cast<float>(WIDTH) * 0.5f;
 constexpr float HALF_HEIGHT = static_cast<float>(HEIGHT) * 0.5f;

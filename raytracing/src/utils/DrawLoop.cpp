@@ -1,4 +1,7 @@
 #include <SDL2/SDL.h>
+#include <GL/glew.h>
+#include <cuda_gl_interop.h>
+
 #include <iostream>
 
 #include "../math/Definitions.h"
@@ -6,6 +9,7 @@
 #include "../scene/composition/SceneCompositor.h"
 #include "DrawLoop.h"
 
+#include "opengl/Shader.h"
 #include "cuda/RayTracer.cuh"
 
 #include "../third_party/tracy/tracy/Tracy.hpp"
@@ -39,7 +43,6 @@ size_t trIndexPairCount;
 
 size_t pointsSize;
 size_t triangleSize;
-size_t pixelBufferSize;
 
 void onSceneComposition()
 {
@@ -49,29 +52,32 @@ void onSceneComposition()
                drawLoopValues);
 }
 
-void onSetupFrame(SDL_Renderer *renderer, SDL_Texture *texture)
+cudaGraphicsResource *cudaPboResource;
+GLuint shaderProgram;
+GLuint quadVAO = 0, quadVBO = 0;
+
+void onSetupFrame(GLuint pbo)
 {
   pointsSize = sizeof(float3_L) * pointsCount;
   triangleSize = sizeof(triangleidx) * triangleNum;
 
-  // Get the texturePitch needed to allocate the right size on CUDA
+  cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard);
+  setupQuad(quadVAO, quadVBO);
+  shaderProgram = createShaderProgram();
 
-  void *pixelsPlaceholder;
-  int texturePitch;
-  SDL_LockTexture(texture, NULL, &pixelsPlaceholder, &texturePitch);
-  SDL_UnlockTexture(texture);
-
-  pixelBufferSize = HEIGHT * texturePitch;
-
-  cudaAllocateAndCopy(pointsSize, triangleSize, pixelBufferSize, triangles);
+  cudaAllocateAndCopy(pointsSize, triangleSize, triangles);
 }
 
-void onClose(SDL_Renderer *renderer, SDL_Texture *texture)
+void onClose()
 {
   cudaCleanup();
+
+  glDeleteProgram(shaderProgram);
+  glDeleteVertexArrays(1, &quadVAO);
+  glDeleteBuffers(1, &quadVBO);
 }
 
-void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
+void drawFrame(GLuint tex, GLuint pbo)
 {
   ZoneScopedN("drawFrame function");
 
@@ -124,18 +130,17 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   TracyCZoneEnd(matRotateVerts);
 
-  // Lock texture
+  // Map the PBO for CUDA access
 
-  TracyCZoneN(lockTexture, "Lock texture", true);
+  TracyCZoneN(PboMap, "PBO map", true);
 
-  void *pixels;
-  int texturePitch;
-  SDL_LockTexture(texture, NULL, &pixels, &texturePitch);
+  cudaGraphicsMapResources(1, &cudaPboResource, 0);
 
-  Uint32 *pixel_ptr = (Uint32 *)pixels;
-  memset(pixel_ptr, 0, texturePitch * HEIGHT);
+  uchar4 *pxlsPtr;
+  size_t pxlsPtrSize;
+  cudaGraphicsResourceGetMappedPointer((void **)&pxlsPtr, &pxlsPtrSize, cudaPboResource);
 
-  TracyCZoneEnd(lockTexture);
+  TracyCZoneEnd(PboMap);
 
   // Camera setup
 
@@ -161,12 +166,12 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   TracyCZoneN(raytraceFunction, "drawFrame rayTrace function call", true);
 
-  rayTrace(pixel_ptr, texturePitch,
+  rayTrace(pxlsPtr,
            camPos, camViewOrigin,
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
            pointarray, triangleNum,
-           pointsSize, triangleSize, pixelBufferSize,
+           pointsSize, triangleSize,
            BG_COLOR);
 
   TracyCZoneEnd(raytraceFunction);
@@ -177,11 +182,25 @@ void drawFrame(SDL_Renderer *renderer, SDL_Texture *texture)
 
   // Unlock and render texture
 
-  TracyCZoneN(finalCleanup, "SDL texture render", true);
+  TracyCZoneN(finalCleanup, "Texture render to screen", true);
 
-  SDL_UnlockTexture(texture);
-  SDL_RenderClear(renderer);
-  SDL_RenderCopy(renderer, texture, NULL, NULL);
+  cudaGraphicsUnmapResources(1, &cudaPboResource);
+
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glUseProgram(shaderProgram);
+
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, tex);
+  glUniform1i(glGetUniformLocation(shaderProgram, "tex"), 0);
+
+  glBindVertexArray(quadVAO);
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  glBindVertexArray(0);
 
   TracyCZoneEnd(finalCleanup);
 

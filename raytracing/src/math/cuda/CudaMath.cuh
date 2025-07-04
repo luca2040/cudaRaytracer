@@ -52,6 +52,16 @@ __device__ __forceinline__ float3_L cross3_cuda(const float3_L &a, const float3_
       a.x * b.y - a.y * b.x);
 }
 
+__device__ __forceinline__ uchar4 make_uchar4_from_int(int c)
+{
+  return make_uchar4(
+      (c >> 16) & 0xFF, // red
+      (c >> 8) & 0xFF,  // green
+      c & 0xFF,         // blue
+      255               // alpha
+  );
+}
+
 // Möller–Trumbore intersection algorithm for ray-triangle intersection
 // Returns true if intersection occurs, false otherwise
 // t: distance along ray, u/v: barycentric coordinates, outHit: intersection point

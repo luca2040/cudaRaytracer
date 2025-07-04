@@ -7,8 +7,7 @@
 #include "../../math/cuda/CudaMath.cuh"
 
 __global__ void rayTraceKernel(
-    uint32_t *pixelBuffer,
-    int texturePitchFourth,
+    uchar4 *pixelBuffer,
 
     float3_L camPos,
     float3_L camViewOrigin,
@@ -24,7 +23,7 @@ __global__ void rayTraceKernel(
     const int imageWidth,
     const int imageHeight,
 
-    const unsigned int bgColor)
+    const int bgColor)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -53,13 +52,13 @@ __global__ void rayTraceKernel(
     if (hasIntersected && (t < currentZbuf))
     {
       currentZbuf = t;
-      pixelBuffer[y * texturePitchFourth + x] = triangle.col;
+      pixelBuffer[y * imageWidth + x] = make_uchar4_from_int(triangle.col);
     }
   }
 
   if (currentZbuf == INFINITY)
   {
-    pixelBuffer[y * texturePitchFourth + x] = bgColor;
+    pixelBuffer[y * imageWidth + x] = make_uchar4_from_int(bgColor);
   }
 }
 
@@ -67,18 +66,15 @@ __global__ void rayTraceKernel(
 
 float3_L *d_pointarray;
 triangleidx *d_triangles;
-uint32_t *d_pixelBuffer;
 
 void cudaAllocateAndCopy(size_t pointsSize,
                          size_t triangleSize,
-                         size_t pixelBufferSize,
 
                          const triangleidx *triangles)
 {
   // Allocate all the memory needed
   cudaMalloc(&d_pointarray, pointsSize);
   cudaMalloc(&d_triangles, triangleSize);
-  cudaMalloc(&d_pixelBuffer, pixelBufferSize);
 
   // Copy the triangles index array, since its always static
   cudaMemcpy(d_triangles, triangles, triangleSize, cudaMemcpyHostToDevice);
@@ -86,14 +82,12 @@ void cudaAllocateAndCopy(size_t pointsSize,
 
 void cudaCleanup()
 {
-  cudaFree(d_pixelBuffer);
   cudaFree(d_pointarray);
   cudaFree(d_triangles);
 }
 
 void rayTrace(
-    uint32_t *pixelBuffer,
-    int texturePitch,
+    uchar4 *pixelBuffer,
 
     const float3_L camPos,
     const float3_L camViewOrigin,
@@ -107,9 +101,8 @@ void rayTrace(
 
     size_t pointarraySize,
     size_t trianglesSize,
-    size_t pixelBufferSize,
 
-    const unsigned int bgColor)
+    const int bgColor)
 {
   // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pointarray, pointarray, pointarraySize, cudaMemcpyHostToDevice);
@@ -118,15 +111,10 @@ void rayTrace(
   dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
 
   rayTraceKernel<<<gridDim, blockDim>>>(
-      d_pixelBuffer,
-      texturePitch / 4,
+      pixelBuffer,
       camPos, camViewOrigin, imageX, imageY,
       inverseWidthMinus, inverseHeightMinus,
       d_pointarray, d_triangles, triangleNum,
       WIDTH, HEIGHT,
       bgColor);
-
-  // Get results back
-
-  cudaMemcpy(pixelBuffer, d_pixelBuffer, pixelBufferSize, cudaMemcpyDeviceToHost);
 }
