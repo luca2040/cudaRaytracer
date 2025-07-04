@@ -6,6 +6,8 @@
 #include "../../math/Definitions.h"
 #include "../../math/cuda/CudaMath.cuh"
 
+#include "../../third_party/tracy/tracy/Tracy.hpp"
+
 __global__ void rayTraceKernel(
     uchar4 *pixelBuffer,
 
@@ -104,11 +106,13 @@ void rayTrace(
 
     const int bgColor)
 {
+  ZoneScopedN("rayTrace function");
+
   // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pointarray, pointarray, pointarraySize, cudaMemcpyHostToDevice);
 
-  dim3 blockDim(16, 16);
-  dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
+  constexpr dim3 blockDim(16, 16);
+  constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
 
   rayTraceKernel<<<gridDim, blockDim>>>(
       pixelBuffer,

@@ -83,33 +83,21 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Rotations
 
-  TracyCZoneN(timeFromSDL, "Get movements from SDL time", true);
-
   Uint32 time = SDL_GetTicks();
   float xrot = fmod((static_cast<float>(time) * 0.0005f), TWO_PI);
   float yrot = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
 
   float ymov = std::sin(yrot) * 1.25f;
 
-  TracyCZoneEnd(timeFromSDL);
-
   // Copy vertexes array
-
-  TracyCZoneN(copyPointArray, "Copy points array", true);
 
   float3_L *pointarray = new float3_L[pointsCount];
   std::copy(points, points + pointsCount, pointarray);
 
-  TracyCZoneEnd(copyPointArray);
-
   // Custom single-object rotations apply
-
-  TracyCZoneN(setRotationsToObjects, "Set rotations to objects", true);
 
   trIndexPairs[drawLoopValues.simpleCubeIndex].transform.rotationAngles = {xrot, yrot, 0.0f};
   trIndexPairs[drawLoopValues.movingCubeIndex].transform.relativePos = {0.0f, ymov, 0.0f};
-
-  TracyCZoneEnd(setRotationsToObjects);
 
   // Apply rotations to copied list
 
@@ -132,15 +120,11 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Map the PBO for CUDA access
 
-  TracyCZoneN(PboMap, "PBO map", true);
-
   cudaGraphicsMapResources(1, &cudaPboResource, 0);
 
   uchar4 *pxlsPtr;
   size_t pxlsPtrSize;
   cudaGraphicsResourceGetMappedPointer((void **)&pxlsPtr, &pxlsPtrSize, cudaPboResource);
-
-  TracyCZoneEnd(PboMap);
 
   // Camera setup
 
@@ -164,8 +148,6 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Generate and trace rays
 
-  TracyCZoneN(raytraceFunction, "drawFrame rayTrace function call", true);
-
   rayTrace(pxlsPtr,
            camPos, camViewOrigin,
            imageX, imageY,
@@ -174,15 +156,11 @@ void drawFrame(GLuint tex, GLuint pbo)
            pointsSize, triangleSize,
            BG_COLOR);
 
-  TracyCZoneEnd(raytraceFunction);
-
   // Clean up
 
   delete[] pointarray;
 
   // Unlock and render texture
-
-  TracyCZoneN(finalCleanup, "Texture render to screen", true);
 
   cudaGraphicsUnmapResources(1, &cudaPboResource);
 
@@ -201,8 +179,6 @@ void drawFrame(GLuint tex, GLuint pbo)
   glBindVertexArray(quadVAO);
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray(0);
-
-  TracyCZoneEnd(finalCleanup);
 
   FrameMark;
 }
