@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 #include <cuda_gl_interop.h>
+// #include <omp.h>
 
 #include <iostream>
 
@@ -94,7 +95,7 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   TracyCZoneN(matRotateVerts, "Matrix rotate vertices", true);
 
-#pragma omp parallel for
+  // #pragma omp parallel for
   for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
   {
     transformIndexPair currentPair = trIndexPairs[indexPairI];

@@ -7,9 +7,11 @@ LDFLAGS = -lSDL2 -lSDL2_ttf -lpthread
 
 LDFLAGS += -lGLEW -lGL
 
+# Optimizations
 # CXXFLAGS += -fopenmp
-# LDFLAGS  += -fopenmp
+# LDFLAGS  += -Xcompiler=-fopenmp -lgomp
 CXXFLAGS += -O3 -march=native -ffast-math
+NVCCFLAGS += -O3 -use_fast_math --fmad=true -Xptxas -O3,-warn-spills -arch=native
 
 SRC_DIR = src
 BUILD_DIR = build
@@ -42,7 +44,12 @@ $(TARGET): $(OBJ_FILES)
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Building $@ from $<"
 	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+	@if echo "$<" | grep -q "third_party"; then \
+		$(CXX) -w $(filter-out -Wall,$(CXXFLAGS)) -c $< -o $@ ; \
+	else \
+		$(CXX) $(CXXFLAGS) -c $< -o $@ ; \
+	fi
 
 # Compile CUDA files with nvcc
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cu
