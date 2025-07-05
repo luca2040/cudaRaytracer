@@ -17,9 +17,3 @@ constexpr unsigned int TOTAL_PIXELS = WIDTH * HEIGHT;
 constexpr float TWO_PI = 2.0f * M_PI;
 
 #define EPSILON 1.1920929e-07f
-
-struct DrawingLoopValues
-{
-  size_t simpleCubeIndex;
-  size_t movingCubeIndex;
-};

@@ -32,8 +32,6 @@ const float imagePlaneWidth = imagePlaneHeight * ASPECT;
 
 // ########### Variables initialized on start ###########
 
-DrawingLoopValues drawLoopValues;
-
 float3_L *points;
 triangleidx *triangles;
 transformIndexPair *trIndexPairs;
@@ -49,8 +47,7 @@ void onSceneComposition()
 {
   composeScene(points, pointsCount,
                triangles, triangleNum,
-               trIndexPairs, trIndexPairCount,
-               drawLoopValues);
+               trIndexPairs, trIndexPairCount);
 }
 
 cudaGraphicsResource *cudaPboResource;

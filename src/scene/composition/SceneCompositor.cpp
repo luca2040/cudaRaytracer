@@ -26,8 +26,7 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
 
 void composeScene(float3_L *&pointarray, size_t &pointCount,
                   triangleidx *&triangles, size_t &triangleCount,
-                  transformIndexPair *&indexpairs, size_t &indexPairCount,
-                  DrawingLoopValues &loopValues)
+                  transformIndexPair *&indexpairs, size_t &indexPairCount)
 {
   SceneBuilder builder;
 
