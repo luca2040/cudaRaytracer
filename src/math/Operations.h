@@ -9,9 +9,29 @@ inline float2_L operator+(const float2_L &a, const float2_L &b) noexcept
   return {a.x + b.x, a.y + b.y};
 }
 
+inline float2_L operator+(const float2_L &a, const float &b) noexcept
+{
+  return {a.x + b, a.y + b};
+}
+
 inline float2_L operator-(const float2_L &a, const float2_L &b) noexcept
 {
   return {a.x - b.x, a.y - b.y};
+}
+
+inline float2_L operator*(const float2_L &a, const float &b) noexcept
+{
+  return {a.x * b, a.y * b};
+}
+
+inline float2_L operator*(const float2_L &a, const float2_L &b) noexcept
+{
+  return {a.x * b.x, a.y * b.y};
+}
+
+inline float2_L operator/(const float2_L &a, const float &b) noexcept
+{
+  return {a.x / b, a.y / b};
 }
 
 inline float dot2(const float2_L &a, const float2_L &b) noexcept
