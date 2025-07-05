@@ -9,6 +9,7 @@
 #include "../math/Operations.h"
 #include "../scene/composition/SceneCompositor.h"
 #include "DrawLoop.h"
+#include "KeyBinds.h"
 
 #include "opengl/Shader.h"
 #include "cuda/RayTracer.cuh"
@@ -16,21 +17,19 @@
 #include "../third_party/tracy/tracy/Tracy.hpp"
 #include "../third_party/tracy/tracy/TracyC.h"
 
-// ######################### Camera settings ##########################
-
-const float camFOVdeg = 60;
-
-float camZoom = 2.0f;
-float3_L camPos = {0, 0, 0};
-float3_L camLookingPoint = {0, 0, 1};
-
-// ####################################################################
-
-const float camFOV = camFOVdeg * M_PI / 180.0f;
-const float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
-const float imagePlaneWidth = imagePlaneHeight * ASPECT;
-
 // ########### Variables initialized on start ###########
+
+// Camera
+
+float camFOVdeg = 75;
+float camZoom = 2.0f;
+
+float3_L camPos = {0, 0, 0};
+
+float camXrot = 0;
+float camYrot = 0;
+
+// General variables
 
 float3_L *points;
 triangleidx *triangles;
@@ -132,7 +131,26 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   TracyCZoneN(cameraSettings, "Camera settings", true);
 
-  float3_L camForward = normalize(camLookingPoint - camPos);
+  float cx = cos(camXrot), sx = sin(camXrot);
+  float cy = cos(camYrot), sy = sin(camYrot);
+
+  float3_L cameraDirVec = {0, sy, cy};
+
+  mat3x3 yRotMat = {
+      float3_L(cx, 0.0f, sx),
+      float3_L(0.0f, 1.0f, 0.0f),
+      float3_L(-sx, 0.0f, cx)};
+
+  float3_L camForward = yRotMat * cameraDirVec;
+
+  // Camera settings declaration
+
+  float camFOV = camFOVdeg * M_PI / 180.0f;
+  float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
+  float imagePlaneWidth = imagePlaneHeight * ASPECT;
+
+  // Camera calculations
+
   float3_L camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
   float3_L camUp = cross3(camRight, camForward);
 
@@ -187,4 +205,22 @@ void drawFrame(GLuint tex, GLuint pbo)
 
 void keyPressed(SDL_Keycode key)
 {
+  const char *keyName = SDL_GetKeyName(key);
+  if (strcmp(keyName, FOVminus) == 0)
+  {
+    camFOVdeg -= 2.0f;
+  }
+  else if (strcmp(keyName, FOVplus) == 0)
+  {
+    camFOVdeg += 2.0f;
+  }
+
+  if (strcmp(keyName, ZOOMminus) == 0)
+  {
+    camZoom /= 1.1f;
+  }
+  else if (strcmp(keyName, ZOOMplus) == 0)
+  {
+    camZoom *= 1.1f;
+  }
 }
