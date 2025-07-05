@@ -25,9 +25,11 @@ __global__ void rayTraceKernel(
   if (x >= imageWidth || y >= imageHeight)
     return;
 
+  float3_L rawDirection = camViewOrigin + imageX * (static_cast<float>(x) * inverseWidthMinus) + imageY * (static_cast<float>(y) * inverseHeightMinus) - camPos;
+
   ray currentRay = ray(
       camPos,
-      camViewOrigin + imageX * (static_cast<float>(x) * inverseWidthMinus) + imageY * (static_cast<float>(y) * inverseHeightMinus) - camPos);
+      normalize3_cuda(rawDirection));
 
   // Bruteforce all the triangles
   float currentZbuf = INFINITY;
