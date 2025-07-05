@@ -43,7 +43,19 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
                                               {2.5f, 2.5f, 3.5f},
                                               {0, 0, 0},
                                               5,
-                                              0x555555, 0xFFFFFF));
+                                              0x555555, 0xFFFFAA));
+
+  builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f},
+                                              {-2.5f, 2.5f, 3.5f},
+                                              {0, 0, 0},
+                                              5,
+                                              0x555555, 0xFFAAFF));
+
+  builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f},
+                                              {2.5f, 2.5f, 3.5f},
+                                              {0, 0, 0},
+                                              5,
+                                              0x555555, 0xAAFFFF));
 
   builder.compile(pointarray, pointCount, triangles, triangleCount, indexpairs, indexPairCount);
 }
