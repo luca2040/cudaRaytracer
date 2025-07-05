@@ -11,7 +11,10 @@ LDFLAGS += -lGLEW -lGL
 # CXXFLAGS += -fopenmp
 # LDFLAGS  += -Xcompiler=-fopenmp -lgomp
 CXXFLAGS += -O3 -march=native -ffast-math
-NVCCFLAGS += -O3 -use_fast_math --fmad=true -Xptxas -O3,-warn-spills -arch=native
+NVCCFLAGS += -O3 --use_fast_math --fmad=true -ftz=true --relocatable-device-code=false
+NVCCFLAGS += -Xptxas -O3,-warn-spills,-v
+NVCCFLAGS += -arch=native
+# NVCCFLAGS += -gencode arch=compute_86,code=sm_86
 
 SRC_DIR = src
 BUILD_DIR = build
