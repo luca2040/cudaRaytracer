@@ -5,11 +5,17 @@
 
 #include "../math/Definitions.h"
 
+// Time, rotationAngles, relativePos
+typedef void (*TransformFunction)(u_int32_t, float3_L &, float3_L &);
+
 class SceneObject
 {
 public:
   float3_L rotationCenter;
   float3_L defaultRot;
+
+  bool hasTransformFunction = false;
+  TransformFunction trFunc;
 
   std::vector<float3_L> points;
   std::vector<triangleidx> triangles;
@@ -22,20 +28,39 @@ public:
     points = points_;
     triangles = triangles_;
   }
+  SceneObject(float3_L rotationCenter_, TransformFunction trFunc_,
+              std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
+  {
+    rotationCenter = rotationCenter_;
+    points = points_;
+    triangles = triangles_;
+
+    trFunc = trFunc_;
+    hasTransformFunction = true;
+  }
 };
 
 class ObjTransform
 {
 public:
   float3_L rotationCenter;
-  float3_L rotationAngles;
+  float3_L rotationAngles = {0, 0, 0};
   float3_L relativePos = {0, 0, 0};
+
+  bool hasTransformFunction = false;
+  TransformFunction trFunc;
 
   ObjTransform() : rotationCenter{0, 0, 0}, rotationAngles{0, 0, 0} {}
   ObjTransform(float3_L rotationCenter_, float3_L rotationAngles_)
   {
     rotationCenter = rotationCenter_;
     rotationAngles = rotationAngles_;
+  }
+  ObjTransform(float3_L rotationCenter_, TransformFunction trFunc_)
+  {
+    rotationCenter = rotationCenter_;
+    trFunc = trFunc_;
+    hasTransformFunction = true;
   }
 
   inline mat3x3 getRotationMatrix()

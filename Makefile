@@ -7,6 +7,10 @@ LDFLAGS = -lSDL2 -lSDL2_ttf -lpthread
 
 LDFLAGS += -lGLEW -lGL
 
+# CXXFLAGS += -fopenmp
+# LDFLAGS  += -fopenmp
+CXXFLAGS += -O3 -march=native -ffast-math
+
 SRC_DIR = src
 BUILD_DIR = build
 TARGET = $(BUILD_DIR)/TheBest3dRendererEverRTX
@@ -37,12 +41,6 @@ $(TARGET): $(OBJ_FILES)
 # Compile C++ files with g++
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp
 	@echo "Building $@ from $<"
-	@mkdir -p $(dir $@)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-# Special case for TracyClient.cpp outside src tree
-$(BUILD_DIR)/third_party/tracy/%.o: $(SRC_DIR)/third_party/tracy/%.cpp
-	@echo "Building $@ from $< (Tracy)"
 	@mkdir -p $(dir $@)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 

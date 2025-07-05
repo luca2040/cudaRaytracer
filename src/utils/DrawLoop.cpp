@@ -81,38 +81,42 @@ void drawFrame(GLuint tex, GLuint pbo)
 {
   ZoneScopedN("drawFrame function");
 
-  // Rotations
-
-  Uint32 time = SDL_GetTicks();
-  float xrot = fmod((static_cast<float>(time) * 0.0005f), TWO_PI);
-  float yrot = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
-
-  float ymov = std::sin(yrot) * 1.25f;
-
   // Copy vertexes array
 
   float3_L *pointarray = new float3_L[pointsCount];
   std::copy(points, points + pointsCount, pointarray);
 
-  // Custom single-object rotations apply
+  // Time for transforms
 
-  trIndexPairs[drawLoopValues.simpleCubeIndex].transform.rotationAngles = {xrot, yrot, 0.0f};
-  trIndexPairs[drawLoopValues.movingCubeIndex].transform.relativePos = {0.0f, ymov, 0.0f};
+  Uint32 time = SDL_GetTicks();
 
   // Apply rotations to copied list
 
   TracyCZoneN(matRotateVerts, "Matrix rotate vertices", true);
 
+#pragma omp parallel for
   for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
   {
     transformIndexPair currentPair = trIndexPairs[indexPairI];
-    mat3x3 currentMat = currentPair.transform.getRotationMatrix();
+    ObjTransform currentTransform = currentPair.transform;
+
+    if (currentTransform.hasTransformFunction)
+    {
+      currentTransform.trFunc(time, currentTransform.rotationAngles, currentTransform.relativePos);
+    }
+
+    mat3x3 currentMat = currentTransform.getRotationMatrix();
+
+    float3_L rotCenter = currentTransform.rotationCenter;
+    float3_L centerShifted = rotCenter + currentTransform.relativePos;
 
     for (size_t i = currentPair.startIdx; i < currentPair.endIdx; i++)
     {
-      pointarray[i] -= currentPair.transform.rotationCenter;
-      pointarray[i] = currentMat * pointarray[i];
-      pointarray[i] += currentPair.transform.rotationCenter + currentPair.transform.relativePos;
+      float3_L &pt = pointarray[i];
+
+      pt -= rotCenter;
+      pt = currentMat * pt;
+      pt += centerShifted;
     }
   }
 

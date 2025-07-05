@@ -4,7 +4,7 @@
 #include "../../math/Operations.h"
 
 SceneObject generateCube(float3_L center, float sideLenght,
-                         float3_L defaultRot,
+                         float3_L defaultRot, TransformFunction trFunc, bool hasTransformFunction,
                          int face1Col,
                          int face2Col,
                          int face3Col,
@@ -43,7 +43,38 @@ SceneObject generateCube(float3_L center, float sideLenght,
       {2, 7, 6, face6Col},
   };
 
-  return SceneObject(center, defaultRot, cubePoints, cubeTriangles);
+  if (hasTransformFunction)
+    return SceneObject(center, trFunc, cubePoints, cubeTriangles);
+  else
+    return SceneObject(center, defaultRot, cubePoints, cubeTriangles);
+}
+
+SceneObject generateCube(float3_L center, float sideLenght,
+                         float3_L defaultRot,
+                         int face1Col,
+                         int face2Col,
+                         int face3Col,
+                         int face4Col,
+                         int face5Col,
+                         int face6Col)
+{
+  return generateCube(center, sideLenght,
+                      defaultRot, nullptr, false,
+                      face1Col, face2Col, face3Col, face4Col, face5Col, face6Col);
+}
+
+SceneObject generateCube(float3_L center, float sideLenght,
+                         TransformFunction trFunc,
+                         int face1Col,
+                         int face2Col,
+                         int face3Col,
+                         int face4Col,
+                         int face5Col,
+                         int face6Col)
+{
+  return generateCube(center, sideLenght,
+                      {}, trFunc, true,
+                      face1Col, face2Col, face3Col, face4Col, face5Col, face6Col);
 }
 
 SceneObject generateCube(float3_L center, float sideLenght,
@@ -51,6 +82,15 @@ SceneObject generateCube(float3_L center, float sideLenght,
                          int color)
 {
   return generateCube(center, sideLenght,
-                      defaultRot,
+                      defaultRot, nullptr, false,
+                      color, color, color, color, color, color);
+}
+
+SceneObject generateCube(float3_L center, float sideLenght,
+                         TransformFunction trFunc,
+                         int color)
+{
+  return generateCube(center, sideLenght,
+                      {}, trFunc, true,
                       color, color, color, color, color, color);
 }
