@@ -69,3 +69,13 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 clear: clean
+
+.PHONY: runf crunf
+
+# Run fast (multithreaded compilation)
+runf:
+	$(MAKE) -j$(shell nproc) run
+
+# Clear and run fast
+crunf:
+	$(MAKE) clear && $(MAKE) runf

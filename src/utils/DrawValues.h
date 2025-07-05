@@ -3,8 +3,8 @@
 #include "../math/Definitions.h"
 #include <math.h>
 
-const unsigned int WIDTH = 1400;
-const unsigned int HEIGHT = 1400;
+const unsigned int WIDTH = 3840;
+const unsigned int HEIGHT = 2160;
 
 const int BG_COLOR = 0x000000;
 
