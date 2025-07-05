@@ -224,3 +224,15 @@ void keyPressed(SDL_Keycode key)
     camZoom *= 1.1f;
   }
 }
+
+void mouseMoved(int2_L mouse, int2_L pMouse)
+{
+  Uint32 mouseState = SDL_GetMouseState(nullptr, nullptr);
+  int2_L dMouse = mouse - pMouse;
+
+  if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
+  {
+    camXrot = fmod(camXrot += 0.00075f * dMouse.x, TWO_PI);
+    camYrot = clamp(camYrot += 0.001f * dMouse.y, cameraVerticalMinRot, cameraVerticalMaxRot);
+  }
+}

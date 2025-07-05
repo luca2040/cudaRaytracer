@@ -4,6 +4,21 @@
 
 #include "Definitions.h"
 
+inline float clamp(float val, float min, float max) noexcept
+{
+  return val < min ? min : (val > max ? max : val);
+}
+
+inline int2_L operator+(const int2_L &a, const int2_L &b) noexcept
+{
+  return {a.x + b.x, a.y + b.y};
+}
+
+inline int2_L operator-(const int2_L &a, const int2_L &b) noexcept
+{
+  return {a.x - b.x, a.y - b.y};
+}
+
 inline float2_L operator+(const float2_L &a, const float2_L &b) noexcept
 {
   return {a.x + b.x, a.y + b.y};

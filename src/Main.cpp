@@ -92,6 +92,8 @@ int main()
       case SDL_MOUSEMOTION:
         pMouse = mouse;
         mouse = int2_L(event.motion.x, event.motion.y);
+
+        mouseMoved(mouse, pMouse);
         break;
 
       case SDL_MOUSEBUTTONDOWN:
