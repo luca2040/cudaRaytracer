@@ -3,6 +3,13 @@
 #include "../SceneClasses.h"
 #include "../../math/Operations.h"
 
+enum PlaneType
+{
+  YZ,
+  XZ,
+  XY
+};
+
 SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                float3_L defaultRot,
                                int sideDivisions,
@@ -16,133 +23,93 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
 
   size_t currentVertIdx = 0;
 
-  if (firstCorner.x == secondCorner.x) // YZ plane
+  PlaneType plane;
+
+  if (firstCorner.x == secondCorner.x)
+    plane = YZ;
+  else if (firstCorner.y == secondCorner.y)
+    plane = XZ;
+  else
+    plane = XY;
+
+  float2_L firstCornerPlane;
+  float2_L secondCornerPlane;
+  float equalVal;
+
+  switch (plane)
   {
-    float2_L firstCornerPlane = {firstCorner.y, firstCorner.z};
-    float2_L secondCornerPlane = {secondCorner.y, secondCorner.z};
-    float equalXval = firstCorner.x;
-
-    float2_L distance = secondCornerPlane - firstCornerPlane;
-    float2_L dt = distance / static_cast<float>(sideDivisions);
-
-    for (int divY = 0; divY < sideDivisions; divY++)
-    {
-      for (int divZ = 0; divZ < sideDivisions; divZ++)
-      {
-        float2_L currentPos = firstCornerPlane + float2_L(divY, divZ) * dt;
-        float2_L nextPos = firstCornerPlane + (float2_L(divY, divZ) + 1) * dt;
-
-        bool useFirstColor = (divY % 2 == 0) ^ (divZ % 2 == 1);
-        int actualColor = useFirstColor ? col1 : col2;
-
-        float3_L startPos = {equalXval, currentPos.x, currentPos.y};
-        float3_L endPos = {equalXval, nextPos.x, nextPos.y};
-
-        float3_L mixedVertex1 = {equalXval, currentPos.x, nextPos.y};
-        float3_L mixedVertex2 = {equalXval, nextPos.x, currentPos.y};
-
-        facePoints.push_back(startPos);     // 0
-        facePoints.push_back(endPos);       // 1
-        facePoints.push_back(mixedVertex1); // 2
-        facePoints.push_back(mixedVertex2); // 3
-
-        faceTriangles.push_back({2 + currentVertIdx,
-                                 3 + currentVertIdx,
-                                 0 + currentVertIdx,
-                                 actualColor});
-        faceTriangles.push_back({2 + currentVertIdx,
-                                 1 + currentVertIdx,
-                                 3 + currentVertIdx,
-                                 actualColor});
-
-        currentVertIdx += 4;
-      }
-    }
+  case YZ:
+    firstCornerPlane = {firstCorner.y, firstCorner.z};
+    secondCornerPlane = {secondCorner.y, secondCorner.z};
+    equalVal = firstCorner.x;
+    break;
+  case XZ:
+    firstCornerPlane = {firstCorner.x, firstCorner.z};
+    secondCornerPlane = {secondCorner.x, secondCorner.z};
+    equalVal = firstCorner.y;
+    break;
+  case XY:
+    firstCornerPlane = {firstCorner.x, firstCorner.y};
+    secondCornerPlane = {secondCorner.x, secondCorner.y};
+    equalVal = firstCorner.z;
+    break;
   }
-  else if (firstCorner.y == secondCorner.y) // XZ plane
+
+  float2_L distance = secondCornerPlane - firstCornerPlane;
+  float2_L dt = distance / static_cast<float>(sideDivisions);
+
+  for (int divA = 0; divA < sideDivisions; divA++)
   {
-    float2_L firstCornerPlane = {firstCorner.x, firstCorner.z};
-    float2_L secondCornerPlane = {secondCorner.x, secondCorner.z};
-    float equalYval = firstCorner.y;
-
-    float2_L distance = secondCornerPlane - firstCornerPlane;
-    float2_L dt = distance / static_cast<float>(sideDivisions);
-
-    for (int divX = 0; divX < sideDivisions; divX++)
+    for (int divB = 0; divB < sideDivisions; divB++)
     {
-      for (int divZ = 0; divZ < sideDivisions; divZ++)
+      float2_L currentPos = firstCornerPlane + float2_L(divA, divB) * dt;
+      float2_L nextPos = firstCornerPlane + (float2_L(divA, divB) + 1) * dt;
+
+      bool useFirstColor = (divA % 2 == 0) ^ (divB % 2 == 1);
+      int actualColor = useFirstColor ? col1 : col2;
+
+      float3_L startPos;
+      float3_L endPos;
+      float3_L mixedVertex1;
+      float3_L mixedVertex2;
+
+      switch (plane)
       {
-        float2_L currentPos = firstCornerPlane + float2_L(divX, divZ) * dt;
-        float2_L nextPos = firstCornerPlane + (float2_L(divX, divZ) + 1) * dt;
-
-        bool useFirstColor = (divX % 2 == 0) ^ (divZ % 2 == 1);
-        int actualColor = useFirstColor ? col1 : col2;
-
-        float3_L startPos = {currentPos.x, equalYval, currentPos.y};
-        float3_L endPos = {nextPos.x, equalYval, nextPos.y};
-
-        float3_L mixedVertex1 = {currentPos.x, equalYval, nextPos.y};
-        float3_L mixedVertex2 = {nextPos.x, equalYval, currentPos.y};
-
-        facePoints.push_back(startPos);     // 0
-        facePoints.push_back(endPos);       // 1
-        facePoints.push_back(mixedVertex1); // 2
-        facePoints.push_back(mixedVertex2); // 3
-
-        faceTriangles.push_back({2 + currentVertIdx,
-                                 3 + currentVertIdx,
-                                 0 + currentVertIdx,
-                                 actualColor});
-        faceTriangles.push_back({2 + currentVertIdx,
-                                 1 + currentVertIdx,
-                                 3 + currentVertIdx,
-                                 actualColor});
-
-        currentVertIdx += 4;
+      case YZ:
+        startPos = {equalVal, currentPos.x, currentPos.y};
+        endPos = {equalVal, nextPos.x, nextPos.y};
+        mixedVertex1 = {equalVal, currentPos.x, nextPos.y};
+        mixedVertex2 = {equalVal, nextPos.x, currentPos.y};
+        break;
+      case XZ:
+        startPos = {currentPos.x, equalVal, currentPos.y};
+        endPos = {nextPos.x, equalVal, nextPos.y};
+        mixedVertex1 = {currentPos.x, equalVal, nextPos.y};
+        mixedVertex2 = {nextPos.x, equalVal, currentPos.y};
+        break;
+      case XY:
+        startPos = {currentPos.x, currentPos.y, equalVal};
+        endPos = {nextPos.x, nextPos.y, equalVal};
+        mixedVertex1 = {currentPos.x, nextPos.y, equalVal};
+        mixedVertex2 = {nextPos.x, currentPos.y, equalVal};
+        break;
       }
-    }
-  }
-  else // XY plane
-  {
-    float2_L firstCornerPlane = {firstCorner.x, firstCorner.y};
-    float2_L secondCornerPlane = {secondCorner.x, secondCorner.y};
-    float equalZval = firstCorner.z;
 
-    float2_L distance = secondCornerPlane - firstCornerPlane;
-    float2_L dt = distance / static_cast<float>(sideDivisions);
+      facePoints.push_back(startPos);     // 0
+      facePoints.push_back(endPos);       // 1
+      facePoints.push_back(mixedVertex1); // 2
+      facePoints.push_back(mixedVertex2); // 3
 
-    for (int divX = 0; divX < sideDivisions; divX++)
-    {
-      for (int divY = 0; divY < sideDivisions; divY++)
-      {
-        float2_L currentPos = firstCornerPlane + float2_L(divX, divY) * dt;
-        float2_L nextPos = firstCornerPlane + (float2_L(divX, divY) + 1) * dt;
+      faceTriangles.push_back({2 + currentVertIdx,
+                               3 + currentVertIdx,
+                               0 + currentVertIdx,
+                               actualColor});
+      faceTriangles.push_back({2 + currentVertIdx,
+                               1 + currentVertIdx,
+                               3 + currentVertIdx,
+                               actualColor});
 
-        bool useFirstColor = (divX % 2 == 0) ^ (divY % 2 == 1);
-        int actualColor = useFirstColor ? col1 : col2;
-
-        float3_L startPos = {currentPos.x, currentPos.y, equalZval};
-        float3_L endPos = {nextPos.x, nextPos.y, equalZval};
-
-        float3_L mixedVertex1 = {currentPos.x, nextPos.y, equalZval};
-        float3_L mixedVertex2 = {nextPos.x, currentPos.y, equalZval};
-
-        facePoints.push_back(startPos);     // 0
-        facePoints.push_back(endPos);       // 1
-        facePoints.push_back(mixedVertex1); // 2
-        facePoints.push_back(mixedVertex2); // 3
-
-        faceTriangles.push_back({2 + currentVertIdx,
-                                 3 + currentVertIdx,
-                                 0 + currentVertIdx,
-                                 actualColor});
-        faceTriangles.push_back({2 + currentVertIdx,
-                                 1 + currentVertIdx,
-                                 3 + currentVertIdx,
-                                 actualColor});
-
-        currentVertIdx += 4;
-      }
+      currentVertIdx += 4;
     }
   }
 
