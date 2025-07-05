@@ -80,13 +80,10 @@ int main()
         break;
 
       case SDL_KEYDOWN:
-        std::cout << "Key pressed: " << SDL_GetKeyName(event.key.keysym.sym) << std::endl;
-
         if (event.key.keysym.sym == SDLK_ESCAPE)
           running = false;
 
         keyPressed(event.key.keysym.sym);
-
         break;
 
       case SDL_MOUSEMOTION:
@@ -95,14 +92,10 @@ int main()
 
         mouseMoved(mouse, pMouse);
         break;
-
-      case SDL_MOUSEBUTTONDOWN:
-        // Not implemented right now - still dont need it
-        std::cout << "Mouse button " << (int)event.button.button
-                  << " pressed at (" << event.button.x << ", " << event.button.y << ")" << std::endl;
-        break;
       }
     }
+
+    checkForKeys();
 
     // Main draw logic
     drawFrame(tex, pbo);

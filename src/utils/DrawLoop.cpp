@@ -19,6 +19,10 @@
 
 // ########### Variables initialized on start ###########
 
+float3_L camForward = {0, 0, 0};
+float3_L camRight = {0, 0, 0};
+float3_L camUp = {0, 0, 0};
+
 // Camera
 
 float camFOVdeg = 75;
@@ -141,18 +145,15 @@ void drawFrame(GLuint tex, GLuint pbo)
       float3_L(0.0f, 1.0f, 0.0f),
       float3_L(-sx, 0.0f, cx)};
 
-  float3_L camForward = yRotMat * cameraDirVec;
+  camForward = yRotMat * cameraDirVec;
+  camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
+  camUp = cross3(camRight, camForward);
 
   // Camera settings declaration
 
   float camFOV = camFOVdeg * M_PI / 180.0f;
   float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
   float imagePlaneWidth = imagePlaneHeight * ASPECT;
-
-  // Camera calculations
-
-  float3_L camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
-  float3_L camUp = cross3(camRight, camForward);
 
   // Camera placement
 
@@ -225,7 +226,7 @@ void keyPressed(SDL_Keycode key)
   }
 }
 
-void mouseMoved(int2_L mouse, int2_L pMouse)
+void mouseMoved(int2_L &mouse, int2_L &pMouse)
 {
   Uint32 mouseState = SDL_GetMouseState(nullptr, nullptr);
   int2_L dMouse = mouse - pMouse;
@@ -235,4 +236,21 @@ void mouseMoved(int2_L mouse, int2_L pMouse)
     camXrot = fmod(camXrot += 0.00075f * dMouse.x, TWO_PI);
     camYrot = clamp(camYrot += 0.001f * dMouse.y, cameraVerticalMinRot, cameraVerticalMaxRot);
   }
+}
+
+void checkForKeys()
+{
+  const Uint8 *keyState = SDL_GetKeyboardState(NULL);
+
+  float sameDirMov = (keyState[forwardKey] ? 1.0f : 0.0f) - (keyState[backKey] ? 1.0f : 0.0f);
+  float rightDirMov = (keyState[rightKey] ? 1.0f : 0.0f) - (keyState[leftKey] ? 1.0f : 0.0f);
+
+  if (sameDirMov == 0.0f && rightDirMov == 0.0f)
+    return;
+
+  float3_L frontMovement = camForward * sameDirMov;
+  float3_L rightMovement = camRight * rightDirMov;
+
+  float3_L totalCamMov = normalize(frontMovement + rightMovement) * movingSpeed;
+  camPos += totalCamMov;
 }
