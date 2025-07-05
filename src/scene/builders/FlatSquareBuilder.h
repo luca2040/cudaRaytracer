@@ -115,3 +115,32 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
 
   return SceneObject(center, defaultRot, facePoints, faceTriangles);
 }
+
+SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+                               int sideDivisions,
+                               int col1,
+                               int col2)
+{
+  return generateFlatSquare(firstCorner, secondCorner,
+                            {0, 0, 0},
+                            sideDivisions,
+                            col1, col2);
+}
+
+SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+                               int sideDivisions,
+                               int col)
+{
+  return generateFlatSquare(firstCorner, secondCorner,
+                            {0, 0, 0},
+                            sideDivisions,
+                            col, col);
+}
+
+SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+                               int col)
+{
+  return generateFlatSquare(firstCorner, secondCorner,
+                            {0, 0, 0}, 1,
+                            col, col);
+}
