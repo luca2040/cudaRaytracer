@@ -13,4 +13,4 @@
 #define rightKey SDL_SCANCODE_D
 #define leftKey SDL_SCANCODE_A
 
-#define movingSpeed 0.05f
+#define movingSpeed 5.0f

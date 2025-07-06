@@ -101,7 +101,7 @@ int main()
     drawFrame(tex, pbo);
 
     // Print FPS each second
-    printFpsTag();
+    fpsCounter.printFpsTag();
 
     // Swap buffer
     SDL_GL_SwapWindow(window);

@@ -10,6 +10,7 @@
 #include "../scene/composition/SceneCompositor.h"
 #include "DrawLoop.h"
 #include "KeyBinds.h"
+#include "generic/FpsCounter.h"
 
 #include "opengl/Shader.h"
 #include "cuda/RayTracer.cuh"
@@ -251,6 +252,6 @@ void checkForKeys()
   float3_L frontMovement = camForward * sameDirMov;
   float3_L rightMovement = camRight * rightDirMov;
 
-  float3_L totalCamMov = normalize(frontMovement + rightMovement) * movingSpeed;
+  float3_L totalCamMov = normalize(frontMovement + rightMovement) * (movingSpeed / fpsCounter.fps);
   camPos += totalCamMov;
 }
