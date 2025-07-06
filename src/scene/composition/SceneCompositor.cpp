@@ -45,23 +45,25 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 3.5f}, // rear panel
                                               {2.5f, 2.5f, 3.5f},
-                                              5,
-                                              0x555555, 0.0f,
-                                              0xFFFFAA, 0.0f));
+                                              0xFFFFFF, 0.0f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // left panel
                                               {-2.5f, 2.5f, 3.5f},
-                                              0x555555, 0.8f));
+                                              0xFF0000, 0.25f));
 
   builder.addObjectToScene(generateFlatSquare({2.5f, -2.5f, 0.0f}, // right panel
                                               {2.5f, 2.5f, 3.5f},
-                                              0x555555, 0.8f));
+                                              0x00FF00, 0.25f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f}, // floor
                                               {2.5f, 2.5f, 3.5f},
                                               5,
-                                              0x555555, 0.2f,
-                                              0xAAFFFF, 0.2f));
+                                              0xFFFFFF, 0.25f,
+                                              0x000000, 0.2f));
+
+  builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // top
+                                              {2.5f, -2.5f, 3.5f},
+                                              0x555555, 0.0f));
 
   builder.compile(pointarray, pointCount, triangles, triangleCount, indexpairs, indexPairCount, dyntriangles, dynTrianglesCount);
 }
