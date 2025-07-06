@@ -20,7 +20,7 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
   float ymov = std::sin(yrot) * 1.25f;
 
   relativePos = {0.0f, ymov, 0.0f};
-  rotationAngles = {M_PI, M_PI, 0};
+  rotationAngles = {M_PI_4, M_PI_4, 0};
 }
 
 // #####################################################

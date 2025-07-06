@@ -19,7 +19,7 @@ constexpr float TWO_PI = 2.0f * M_PI;
 // Angle to remove from camera vertical rotation both sides, in degrees
 constexpr float cameraVerticalViewReduction = 10.0f;
 
-constexpr float cameraVerticalMaxRot = (M_PI / 2) - (cameraVerticalViewReduction / 180.0f * M_PI);
+constexpr float cameraVerticalMaxRot = M_PI_2 - (cameraVerticalViewReduction / 180.0f * M_PI);
 constexpr float cameraVerticalMinRot = -cameraVerticalMaxRot;
 
 #define EPSILON 1.1920929e-07f
