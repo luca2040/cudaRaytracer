@@ -18,10 +18,11 @@ struct triangleidx
   size_t v3;
 
   int col;
+  float reflectiveness; // 0.0f -> solid - 1.0f -> mirror
 
   inline triangleidx() = default;
-  inline triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col)
-      : v1(v1), v2(v2), v3(v3), col(col) {}
+  inline triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col, float reflectiveness)
+      : v1(v1), v2(v2), v3(v3), col(col), reflectiveness(reflectiveness) {}
 };
 
 struct float2_L

@@ -13,8 +13,8 @@ enum PlaneType
 SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                float3_L defaultRot,
                                int sideDivisions,
-                               int col1,
-                               int col2)
+                               int col1, float reflectiveness1,
+                               int col2, float reflectiveness2)
 {
   float3_L center = (firstCorner + secondCorner) * 0.5f;
 
@@ -67,6 +67,7 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
 
       bool useFirstColor = (divA % 2 == 0) ^ (divB % 2 == 1);
       int actualColor = useFirstColor ? col1 : col2;
+      float actualReflectiveness = useFirstColor ? reflectiveness1 : reflectiveness2;
 
       float3_L startPos;
       float3_L endPos;
@@ -103,11 +104,11 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
       faceTriangles.push_back({2 + currentVertIdx,
                                3 + currentVertIdx,
                                0 + currentVertIdx,
-                               actualColor});
+                               actualColor, actualReflectiveness});
       faceTriangles.push_back({2 + currentVertIdx,
                                1 + currentVertIdx,
                                3 + currentVertIdx,
-                               actualColor});
+                               actualColor, actualReflectiveness});
 
       currentVertIdx += 4;
     }
@@ -118,29 +119,32 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
 
 SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                int sideDivisions,
-                               int col1,
-                               int col2)
+                               int col1, float reflectiveness1,
+                               int col2, float reflectiveness2)
 {
   return generateFlatSquare(firstCorner, secondCorner,
                             {0, 0, 0},
                             sideDivisions,
-                            col1, col2);
+                            col1, reflectiveness1,
+                            col2, reflectiveness2);
 }
 
 SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                int sideDivisions,
-                               int col)
+                               int col, float reflectiveness)
 {
   return generateFlatSquare(firstCorner, secondCorner,
                             {0, 0, 0},
                             sideDivisions,
-                            col, col);
+                            col, reflectiveness,
+                            col, reflectiveness);
 }
 
 SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
-                               int col)
+                               int col, float reflectiveness)
 {
   return generateFlatSquare(firstCorner, secondCorner,
                             {0, 0, 0}, 1,
-                            col, col);
+                            col, reflectiveness,
+                            col, reflectiveness);
 }

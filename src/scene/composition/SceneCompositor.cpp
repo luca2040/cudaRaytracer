@@ -33,26 +33,31 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
 
   builder.addObjectToScene(generateCube({1.0f, 0.0f, 2.0f}, 1.0f,
                                         normalRotation,
-                                        0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF));
+                                        0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF,
+                                        0.8f));
 
   builder.addObjectToScene(generateCube({-1.0f, 0.0f, 2.0f}, 1.0f,
                                         verticalShift,
-                                        0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF));
+                                        0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF,
+                                        0.2f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 3.5f},
                                               {2.5f, 2.5f, 3.5f},
                                               5,
-                                              0x555555, 0xFFFFAA));
+                                              0x555555, 0.0f,
+                                              0xFFFFAA, 0.0f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f},
                                               {-2.5f, 2.5f, 3.5f},
                                               5,
-                                              0x555555, 0xFFAAFF));
+                                              0x555555, 0.0f,
+                                              0xFFAAFF, 0.0f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f},
                                               {2.5f, 2.5f, 3.5f},
                                               5,
-                                              0x555555, 0xAAFFFF));
+                                              0x555555, 0.0f,
+                                              0xAAFFFF, 0.0f));
 
   builder.compile(pointarray, pointCount, triangles, triangleCount, indexpairs, indexPairCount);
 }
