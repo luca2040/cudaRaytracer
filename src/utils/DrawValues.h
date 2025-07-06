@@ -25,4 +25,4 @@ constexpr float cameraVerticalMinRot = -cameraVerticalMaxRot;
 #define EPSILON 1.1920929e-05f
 
 // How many times rays should be traced, 2 means an hit and single reflection
-#define RAY_HITS_MAX 2
+#define RAY_HITS_MAX 10

@@ -114,3 +114,36 @@ __device__ __forceinline__ bool rayTriangleIntersection(
   else // This means that there is a line intersection but not a ray intersection.
     return false;
 }
+
+// t -> 0 = color1 - t -> 1 = color2
+__device__ __forceinline__ int colorMix(int &color1, int &color2, float &t) noexcept
+{
+  int r1 = (color1 >> 16) & 0xFF;
+  int g1 = (color1 >> 8) & 0xFF;
+  int b1 = color1 & 0xFF;
+
+  int r2 = (color2 >> 16) & 0xFF;
+  int g2 = (color2 >> 8) & 0xFF;
+  int b2 = color2 & 0xFF;
+
+  float t2 = 1 - t;
+
+  int r = static_cast<int>(t2 * r1 + t * r2);
+  int g = static_cast<int>(t2 * g1 + t * g2);
+  int b = static_cast<int>(t2 * b1 + t * b2);
+
+  return (r << 16) | (g << 8) | b;
+}
+
+__device__ __forceinline__ void reflectRay(float3_L &rayDir, float3_L &normal) noexcept
+{
+  float d = dot3_cuda(rayDir, normal);
+
+  if (d > 0.0f)
+  {
+    normal = normal * -1.0f;
+    d = -d;
+  }
+
+  rayDir = rayDir - normal * (2.0f * d);
+}

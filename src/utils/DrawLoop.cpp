@@ -135,8 +135,8 @@ void drawFrame(GLuint tex, GLuint pbo)
     float3_L v2 = pointarray[currentTriangle.v2];
     float3_L v3 = pointarray[currentTriangle.v3];
 
-    float3_L side1 = pointarray[currentTriangle.v2] - v1;
-    float3_L side2 = pointarray[currentTriangle.v3] - v1;
+    float3_L side1 = v2 - v1;
+    float3_L side2 = v3 - v1;
 
     currentTriangle.normal = normalize(cross3(side1, side2));
   }

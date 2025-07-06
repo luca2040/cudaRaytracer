@@ -1,31 +1,5 @@
 #include "RaytraceKernel.cuh"
 
-// Just while testing use these unoptimized functions
-__device__ int colorMix(int color1, int color2, float t)
-{
-  int r1 = (color1 >> 16) & 0xFF;
-  int g1 = (color1 >> 8) & 0xFF;
-  int b1 = color1 & 0xFF;
-
-  int r2 = (color2 >> 16) & 0xFF;
-  int g2 = (color2 >> 8) & 0xFF;
-  int b2 = color2 & 0xFF;
-
-  int r = static_cast<int>((1 - t) * r1 + t * r2);
-  int g = static_cast<int>((1 - t) * g1 + t * g2);
-  int b = static_cast<int>((1 - t) * b1 + t * b2);
-
-  return (r << 16) | (g << 8) | b;
-}
-
-__device__ float3_L reflectRay(float3_L rayDir, float3_L normal)
-{
-  if (dot3_cuda(rayDir, normal) > 0.0f)
-    normal = normal * -1.0f;
-
-  return rayDir - normal * (2.0f * dot3_cuda(rayDir, normal));
-}
-
 __global__ void rayTraceKernel(
     uchar4 *pixelBuffer,
 
@@ -43,7 +17,7 @@ __global__ void rayTraceKernel(
     const int imageWidth,
     const int imageHeight,
 
-    const int bgColor)
+    int bgColor)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -99,7 +73,7 @@ __global__ void rayTraceKernel(
     if (lastReflectiveness < EPSILON)
       continue;
 
-    currentRay.direction = reflectRay(currentRay.direction, hitTriangle.normal);
+    reflectRay(currentRay.direction, hitTriangle.normal);
     currentRay.origin = lastHit;
   }
 
