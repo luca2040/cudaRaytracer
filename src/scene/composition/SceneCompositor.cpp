@@ -36,7 +36,7 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
   builder.addObjectToScene(generateCube({1.0f, 0.0f, 2.0f}, 1.0f,
                                         normalRotation,
                                         0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF,
-                                        0.0f));
+                                        0.8f));
 
   builder.addObjectToScene(generateCube({-1.0f, 0.0f, 2.0f}, 1.0f,
                                         verticalShift,

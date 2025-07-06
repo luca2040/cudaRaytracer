@@ -17,7 +17,7 @@ __global__ void rayTraceKernel(
     const int imageWidth,
     const int imageHeight,
 
-    int bgColor)
+    const float3_L bgColor)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -31,8 +31,8 @@ __global__ void rayTraceKernel(
       camPos,
       normalize3_cuda(rawDirection));
 
-  int currentColor = bgColor;
-  float lastReflectiveness = 1.0f;
+  float3_L currentColor = make_float3_L(0.0f, 0.0f, 0.0f);
+  float rayLight = 1.0f;
 
   for (size_t iteration = 0; iteration < RAY_HITS_MAX; iteration++)
   {
@@ -64,18 +64,21 @@ __global__ void rayTraceKernel(
 
     if (currentZbuf == INFINITY)
     {
-      pixelBuffer[y * imageWidth + x] = make_uchar4_from_int(colorMix(currentColor, bgColor, lastReflectiveness));
-      return;
+      currentColor = currentColor + (bgColor * rayLight);
+      break;
     }
 
-    currentColor = colorMix(currentColor, hitTriangle.col, lastReflectiveness);
-    lastReflectiveness = hitTriangle.reflectiveness;
-    if (lastReflectiveness < EPSILON)
-      continue;
+    float reflectiveness = hitTriangle.reflectiveness;
 
-    reflectRay(currentRay.direction, hitTriangle.normal);
+    currentColor = currentColor + (intColToF3l(hitTriangle.col) * rayLight * (1.0f - reflectiveness));
+    rayLight *= reflectiveness;
+
+    if (reflectiveness < EPSILON)
+      break;
+
     currentRay.origin = lastHit;
+    reflectRay(currentRay.direction, hitTriangle.normal);
   }
 
-  pixelBuffer[y * imageWidth + x] = make_uchar4_from_int(currentColor);
+  pixelBuffer[y * imageWidth + x] = make_uchar4_from_f3l(currentColor);
 }

@@ -15,7 +15,7 @@ struct ray
   ray(float3_L origin, float3_L direction) : origin(origin), direction(direction) {}
 };
 
-__device__ __forceinline__ float3_L make_float3_L(float x, float y, float z) noexcept
+__host__ __device__ __forceinline__ float3_L make_float3_L(float x, float y, float z) noexcept
 {
   float3_L v;
   v.x = x;
@@ -52,14 +52,23 @@ __device__ __forceinline__ float3_L cross3_cuda(const float3_L &a, const float3_
       a.x * b.y - a.y * b.x);
 }
 
-__host__ __device__ __forceinline__ uchar4 make_uchar4_from_int(const int c)
+__host__ __device__ __forceinline__ float3_L intColToF3l(const int c)
+{
+  float x = static_cast<float>((c >> 16) & 0xFF) / 255.0f; // red
+  float y = static_cast<float>((c >> 8) & 0xFF) / 255.0f;  // green
+  float z = static_cast<float>(c & 0xFF) / 255.0f;         // blue
+
+  return make_float3_L(x, y, z);
+}
+
+__host__ __device__ __forceinline__ uchar4 make_uchar4_from_f3l(const float3_L c)
 {
   uchar4 retVal;
 
-  retVal.x = (c >> 16) & 0xFF; // red
-  retVal.y = (c >> 8) & 0xFF;  // green
-  retVal.z = c & 0xFF;         // blue
-  retVal.w = 255;              // alpha
+  retVal.x = static_cast<char>(min(c.x, 1.0f) * 255.0f); // red
+  retVal.y = static_cast<char>(min(c.y, 1.0f) * 255.0f); // green
+  retVal.z = static_cast<char>(min(c.z, 1.0f) * 255.0f); // blue
+  retVal.w = 255;                                        // alpha
 
   return retVal;
 }
@@ -113,26 +122,6 @@ __device__ __forceinline__ bool rayTriangleIntersection(
   }
   else // This means that there is a line intersection but not a ray intersection.
     return false;
-}
-
-// t -> 0 = color1 - t -> 1 = color2
-__device__ __forceinline__ int colorMix(int &color1, int &color2, float &t) noexcept
-{
-  int r1 = (color1 >> 16) & 0xFF;
-  int g1 = (color1 >> 8) & 0xFF;
-  int b1 = color1 & 0xFF;
-
-  int r2 = (color2 >> 16) & 0xFF;
-  int g2 = (color2 >> 8) & 0xFF;
-  int b2 = color2 & 0xFF;
-
-  float t2 = 1 - t;
-
-  int r = static_cast<int>(t2 * r1 + t * r2);
-  int g = static_cast<int>(t2 * g1 + t * g2);
-  int b = static_cast<int>(t2 * b1 + t * b2);
-
-  return (r << 16) | (g << 8) | b;
 }
 
 __device__ __forceinline__ void reflectRay(float3_L &rayDir, float3_L &normal) noexcept
