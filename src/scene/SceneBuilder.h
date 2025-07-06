@@ -1,7 +1,9 @@
 #pragma once
 
 #include <vector>
+
 #include "SceneClasses.h"
+#include "../math/Operations.h"
 
 struct transformIndexPair
 {
@@ -16,6 +18,22 @@ struct transformIndexPair
 
 class SceneBuilder
 {
+private:
+  void computeNormals()
+  {
+    for (auto &triangle : sceneTriangles)
+    {
+      float3_L v1 = scenePoints[triangle.v1];
+      float3_L v2 = scenePoints[triangle.v2];
+      float3_L v3 = scenePoints[triangle.v3];
+
+      float3_L side1 = v2 - v1;
+      float3_L side2 = v3 - v1;
+
+      triangle.normal = normalize(cross3(side1, side2));
+    }
+  }
+
 public:
   std::vector<float3_L> scenePoints;
   std::vector<triangleidx> sceneTriangles;
@@ -63,6 +81,8 @@ public:
                triangleidx *&triangles, size_t &triangleCount,
                transformIndexPair *&indexpairs, size_t &indexPairCount)
   {
+    computeNormals();
+
     pointCount = scenePoints.size();
     pointarray = new float3_L[pointCount];
     std::copy(scenePoints.begin(), scenePoints.end(), pointarray);

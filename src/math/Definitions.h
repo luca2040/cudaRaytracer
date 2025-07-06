@@ -11,20 +11,6 @@ struct int2_L
   inline int2_L(int x, int y) : x(x), y(y) {}
 };
 
-struct triangleidx
-{
-  size_t v1;
-  size_t v2;
-  size_t v3;
-
-  int col;
-  float reflectiveness; // 0.0f -> solid - 1.0f -> mirror
-
-  inline triangleidx() = default;
-  inline triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col, float reflectiveness)
-      : v1(v1), v2(v2), v3(v3), col(col), reflectiveness(reflectiveness) {}
-};
-
 struct float2_L
 {
   float x;
@@ -106,4 +92,20 @@ struct mat3x3
     }
     return r;
   }
+};
+
+struct triangleidx
+{
+  size_t v1;
+  size_t v2;
+  size_t v3;
+
+  int col;
+  float reflectiveness; // 0.0f -> solid - 1.0f -> mirror
+
+  float3_L normal;
+
+  inline triangleidx() = default;
+  inline triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col, float reflectiveness)
+      : v1(v1), v2(v2), v3(v3), col(col), reflectiveness(reflectiveness) {}
 };

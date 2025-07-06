@@ -22,4 +22,7 @@ constexpr float cameraVerticalViewReduction = 10.0f;
 constexpr float cameraVerticalMaxRot = M_PI_2 - (cameraVerticalViewReduction / 180.0f * M_PI);
 constexpr float cameraVerticalMinRot = -cameraVerticalMaxRot;
 
-#define EPSILON 1.1920929e-07f
+#define EPSILON 1.1920929e-05f
+
+// How many times rays should be traced, 2 means an hit and single reflection
+#define RAY_HITS_MAX 2

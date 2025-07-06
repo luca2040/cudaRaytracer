@@ -59,13 +59,11 @@ void rayTrace(
   constexpr dim3 blockDim(16, 16);
   constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
 
-  const uchar4 bgColor_uch4 = make_uchar4_from_int(bgColor);
-
   rayTraceKernel<<<gridDim, blockDim>>>(
       pixelBuffer,
       camPos, camViewOrigin, imageX, imageY,
       inverseWidthMinus, inverseHeightMinus,
       d_pointarray, d_triangles, triangleNum,
       WIDTH, HEIGHT,
-      bgColor_uch4);
+      bgColor);
 }
