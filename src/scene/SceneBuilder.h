@@ -37,6 +37,7 @@ private:
 public:
   std::vector<float3_L> scenePoints;
   std::vector<triangleidx> sceneTriangles;
+  std::vector<size_t> dynamicTriangles;
 
   std::vector<transformIndexPair> groupIndexRanges; // When adding some points, save here the corresponding index start and end; the index of the pair is returned.
 
@@ -65,6 +66,12 @@ public:
       newTriangleIdx.v3 += currentPointIndex;
 
       sceneTriangles.push_back(newTriangleIdx); // Add triangles to the scene triangles vector
+
+      if (objToAdd.hasTransformFunction)
+      {
+        size_t currentTriangleIdx = sceneTriangles.size() - 1;
+        dynamicTriangles.push_back(currentTriangleIdx);
+      }
     }
 
     scenePoints.insert(scenePoints.end(), objPoints.begin(), objPoints.end()); // Add obj's points to scene points
@@ -79,7 +86,8 @@ public:
 
   void compile(float3_L *&pointarray, size_t &pointCount,
                triangleidx *&triangles, size_t &triangleCount,
-               transformIndexPair *&indexpairs, size_t &indexPairCount)
+               transformIndexPair *&indexpairs, size_t &indexPairCount,
+               size_t *&dyntriangles, size_t &dynTrianglesCount)
   {
     computeNormals();
 
@@ -94,5 +102,9 @@ public:
     indexPairCount = groupIndexRanges.size();
     indexpairs = new transformIndexPair[indexPairCount];
     std::copy(groupIndexRanges.begin(), groupIndexRanges.end(), indexpairs);
+
+    dynTrianglesCount = dynamicTriangles.size();
+    dyntriangles = new size_t[dynTrianglesCount];
+    std::copy(dynamicTriangles.begin(), dynamicTriangles.end(), dyntriangles);
   }
 };

@@ -38,10 +38,12 @@ float camYrot = 0;
 
 float3_L *points;
 triangleidx *triangles;
+size_t *dyntriangles;
 transformIndexPair *trIndexPairs;
 
 size_t pointsCount;
 size_t triangleNum;
+size_t dyntrianglesNum;
 size_t trIndexPairCount;
 
 size_t pointsSize;
@@ -51,7 +53,8 @@ void onSceneComposition()
 {
   composeScene(points, pointsCount,
                triangles, triangleNum,
-               trIndexPairs, trIndexPairCount);
+               trIndexPairs, trIndexPairCount,
+               dyntriangles, dyntrianglesNum);
 }
 
 cudaGraphicsResource *cudaPboResource;
@@ -67,7 +70,7 @@ void onSetupFrame(GLuint pbo)
   setupQuad(quadVAO, quadVBO);
   shaderProgram = createShaderProgram();
 
-  cudaAllocateAndCopy(pointsSize, triangleSize, triangles);
+  cudaAllocateAndCopy(pointsSize, triangleSize);
 }
 
 void onClose()
@@ -96,6 +99,7 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   TracyCZoneN(matRotateVerts, "Matrix rotate vertices", true);
 
+  // Rotate vertices and apply transforms
   // #pragma omp parallel for
   for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
   {
@@ -120,6 +124,21 @@ void drawFrame(GLuint tex, GLuint pbo)
       pt = currentMat * pt;
       pt += centerShifted;
     }
+  }
+
+  // Recalculate normals
+  for (size_t i = 0; i < dyntrianglesNum; i++)
+  {
+    triangleidx &currentTriangle = triangles[dyntriangles[i]];
+
+    float3_L v1 = pointarray[currentTriangle.v1];
+    float3_L v2 = pointarray[currentTriangle.v2];
+    float3_L v3 = pointarray[currentTriangle.v3];
+
+    float3_L side1 = pointarray[currentTriangle.v2] - v1;
+    float3_L side2 = pointarray[currentTriangle.v3] - v1;
+
+    currentTriangle.normal = normalize(cross3(side1, side2));
   }
 
   TracyCZoneEnd(matRotateVerts);
@@ -174,7 +193,7 @@ void drawFrame(GLuint tex, GLuint pbo)
            camPos, camViewOrigin,
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
-           pointarray, triangleNum,
+           pointarray, triangles, triangleNum,
            pointsSize, triangleSize,
            BG_COLOR);
 

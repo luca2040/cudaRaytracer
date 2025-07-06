@@ -15,16 +15,14 @@ float3_L *d_pointarray;
 triangleidx *d_triangles;
 
 void cudaAllocateAndCopy(size_t pointsSize,
-                         size_t triangleSize,
-
-                         const triangleidx *triangles)
+                         size_t triangleSize)
 {
   // Allocate all the memory needed
   cudaMalloc(&d_pointarray, pointsSize);
   cudaMalloc(&d_triangles, triangleSize);
 
-  // Copy the triangles index array, since its always static
-  cudaMemcpy(d_triangles, triangles, triangleSize, cudaMemcpyHostToDevice);
+  // Copy the triangles index array, since its always static - not now because normals need to be recalculated each frame
+  // cudaMemcpy(d_triangles, triangles, triangleSize, cudaMemcpyHostToDevice);
 }
 
 void cudaCleanup()
@@ -44,6 +42,7 @@ void rayTrace(
     float inverseHeightMinus,
 
     const float3_L *pointarray,
+    const triangleidx *triangles,
     size_t triangleNum,
 
     size_t pointarraySize,
@@ -55,6 +54,7 @@ void rayTrace(
 
   // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_pointarray, pointarray, pointarraySize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_triangles, triangles, trianglesSize, cudaMemcpyHostToDevice);
 
   constexpr dim3 blockDim(16, 16);
   constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);

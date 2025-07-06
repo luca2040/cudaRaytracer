@@ -4,9 +4,7 @@
 #include "../../math/Definitions.h"
 
 void cudaAllocateAndCopy(size_t pointsSize,
-                         size_t triangleSize,
-
-                         const triangleidx *triangles);
+                         size_t triangleSize);
 
 void cudaCleanup();
 
@@ -21,6 +19,7 @@ void rayTrace(
     float inverseHeightMinus,
 
     const float3_L *pointarray,
+    const triangleidx *triangles,
     size_t triangleNum,
 
     size_t pointarraySize,

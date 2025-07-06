@@ -16,18 +16,20 @@ inline void normalRotation(u_int32_t time, float3_L &rotationAngles, float3_L &r
 
 inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &relativePos)
 {
-  float yrot = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
-  float ymov = std::sin(yrot) * 1.25f;
+  float timeValue = fmod((static_cast<float>(time) * 0.001f), TWO_PI);
+  float ymov = std::sin(timeValue) * 0.8f;
+  float xrot = std::cos(timeValue) * 0.2f;
 
   relativePos = {0.0f, ymov, 0.0f};
-  rotationAngles = {M_PI_4, M_PI_4, 0};
+  rotationAngles = {0, xrot, 0};
 }
 
 // #####################################################
 
 void composeScene(float3_L *&pointarray, size_t &pointCount,
                   triangleidx *&triangles, size_t &triangleCount,
-                  transformIndexPair *&indexpairs, size_t &indexPairCount)
+                  transformIndexPair *&indexpairs, size_t &indexPairCount,
+                  size_t *&dyntriangles, size_t &dynTrianglesCount)
 {
   SceneBuilder builder;
 
@@ -56,8 +58,8 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f},
                                               {2.5f, 2.5f, 3.5f},
                                               5,
-                                              0x555555, 0.0f,
-                                              0xAAFFFF, 0.0f));
+                                              0x555555, 0.2f,
+                                              0xAAFFFF, 0.2f));
 
-  builder.compile(pointarray, pointCount, triangles, triangleCount, indexpairs, indexPairCount);
+  builder.compile(pointarray, pointCount, triangles, triangleCount, indexpairs, indexPairCount, dyntriangles, dynTrianglesCount);
 }
