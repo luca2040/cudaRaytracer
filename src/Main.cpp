@@ -13,7 +13,7 @@
 #endif
 
 #include "utils/DrawLoop.h"
-#include "utils/generic/GuiWindow.h"
+#include "utils/gui/GuiWindow.h"
 #include "math/Definitions.h"
 
 #include "third_party/imgui/imgui.h"

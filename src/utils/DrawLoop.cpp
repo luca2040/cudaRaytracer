@@ -10,29 +10,15 @@
 #include "../scene/composition/SceneCompositor.h"
 #include "DrawLoop.h"
 #include "KeyBinds.h"
-#include "generic/GuiWindow.h"
+
+#include "gui/GuiWindow.h"
+#include "../scene/structs/Scene.h"
 
 #include "opengl/Shader.h"
 #include "cuda/RayTracer.cuh"
 
 #include "../third_party/tracy/tracy/Tracy.hpp"
 #include "../third_party/tracy/tracy/TracyC.h"
-
-// ########### Variables initialized on start ###########
-
-float3_L camForward = {0, 0, 0};
-float3_L camRight = {0, 0, 0};
-float3_L camUp = {0, 0, 0};
-
-// Camera
-
-float camFOVdeg = 75;
-float camZoom = 2.0f;
-
-float3_L camPos = {0, 0, 0};
-
-float camXrot = 0;
-float camYrot = 0;
 
 // General variables
 
@@ -155,8 +141,10 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   TracyCZoneN(cameraSettings, "Camera settings", true);
 
-  float cx = cos(camXrot), sx = sin(camXrot);
-  float cy = cos(camYrot), sy = sin(camYrot);
+  auto &cam = scene.cam;
+
+  float cx = cos(cam.camXrot), sx = sin(cam.camXrot);
+  float cy = cos(cam.camYrot), sy = sin(cam.camYrot);
 
   float3_L cameraDirVec = {0, sy, cy};
 
@@ -165,21 +153,21 @@ void drawFrame(GLuint tex, GLuint pbo)
       float3_L(0.0f, 1.0f, 0.0f),
       float3_L(-sx, 0.0f, cx)};
 
-  camForward = yRotMat * cameraDirVec;
-  camRight = normalize(cross3(camForward, {0, -1, 0})); // camForward, worldUp
-  camUp = cross3(camRight, camForward);
+  cam.camForward = yRotMat * cameraDirVec;
+  cam.camRight = normalize(cross3(cam.camForward, {0, -1, 0})); // camForward, worldUp
+  cam.camUp = cross3(cam.camRight, cam.camForward);
 
   // Camera settings declaration
 
-  float camFOV = camFOVdeg * M_PI / 180.0f;
+  float camFOV = cam.camFOVdeg * M_PI / 180.0f;
   float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
   float imagePlaneWidth = imagePlaneHeight * ASPECT;
 
   // Camera placement
 
-  float3_L imageCenter = camPos + camForward;
-  float3_L imageX = camRight * imagePlaneWidth * camZoom;
-  float3_L imageY = camUp * imagePlaneHeight * camZoom;
+  float3_L imageCenter = cam.camPos + cam.camForward;
+  float3_L imageX = cam.camRight * imagePlaneWidth * cam.camZoom;
+  float3_L imageY = cam.camUp * imagePlaneHeight * cam.camZoom;
   float3_L camViewOrigin = imageCenter - imageX * 0.5f - imageY * 0.5f;
 
   constexpr float inverseWidthMinus = 1.0f / static_cast<float>(WIDTH - 1);
@@ -190,7 +178,7 @@ void drawFrame(GLuint tex, GLuint pbo)
   // Generate and trace rays
 
   rayTrace(pxlsPtr,
-           camPos, camViewOrigin,
+           cam.camPos, camViewOrigin,
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
            pointarray, triangles, triangleNum,
@@ -226,24 +214,6 @@ void drawFrame(GLuint tex, GLuint pbo)
 
 void keyPressed(SDL_Keycode key)
 {
-  const char *keyName = SDL_GetKeyName(key);
-  if (strcmp(keyName, FOVminus) == 0)
-  {
-    camFOVdeg -= 2.0f;
-  }
-  else if (strcmp(keyName, FOVplus) == 0)
-  {
-    camFOVdeg += 2.0f;
-  }
-
-  if (strcmp(keyName, ZOOMminus) == 0)
-  {
-    camZoom /= 1.1f;
-  }
-  else if (strcmp(keyName, ZOOMplus) == 0)
-  {
-    camZoom *= 1.1f;
-  }
 }
 
 void mouseMoved(int2_L &mouse, int2_L &pMouse)
@@ -253,8 +223,10 @@ void mouseMoved(int2_L &mouse, int2_L &pMouse)
 
   if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
   {
-    camXrot = fmod(camXrot += 0.00075f * dMouse.x, TWO_PI);
-    camYrot = clamp(camYrot += 0.001f * dMouse.y, cameraVerticalMinRot, cameraVerticalMaxRot);
+    auto &cam = scene.cam;
+
+    cam.camXrot = fmod(cam.camXrot += 0.00075f * dMouse.x, TWO_PI);
+    cam.camYrot = clamp(cam.camYrot += 0.001f * dMouse.y, cameraVerticalMinRot, cameraVerticalMaxRot);
   }
 }
 
@@ -268,9 +240,11 @@ void checkForKeys()
   if (sameDirMov == 0.0f && rightDirMov == 0.0f)
     return;
 
-  float3_L frontMovement = camForward * sameDirMov;
-  float3_L rightMovement = camRight * rightDirMov;
+  auto &cam = scene.cam;
+
+  float3_L frontMovement = cam.camForward * sameDirMov;
+  float3_L rightMovement = cam.camRight * rightDirMov;
 
   float3_L totalCamMov = normalize(frontMovement + rightMovement) * (movingSpeed * guiWindow.io->DeltaTime);
-  camPos += totalCamMov;
+  cam.camPos += totalCamMov;
 }
