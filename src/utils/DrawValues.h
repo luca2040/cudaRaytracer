@@ -6,7 +6,7 @@
 const unsigned int WIDTH = 3840;
 const unsigned int HEIGHT = 2160;
 
-const int BG_COLOR = 0x000000;
+const int BG_COLOR = 0x224422;
 
 constexpr float HALF_WIDTH = static_cast<float>(WIDTH) * 0.5f;
 constexpr float HALF_HEIGHT = static_cast<float>(HEIGHT) * 0.5f;

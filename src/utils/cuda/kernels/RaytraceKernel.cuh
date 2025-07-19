@@ -3,6 +3,7 @@
 #include "../../DrawValues.h"
 #include "../../../math/Definitions.h"
 #include "../../../math/cuda/CudaMath.cuh"
+#include "../definitions/RenderingStructs.cuh"
 
 __global__ void rayTraceKernel(
     uchar4 *pixelBuffer,
@@ -14,9 +15,7 @@ __global__ void rayTraceKernel(
     float inverseWidthMinus,
     float inverseHeightMinus,
 
-    const float3_L *pointarray,
-    const triangleidx *triangles,
-    size_t triangleNum,
+    SceneMemoryPointers memPointers,
 
     const int imageWidth,
     const int imageHeight,

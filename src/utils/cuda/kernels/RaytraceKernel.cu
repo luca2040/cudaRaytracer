@@ -1,4 +1,6 @@
 #include "RaytraceKernel.cuh"
+#include "TracingKernel.cuh"
+#include "../definitions/RenderingStructs.cuh"
 
 __global__ void rayTraceKernel(
     uchar4 *pixelBuffer,
@@ -10,9 +12,7 @@ __global__ void rayTraceKernel(
     float inverseWidthMinus,
     float inverseHeightMinus,
 
-    const float3_L *pointarray,
-    const triangleidx *triangles,
-    size_t triangleNum,
+    SceneMemoryPointers memPointers,
 
     const int imageWidth,
     const int imageHeight,
@@ -30,55 +30,11 @@ __global__ void rayTraceKernel(
   ray currentRay = ray(
       camPos,
       normalize3_cuda(rawDirection));
+  RayData currentRayData;
 
-  float3_L currentColor = make_float3_L(0.0f, 0.0f, 0.0f);
-  float rayLight = 1.0f;
+  traceRay(memPointers,
+           currentRay, currentRayData,
+           bgColor);
 
-  for (size_t iteration = 0; iteration < RAY_HITS_MAX; iteration++)
-  {
-    // Bruteforce all the triangles
-    float currentZbuf = INFINITY;
-    triangleidx hitTriangle;
-    float3_L lastHit;
-
-    for (size_t i = 0; i < triangleNum; i++)
-    {
-      triangleidx triangle = triangles[i];
-
-      float t, u, v;
-      float3_L rayHit;
-
-      bool hasIntersected = rayTriangleIntersection(currentRay,
-                                                    pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
-                                                    t, u, v,
-                                                    rayHit);
-
-      if (hasIntersected && (t < currentZbuf))
-      {
-        currentZbuf = t;
-        hitTriangle = triangle;
-        lastHit = rayHit;
-        // pixelBuffer[y * imageWidth + x] = make_uchar4_from_int(triangle.col);
-      }
-    }
-
-    if (currentZbuf == INFINITY)
-    {
-      currentColor = currentColor + (bgColor * rayLight);
-      break;
-    }
-
-    float reflectiveness = hitTriangle.reflectiveness;
-
-    currentColor = currentColor + (intColToF3l(hitTriangle.col) * rayLight * (1.0f - reflectiveness));
-    rayLight *= reflectiveness;
-
-    if (reflectiveness < EPSILON)
-      break;
-
-    currentRay.origin = lastHit;
-    reflectRay(currentRay.direction, hitTriangle.normal);
-  }
-
-  pixelBuffer[y * imageWidth + x] = make_uchar4_from_f3l(currentColor);
+  pixelBuffer[y * imageWidth + x] = make_uchar4_from_f3l(currentRayData.color);
 }

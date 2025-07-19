@@ -6,6 +6,7 @@
 #include "../../math/cuda/CudaMath.cuh"
 
 #include "kernels/RaytraceKernel.cuh"
+#include "definitions/RenderingStructs.cuh"
 
 #include "../../third_party/tracy/tracy/Tracy.hpp"
 
@@ -60,12 +61,13 @@ void rayTrace(
   constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
 
   float3_L f3lBg = intColToF3l(bgColor);
+  SceneMemoryPointers memPointers = SceneMemoryPointers(d_pointarray, d_triangles, triangleNum);
 
   rayTraceKernel<<<gridDim, blockDim>>>(
       pixelBuffer,
       camPos, camViewOrigin, imageX, imageY,
       inverseWidthMinus, inverseHeightMinus,
-      d_pointarray, d_triangles, triangleNum,
+      memPointers,
       WIDTH, HEIGHT,
       f3lBg);
 }

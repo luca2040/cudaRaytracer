@@ -15,7 +15,7 @@ struct ray
   ray(float3_L origin, float3_L direction) : origin(origin), direction(direction) {}
 };
 
-__host__ __device__ __forceinline__ float3_L make_float3_L(float x, float y, float z) noexcept
+__host__ __device__ __forceinline__ static float3_L make_float3_L(float x, float y, float z) noexcept
 {
   float3_L v;
   v.x = x;
