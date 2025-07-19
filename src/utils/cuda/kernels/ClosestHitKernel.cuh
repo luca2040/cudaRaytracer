@@ -2,10 +2,6 @@
 
 #include "TracingKernel.cuh"
 
-__device__ void traceRay(SceneMemoryPointers memPointers,
-                         ray &ray, RayData &rayData,
-                         const float3_L bgColor);
-
 __device__ __forceinline__ bool onClosestHit(SceneMemoryPointers memPointers,
                                              ray &ray, RayData &rayData, triangleidx hitTriangle, float3_L hitPos,
                                              const float3_L bgColor)
