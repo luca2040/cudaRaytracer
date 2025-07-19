@@ -6,9 +6,6 @@
 #include "utils/gui/GuiWindow.h"
 #include "math/Definitions.h"
 
-#include <optix.h>
-#include <optix_stubs.h>
-
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_sdl2.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
