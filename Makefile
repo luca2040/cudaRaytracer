@@ -20,6 +20,12 @@ SRC_DIR = src
 BUILD_DIR = build
 TARGET = $(BUILD_DIR)/TheBest3dRendererEverRTX
 
+# === NVIDIA OptiX ===
+OPTIX_DIR = $(OPTIX_SDK_PATH)
+CXXFLAGS  += -I$(OPTIX_DIR)/include
+NVCCFLAGS += -I$(OPTIX_DIR)/include
+LDFLAGS   += -L$(OPTIX_DIR)/lib64
+
 # === Tracy Profiler ===
 TRACY_DIR = $(SRC_DIR)/third_party/tracy
 TRACY_CPP = $(TRACY_DIR)/TracyClient.cpp

@@ -2,19 +2,12 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <SLD2/SDL_opengles2.h>
-#else
-#include <SDL2/SDL_opengl.h>
-#endif
-
-#ifdef _WIN32
-#include <windows.h> // SetProcessDPIAware()
-#endif
-
 #include "utils/DrawLoop.h"
 #include "utils/gui/GuiWindow.h"
 #include "math/Definitions.h"
+
+#include <optix.h>
+#include <optix_stubs.h>
 
 #include "third_party/imgui/imgui.h"
 #include "third_party/imgui/imgui_impl_sdl2.h"
@@ -26,50 +19,19 @@ int main()
 {
   std::cout << "Starting the best 3D renderer ever - Now RTX!" << std::endl;
 
-#ifdef _WIN32
-  ::SetProcessDPIAware();
-#endif
-
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
     return 1;
   }
 
-  // Decide GL+GLSL versions
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-  // GL ES 2.0 + GLSL 100 (WebGL 1.0)
-  const char *glsl_version = "#version 100";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(IMGUI_IMPL_OPENGL_ES3)
-  // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
-  const char *glsl_version = "#version 300 es";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#elif defined(__APPLE__)
-  // GL 3.2 Core + GLSL 150
-  const char *glsl_version = "#version 150";
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
-#else
-  // GL 3.0 + GLSL 130
   const char *glsl_version = "#version 130";
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-#endif
 
-#ifdef SDL_HINT_IME_SHOW_UI
   SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
-#endif
 
   SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
   SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);

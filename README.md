@@ -1,0 +1,1 @@
+To build set the `OPTIX_SDK_PATH` env variable to the Nvidia OptiX install folder, e.g. `/home/user/NVIDIA-OptiX-SDK-9.0.0-linux64-x86_64`
