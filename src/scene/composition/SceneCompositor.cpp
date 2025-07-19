@@ -50,10 +50,12 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // left panel
                                               {-2.5f, 2.5f, 3.5f},
                                               0xFF0000, 0.25f));
+                                              // 0xFFFFFF, 0.8f));
 
   builder.addObjectToScene(generateFlatSquare({2.5f, -2.5f, 0.0f}, // right panel
                                               {2.5f, 2.5f, 3.5f},
                                               0x00FF00, 0.25f));
+                                              // 0xFFFFFF, 0.8f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f}, // floor
                                               {2.5f, 2.5f, 3.5f},

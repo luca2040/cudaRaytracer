@@ -13,7 +13,7 @@
 #endif
 
 #include "utils/DrawLoop.h"
-#include "utils/generic/FpsCounter.h"
+#include "utils/generic/GuiWindow.h"
 #include "math/Definitions.h"
 
 #include "third_party/imgui/imgui.h"
@@ -100,8 +100,7 @@ int main()
   }
 
   // Check opengl version
-  const GLubyte *version = glGetString(GL_VERSION);
-  std::cout << "OpenGL version: " << version << std::endl;
+  guiWindow.openGLversion = glGetString(GL_VERSION);
 
   GLint defaultPbo;
   GLuint renderingPbo, tex;
@@ -125,15 +124,20 @@ int main()
 
   IMGUI_CHECKVERSION();
   ImGui::CreateContext();
-  ImGuiIO &io = ImGui::GetIO();
-  (void)io;
-  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+  guiWindow.io = &ImGui::GetIO();
+  (void)guiWindow.io;
+  guiWindow.io->ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 
   ImGui::StyleColorsLight();
 
   ImGuiStyle &style = ImGui::GetStyle();
   style.ScaleAllSizes(main_scale);
   style.FontScaleDpi = main_scale;
+  style.TabRounding = 8.f;
+  style.FrameRounding = 8.f;
+  style.GrabRounding = 8.f;
+  style.WindowRounding = 8.f;
+  style.PopupRounding = 8.f;
 
   ImGui_ImplSDL2_InitForOpenGL(window, glContext);
   ImGui_ImplOpenGL3_Init(glsl_version);
@@ -187,14 +191,7 @@ int main()
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 2.0f);
-
-    bool show_demo_window = true;
-    ImGui::ShowDemoWindow(&show_demo_window);
-
-    ImGui::PopStyleVar(3);
+    guiWindow.RenderGui();
 
     // Bind rendering pbo, render scene, rebind default pbo
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, renderingPbo);
@@ -205,9 +202,6 @@ int main()
 
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     SDL_GL_SwapWindow(window);
-
-    // Print FPS each second
-    fpsCounter.printFpsTag();
   }
 
   onClose();
