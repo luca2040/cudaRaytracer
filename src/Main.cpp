@@ -2,9 +2,23 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
 
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+#include <SLD2/SDL_opengles2.h>
+#else
+#include <SDL2/SDL_opengl.h>
+#endif
+
+#ifdef _WIN32
+#include <windows.h> // SetProcessDPIAware()
+#endif
+
 #include "utils/DrawLoop.h"
 #include "utils/generic/FpsCounter.h"
 #include "math/Definitions.h"
+
+#include "third_party/imgui/imgui.h"
+#include "third_party/imgui/imgui_impl_sdl2.h"
+#include "third_party/imgui/imgui_impl_opengl3.h"
 
 #include "third_party/tracy/tracy/Tracy.hpp"
 
@@ -12,15 +26,56 @@ int main()
 {
   std::cout << "Starting the best 3D renderer ever - Now RTX!" << std::endl;
 
+#ifdef _WIN32
+  ::SetProcessDPIAware();
+#endif
+
   if (SDL_Init(SDL_INIT_VIDEO) < 0)
   {
     std::cerr << "SDL could not initialize: " << SDL_GetError() << std::endl;
     return 1;
   }
 
+  // Decide GL+GLSL versions
+#if defined(IMGUI_IMPL_OPENGL_ES2)
+  // GL ES 2.0 + GLSL 100 (WebGL 1.0)
+  const char *glsl_version = "#version 100";
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(IMGUI_IMPL_OPENGL_ES3)
+  // GL ES 3.0 + GLSL 300 es (WebGL 2.0)
+  const char *glsl_version = "#version 300 es";
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#elif defined(__APPLE__)
+  // GL 3.2 Core + GLSL 150
+  const char *glsl_version = "#version 150";
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG); // Always required on Mac
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+#else
+  // GL 3.0 + GLSL 130
+  const char *glsl_version = "#version 130";
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+#endif
+
+#ifdef SDL_HINT_IME_SHOW_UI
+  SDL_SetHint(SDL_HINT_IME_SHOW_UI, "1");
+#endif
+
+  SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+  SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+  SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
+
+  float main_scale = ImGui_ImplSDL2_GetContentScaleForDisplay(0);
 
   SDL_Window *window = SDL_CreateWindow("The Best 3D Renderer Ever - RTX edition",
                                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
@@ -44,11 +99,19 @@ int main()
     return -1;
   }
 
-  GLuint pbo, tex;
+  // Check opengl version
+  const GLubyte *version = glGetString(GL_VERSION);
+  std::cout << "OpenGL version: " << version << std::endl;
 
-  glGenBuffers(1, &pbo);
-  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+  GLint defaultPbo;
+  GLuint renderingPbo, tex;
+
+  glGetIntegerv(GL_PIXEL_UNPACK_BUFFER_BINDING, &defaultPbo);
+
+  glGenBuffers(1, &renderingPbo);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, renderingPbo);
   glBufferData(GL_PIXEL_UNPACK_BUFFER, WIDTH * HEIGHT * 4, nullptr, GL_STREAM_DRAW);
+  glBindBuffer(GL_PIXEL_UNPACK_BUFFER, defaultPbo);
 
   glGenTextures(1, &tex);
   glBindTexture(GL_TEXTURE_2D, tex);
@@ -58,6 +121,25 @@ int main()
 
   SDL_GL_SetSwapInterval(0);
 
+  // Imgui settings
+
+  IMGUI_CHECKVERSION();
+  ImGui::CreateContext();
+  ImGuiIO &io = ImGui::GetIO();
+  (void)io;
+  io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+
+  ImGui::StyleColorsLight();
+
+  ImGuiStyle &style = ImGui::GetStyle();
+  style.ScaleAllSizes(main_scale);
+  style.FontScaleDpi = main_scale;
+
+  ImGui_ImplSDL2_InitForOpenGL(window, glContext);
+  ImGui_ImplOpenGL3_Init(glsl_version);
+
+  style.FontSizeBase = 15.0f;
+
   SDL_Event event;
   bool running = true;
 
@@ -65,7 +147,7 @@ int main()
   int2_L pMouse(0, 0);
 
   onSceneComposition();
-  onSetupFrame(pbo);
+  onSetupFrame(renderingPbo);
 
   while (running)
   {
@@ -73,6 +155,7 @@ int main()
 
     while (SDL_PollEvent(&event))
     {
+      ImGui_ImplSDL2_ProcessEvent(&event);
       switch (event.type)
       {
       case SDL_QUIT:
@@ -97,17 +180,41 @@ int main()
 
     checkForKeys();
 
-    // Main draw logic
-    drawFrame(tex, pbo);
+    // ###############################
+    // Testing imgui
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL2_NewFrame();
+    ImGui::NewFrame();
+
+    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, 0.6f);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 2.0f);
+
+    bool show_demo_window = true;
+    ImGui::ShowDemoWindow(&show_demo_window);
+
+    ImGui::PopStyleVar(3);
+
+    // Bind rendering pbo, render scene, rebind default pbo
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, renderingPbo);
+    drawFrame(tex, renderingPbo);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, defaultPbo);
+
+    ImGui::Render();
+
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+    SDL_GL_SwapWindow(window);
 
     // Print FPS each second
     fpsCounter.printFpsTag();
-
-    // Swap buffer
-    SDL_GL_SwapWindow(window);
   }
 
   onClose();
+
+  ImGui_ImplOpenGL3_Shutdown();
+  ImGui_ImplSDL2_Shutdown();
+  ImGui::DestroyContext();
 
   SDL_DestroyWindow(window);
   SDL_Quit();
