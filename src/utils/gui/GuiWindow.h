@@ -14,6 +14,24 @@
 class GuiWindow
 {
 private:
+  inline void MakeEditableSlider(const char *title, const char *sliderName, const char *valueName,
+                                 float &value, float sliderMin, float sliderMax,
+                                 float sliderWidth, float valueWidth)
+  {
+    ImGui::TextUnformatted(title);
+    ImGui::SameLine();
+
+    ImGui::PushItemWidth(sliderWidth);
+    ImGui::SliderFloat(sliderName, &value, sliderMin, sliderMax, "%0.1f");
+    ImGui::PopItemWidth();
+
+    ImGui::SameLine();
+
+    ImGui::PushItemWidth(valueWidth);
+    ImGui::InputFloat(valueName, &value);
+    ImGui::PopItemWidth();
+  }
+
 public:
   ImGuiIO *io = nullptr;
   const GLubyte *openGLversion;
@@ -36,6 +54,15 @@ public:
       ImGui::Text("FPS: %.1f", io->Framerate);
       ImGui::Text("DeltaTime: %.4f s", io->DeltaTime);
 
+      ImGui::Separator();
+
+      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+      if (ImGui::CollapsingHeader("Camera"))
+      {
+        ImGui::Text("Position: %0.1f, %0.1f, %0.1f", cam.camPos.x, cam.camPos.y, cam.camPos.z);
+        ImGui::Text("Angle: %0.2f, %0.2f", cam.camXrot, cam.camYrot);
+      }
+
       ImGui::End();
     }
 
@@ -52,39 +79,18 @@ public:
       ImGui::SetNextItemOpen(true, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Zoom"))
       {
-        float content_width = ImGui::GetContentRegionAvail().x;
+        float contentWidth = ImGui::GetContentRegionAvail().x;
 
-        float slider_width = content_width * 0.6f;
-        float input_width = content_width * 0.2f;
+        float sliderWidth = contentWidth * 0.6f;
+        float inputWidth = contentWidth * 0.2f;
 
-        {
-          ImGui::Text("Cam FOV:");
-          ImGui::SameLine();
+        MakeEditableSlider("Cam FOV:", "##fovSlider", "##fovInput",
+                           cam.camFOVdeg, 20.0f, 120.0f,
+                           sliderWidth, inputWidth);
 
-          ImGui::PushItemWidth(slider_width);
-          ImGui::SliderFloat("##fovSlider", &cam.camFOVdeg, 20.0f, 120.0f, "%0.1f");
-          ImGui::PopItemWidth();
-
-          ImGui::SameLine();
-
-          ImGui::PushItemWidth(input_width);
-          ImGui::InputFloat("##fovInput", &cam.camFOVdeg);
-          ImGui::PopItemWidth();
-        }
-        {
-          ImGui::Text("Cam Zoom:");
-          ImGui::SameLine();
-
-          ImGui::PushItemWidth(slider_width);
-          ImGui::SliderFloat("##zoomSlider", &cam.camZoom, 0.1f, 4.0f, "%0.1f");
-          ImGui::PopItemWidth();
-
-          ImGui::SameLine();
-
-          ImGui::PushItemWidth(input_width);
-          ImGui::InputFloat("##zoomInput", &cam.camZoom);
-          ImGui::PopItemWidth();
-        }
+        MakeEditableSlider("Cam Zoom:", "##zoomSlider", "##zoomInput",
+                           cam.camZoom, 0.1f, 4.0f,
+                           sliderWidth, inputWidth);
       }
 
       ImGui::End();
