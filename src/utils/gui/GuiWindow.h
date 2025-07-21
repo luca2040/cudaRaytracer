@@ -48,6 +48,7 @@ public:
       ImGui::Begin("Status");
 
       ImGui::Text("OpenGL version: %s", openGLversion);
+      ImGui::Text("Rendering resolution: %i x %i", WIDTH, HEIGHT);
 
       ImGui::Separator();
 
@@ -63,13 +64,27 @@ public:
         ImGui::Text("Angle: %0.2f, %0.2f", cam.camXrot, cam.camYrot);
       }
 
+      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+      if (ImGui::CollapsingHeader("Scene"))
+      {
+        ImGui::Text("Vertices: %zu", scene.pointsCount);
+        ImGui::Text("Triangles: %zu", scene.triangleNum);
+        ImGui::Text("Dyn triangles: %zu", scene.dyntrianglesNum);
+      }
+
+      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+      if (ImGui::CollapsingHeader("Rendering settings"))
+      {
+        ImGui::Text("Max reflections: %i", RAY_MAX_REFLECTIONS);
+      }
+
       ImGui::End();
     }
 
     // Controls window
     {
       constexpr const ImVec2 windowSize = ImVec2(1000, 400);
-      constexpr const ImVec2 windwoPos = ImVec2(WIDTH - windowSize.x - 10, 10);
+      constexpr const ImVec2 windwoPos = ImVec2(WINDOW_WIDTH - windowSize.x - 10, 10);
 
       ImGui::SetNextWindowPos(windwoPos, ImGuiCond_Once);
       ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);

@@ -3,10 +3,37 @@
 #include "../math/Definitions.h"
 #include <math.h>
 
-const unsigned int WIDTH = 3840;
-const unsigned int HEIGHT = 2160;
+// ########### Window size config ###########
 
+#define windowWidth 3840
+#define windowHeight 2160
+
+#define renderingReduction 2
+
+// ############ Rendering config ############
+
+#define EPSILON 1.1920929e-05f
 const int BG_COLOR = 0x224422;
+
+// How many times rays should be traced, 2 means an hit and single reflection
+#define RAY_MAX_REFLECTIONS 5
+
+// ##########################################
+
+const unsigned int WINDOW_WIDTH = windowWidth;
+const unsigned int WINDOW_HEIGHT = windowHeight;
+
+#ifdef renderingReduction
+
+const unsigned int WIDTH = WINDOW_WIDTH / renderingReduction;
+const unsigned int HEIGHT = WINDOW_HEIGHT / renderingReduction;
+
+#else
+
+const unsigned int WIDTH = WINDOW_WIDTH;
+const unsigned int HEIGHT = WINDOW_HEIGHT;
+
+#endif
 
 constexpr float HALF_WIDTH = static_cast<float>(WIDTH) * 0.5f;
 constexpr float HALF_HEIGHT = static_cast<float>(HEIGHT) * 0.5f;
@@ -21,8 +48,3 @@ constexpr float cameraVerticalViewReduction = 10.0f;
 
 constexpr float cameraVerticalMaxRot = M_PI_2 - (cameraVerticalViewReduction / 180.0f * M_PI);
 constexpr float cameraVerticalMinRot = -cameraVerticalMaxRot;
-
-#define EPSILON 1.1920929e-05f
-
-// How many times rays should be traced, 2 means an hit and single reflection
-#define RAY_HITS_MAX 10

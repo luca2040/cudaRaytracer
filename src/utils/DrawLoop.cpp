@@ -20,27 +20,12 @@
 #include "../third_party/tracy/tracy/Tracy.hpp"
 #include "../third_party/tracy/tracy/TracyC.h"
 
-// General variables
-
-float3_L *points;
-triangleidx *triangles;
-size_t *dyntriangles;
-transformIndexPair *trIndexPairs;
-
-size_t pointsCount;
-size_t triangleNum;
-size_t dyntrianglesNum;
-size_t trIndexPairCount;
-
-size_t pointsSize;
-size_t triangleSize;
-
 void onSceneComposition()
 {
-  composeScene(points, pointsCount,
-               triangles, triangleNum,
-               trIndexPairs, trIndexPairCount,
-               dyntriangles, dyntrianglesNum);
+  composeScene(scene.points, scene.pointsCount,
+               scene.triangles, scene.triangleNum,
+               scene.trIndexPairs, scene.trIndexPairCount,
+               scene.dyntriangles, scene.dyntrianglesNum);
 }
 
 cudaGraphicsResource *cudaPboResource;
@@ -49,14 +34,14 @@ GLuint quadVAO = 0, quadVBO = 0;
 
 void onSetupFrame(GLuint pbo)
 {
-  pointsSize = sizeof(float3_L) * pointsCount;
-  triangleSize = sizeof(triangleidx) * triangleNum;
+  scene.pointsSize = sizeof(float3_L) * scene.pointsCount;
+  scene.triangleSize = sizeof(triangleidx) * scene.triangleNum;
 
   cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard);
   setupQuad(quadVAO, quadVBO);
   shaderProgram = createShaderProgram();
 
-  cudaAllocateAndCopy(pointsSize, triangleSize);
+  cudaAllocateAndCopy(scene.pointsSize, scene.triangleSize);
 }
 
 void onClose()
@@ -74,8 +59,8 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Copy vertexes array
 
-  float3_L *pointarray = new float3_L[pointsCount];
-  std::copy(points, points + pointsCount, pointarray);
+  float3_L *pointarray = new float3_L[scene.pointsCount];
+  std::copy(scene.points, scene.points + scene.pointsCount, pointarray);
 
   // Time for transforms
 
@@ -87,9 +72,9 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Rotate vertices and apply transforms
   // #pragma omp parallel for
-  for (size_t indexPairI = 0; indexPairI < trIndexPairCount; indexPairI++)
+  for (size_t indexPairI = 0; indexPairI < scene.trIndexPairCount; indexPairI++)
   {
-    transformIndexPair currentPair = trIndexPairs[indexPairI];
+    transformIndexPair currentPair = scene.trIndexPairs[indexPairI];
     ObjTransform currentTransform = currentPair.transform;
 
     if (currentTransform.hasTransformFunction)
@@ -113,9 +98,9 @@ void drawFrame(GLuint tex, GLuint pbo)
   }
 
   // Recalculate normals
-  for (size_t i = 0; i < dyntrianglesNum; i++)
+  for (size_t i = 0; i < scene.dyntrianglesNum; i++)
   {
-    triangleidx &currentTriangle = triangles[dyntriangles[i]];
+    triangleidx &currentTriangle = scene.triangles[scene.dyntriangles[i]];
 
     float3_L v1 = pointarray[currentTriangle.v1];
     float3_L v2 = pointarray[currentTriangle.v2];
@@ -181,8 +166,8 @@ void drawFrame(GLuint tex, GLuint pbo)
            cam.camPos, camViewOrigin,
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
-           pointarray, triangles, triangleNum,
-           pointsSize, triangleSize,
+           pointarray, scene.triangles, scene.triangleNum,
+           scene.pointsSize, scene.triangleSize,
            BG_COLOR);
 
   // Clean up

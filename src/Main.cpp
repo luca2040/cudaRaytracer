@@ -38,7 +38,7 @@ int main()
 
   SDL_Window *window = SDL_CreateWindow("The Best 3D Renderer Ever - RTX edition",
                                         SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                                        WIDTH, HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
+                                        WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN);
 
   SDL_GLContext glContext = SDL_GL_CreateContext(window);
 
@@ -50,7 +50,7 @@ int main()
 
   SDL_GL_MakeCurrent(window, glContext);
 
-  glViewport(0, 0, WIDTH, HEIGHT);
+  glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
   if (glewInit() != GLEW_OK)
   {

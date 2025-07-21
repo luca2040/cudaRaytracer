@@ -10,7 +10,7 @@ __device__ __forceinline__ void traceRay(SceneMemoryPointers memPointers,
 {
   // Bruteforce all the triangles - TODO: optimize this shit
 
-  for (size_t depth = 0; depth < RAY_HITS_MAX; depth++)
+  for (size_t depth = 0; depth < RAY_MAX_REFLECTIONS; depth++)
   {
 
     float currentZbuf = INFINITY;
