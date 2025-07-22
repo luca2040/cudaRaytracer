@@ -10,7 +10,7 @@ enum PlaneType
   XY
 };
 
-SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                float3_L defaultRot,
                                int sideDivisions,
                                int col1, float reflectiveness1,
@@ -114,10 +114,10 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
     }
   }
 
-  return SceneObject(center, defaultRot, facePoints, faceTriangles);
+  return SceneObjectPassthrough(center, defaultRot, facePoints, faceTriangles);
 }
 
-SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                int sideDivisions,
                                int col1, float reflectiveness1,
                                int col2, float reflectiveness2)
@@ -129,7 +129,7 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                             col2, reflectiveness2);
 }
 
-SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                int sideDivisions,
                                int col, float reflectiveness)
 {
@@ -140,7 +140,7 @@ SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                             col, reflectiveness);
 }
 
-SceneObject generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
+SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
                                int col, float reflectiveness)
 {
   return generateFlatSquare(firstCorner, secondCorner,

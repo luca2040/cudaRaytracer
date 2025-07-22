@@ -3,7 +3,7 @@
 #include "../SceneClasses.h"
 #include "../../math/Operations.h"
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          float3_L defaultRot, TransformFunction trFunc, bool hasTransformFunction,
                          int face1Col, float reflectiveness1,
                          int face2Col, float reflectiveness2,
@@ -44,12 +44,12 @@ SceneObject generateCube(float3_L center, float sideLenght,
   };
 
   if (hasTransformFunction)
-    return SceneObject(center, trFunc, cubePoints, cubeTriangles);
+    return SceneObjectPassthrough(center, trFunc, cubePoints, cubeTriangles);
   else
-    return SceneObject(center, defaultRot, cubePoints, cubeTriangles);
+    return SceneObjectPassthrough(center, defaultRot, cubePoints, cubeTriangles);
 }
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          float3_L defaultRot,
                          int face1Col,
                          int face2Col,
@@ -69,7 +69,7 @@ SceneObject generateCube(float3_L center, float sideLenght,
                       face6Col, reflectiveness);
 }
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          float3_L defaultRot,
                          int face1Col, float reflectiveness1,
                          int face2Col, float reflectiveness2,
@@ -88,7 +88,7 @@ SceneObject generateCube(float3_L center, float sideLenght,
                       face6Col, reflectiveness6);
 }
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          TransformFunction trFunc,
                          int face1Col,
                          int face2Col,
@@ -108,7 +108,7 @@ SceneObject generateCube(float3_L center, float sideLenght,
                       face6Col, reflectiveness);
 }
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          TransformFunction trFunc,
                          int face1Col, float reflectiveness1,
                          int face2Col, float reflectiveness2,
@@ -127,7 +127,7 @@ SceneObject generateCube(float3_L center, float sideLenght,
                       face6Col, reflectiveness6);
 }
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          float3_L defaultRot,
                          int color, float reflectiveness)
 {
@@ -141,7 +141,7 @@ SceneObject generateCube(float3_L center, float sideLenght,
                       color, reflectiveness);
 }
 
-SceneObject generateCube(float3_L center, float sideLenght,
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
                          TransformFunction trFunc,
                          int color, float reflectiveness)
 {

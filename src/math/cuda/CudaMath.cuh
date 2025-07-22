@@ -2,6 +2,7 @@
 
 #include "../Definitions.h"
 #include "../../utils/DrawValues.h"
+#include "../../scene/structs/AABB.h"
 
 struct ray
 {
@@ -24,34 +25,6 @@ __host__ __device__ __forceinline__ static float3_L make_float3_L(float x, float
   return v;
 };
 
-__device__ __forceinline__ float3_L operator+(const float3_L &a, const float3_L &b) noexcept
-{
-  return make_float3_L(a.x + b.x, a.y + b.y, a.z + b.z);
-};
-
-__device__ __forceinline__ float3_L operator-(const float3_L &a, const float3_L &b) noexcept
-{
-  return make_float3_L(a.x - b.x, a.y - b.y, a.z - b.z);
-};
-
-__device__ __forceinline__ float3_L operator*(const float3_L &a, const float &b) noexcept
-{
-  return make_float3_L(a.x * b, a.y * b, a.z * b);
-};
-
-__device__ __forceinline__ float dot3_cuda(const float3_L &a, const float3_L &b) noexcept
-{
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-__device__ __forceinline__ float3_L cross3_cuda(const float3_L &a, const float3_L &b) noexcept
-{
-  return make_float3_L(
-      a.y * b.z - a.z * b.y,
-      a.z * b.x - a.x * b.z,
-      a.x * b.y - a.y * b.x);
-}
-
 __host__ __device__ __forceinline__ float3_L intColToF3l(const int c)
 {
   float x = static_cast<float>((c >> 16) & 0xFF) / 255.0f; // red
@@ -73,9 +46,74 @@ __host__ __device__ __forceinline__ uchar4 make_uchar4_from_f3l(const float3_L c
   return retVal;
 }
 
+__device__ __forceinline__ float3_L operator+(const float3_L &a, const float3_L &b) noexcept
+{
+  return make_float3_L(a.x + b.x, a.y + b.y, a.z + b.z);
+};
+
+__device__ __forceinline__ float3_L operator-(const float3_L &a, const float3_L &b) noexcept
+{
+  return make_float3_L(a.x - b.x, a.y - b.y, a.z - b.z);
+};
+
+__device__ __forceinline__ float3_L operator*(const float3_L &a, const float &b) noexcept
+{
+  return make_float3_L(a.x * b, a.y * b, a.z * b);
+};
+
+__device__ __forceinline__ float3_L inverse(const float3_L &a) noexcept
+{
+  return make_float3_L(1.0f / a.x, 1.0f / a.y, 1.0f / a.z);
+};
+
+// Per-component multiplication
+__device__ __forceinline__ float3_L operator*(const float3_L &a, const float3_L &b) noexcept
+{
+  return make_float3_L(a.x * b.x, a.y * b.y, a.z * b.z);
+};
+
+// Per-component division
+__device__ __forceinline__ float3_L operator/(const float3_L &a, const float3_L &b) noexcept
+{
+  return make_float3_L(a.x / b.x, a.y / b.y, a.z / b.z);
+};
+
+__device__ __forceinline__ float dot3_cuda(const float3_L &a, const float3_L &b) noexcept
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+__device__ __forceinline__ float3_L cross3_cuda(const float3_L &a, const float3_L &b) noexcept
+{
+  return make_float3_L(
+      a.y * b.z - a.z * b.y,
+      a.z * b.x - a.x * b.z,
+      a.x * b.y - a.y * b.x);
+}
+
 __device__ __forceinline__ float3_L normalize3_cuda(const float3_L &a) noexcept
 {
   return a * rsqrtf(dot3_cuda(a, a));
+}
+
+// Per-component max
+__device__ __forceinline__ float3_L max(const float3_L &val1, const float3_L &val2) noexcept
+{
+  float3_L ret;
+  ret.x = fmaxf(val1.x, val2.x);
+  ret.y = fmaxf(val1.y, val2.y);
+  ret.z = fmaxf(val1.z, val2.z);
+  return ret;
+}
+
+// Per-component min
+__device__ __forceinline__ float3_L min(const float3_L &val1, const float3_L &val2) noexcept
+{
+  float3_L ret;
+  ret.x = fminf(val1.x, val2.x);
+  ret.y = fminf(val1.y, val2.y);
+  ret.z = fminf(val1.z, val2.z);
+  return ret;
 }
 
 // Möller–Trumbore intersection algorithm for ray-triangle intersection
@@ -124,7 +162,28 @@ __device__ __forceinline__ bool rayTriangleIntersection(
     return false;
 }
 
-__device__ __forceinline__ void reflectRay(float3_L &rayDir, float3_L &normal) noexcept
+// Since this is looped per each box with the same ray, couldnt the inverse
+// ray be pre-computed before the loop for the whole cycle? Need to try this
+__device__ __forceinline__ bool rayBoxIntersection(ray testRay, AABB bb)
+{
+  float3_L invDirComponents = inverse(testRay.direction);
+
+  float3_L tLowComponents = (bb.l - testRay.origin) * invDirComponents;
+  float3_L tHighComponents = (bb.h - testRay.origin) * invDirComponents;
+
+  float3_L tCloseComponents = min(tLowComponents, tHighComponents);
+  float3_L tFarComponents = max(tLowComponents, tHighComponents);
+
+  float tClose = fmaxf(fmaxf(tCloseComponents.x, tCloseComponents.y), tCloseComponents.z);
+  float tFar = fminf(fminf(tFarComponents.x, tFarComponents.y), tFarComponents.z);
+
+  // If tClose is less than 0 it intersects behind the ray, and that no good.
+  // Intersection happens if tClose <= tFar and neither of them is NaN.
+  // return tClose < 0 ? false : tClose <= tFar;
+  return tClose <= tFar && tFar >= 0.0f;
+}
+
+__device__ __forceinline__ void reflectRay(float3_L &rayDir, float3_L &normal)
 {
   float d = dot3_cuda(rayDir, normal);
 

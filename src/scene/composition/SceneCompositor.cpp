@@ -29,6 +29,7 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
 void composeScene(float3_L *&pointarray, size_t &pointCount,
                   triangleidx *&triangles, size_t &triangleCount,
                   transformIndexPair *&indexpairs, size_t &indexPairCount,
+                  SceneObject *&sceneobjects, size_t &sceneobjectsCount,
                   size_t *&dyntriangles, size_t &dynTrianglesCount)
 {
   SceneBuilder builder;
@@ -50,12 +51,12 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // left panel
                                               {-2.5f, 2.5f, 3.5f},
                                               0xFF0000, 0.25f));
-                                              // 0xFFFFFF, 0.8f));
+  // 0xFFFFFF, 0.8f));
 
   builder.addObjectToScene(generateFlatSquare({2.5f, -2.5f, 0.0f}, // right panel
                                               {2.5f, 2.5f, 3.5f},
                                               0x00FF00, 0.25f));
-                                              // 0xFFFFFF, 0.8f));
+  // 0xFFFFFF, 0.8f));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f}, // floor
                                               {2.5f, 2.5f, 3.5f},
@@ -67,5 +68,9 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
                                               {2.5f, -2.5f, 3.5f},
                                               0x555555, 0.0f));
 
-  builder.compile(pointarray, pointCount, triangles, triangleCount, indexpairs, indexPairCount, dyntriangles, dynTrianglesCount);
+  builder.compile(pointarray, pointCount,
+                  triangles, triangleCount,
+                  indexpairs, indexPairCount,
+                  sceneobjects, sceneobjectsCount,
+                  dyntriangles, dynTrianglesCount);
 }

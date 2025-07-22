@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "SceneClasses.h"
+#include "structs/SceneObject.h"
 #include "../math/Operations.h"
 
 struct transformIndexPair
@@ -38,10 +39,11 @@ public:
   std::vector<float3_L> scenePoints;
   std::vector<triangleidx> sceneTriangles;
   std::vector<size_t> dynamicTriangles;
+  std::vector<SceneObject> sceneObjects;
 
   std::vector<transformIndexPair> groupIndexRanges; // When adding some points, save here the corresponding index start and end; the index of the pair is returned.
 
-  size_t addObjectToScene(SceneObject objToAdd)
+  size_t addObjectToScene(SceneObjectPassthrough objToAdd)
   {
     ObjTransform objTransform;
 
@@ -56,6 +58,7 @@ public:
 
     std::vector<float3_L> objPoints = objToAdd.points;
     size_t currentPointIndex = scenePoints.size();
+    size_t currentTriangleIndex = sceneTriangles.size();
 
     for (auto oldTriangle : objToAdd.triangles)
     {
@@ -77,7 +80,18 @@ public:
     scenePoints.insert(scenePoints.end(), objPoints.begin(), objPoints.end()); // Add obj's points to scene points
 
     size_t afterListPointIndex = scenePoints.size();
+    size_t afterListTriangleIndex = sceneTriangles.size();
 
+    AABB objBB = {};
+    setBBtoNew(objBB);
+
+    for (auto currentVertex : objPoints)
+    {
+      growBBtoInclude(objBB, currentVertex);
+    }
+
+    SceneObject newSceneObj = {currentTriangleIndex, afterListTriangleIndex, objBB};
+    sceneObjects.push_back(newSceneObj);
     transformIndexPair toAddTransformPair = {currentPointIndex, afterListPointIndex, objTransform};
     groupIndexRanges.push_back(toAddTransformPair);
 
@@ -87,6 +101,7 @@ public:
   void compile(float3_L *&pointarray, size_t &pointCount,
                triangleidx *&triangles, size_t &triangleCount,
                transformIndexPair *&indexpairs, size_t &indexPairCount,
+               SceneObject *&sceneobjects, size_t &sceneobjectsCount,
                size_t *&dyntriangles, size_t &dynTrianglesCount)
   {
     computeNormals();
@@ -102,6 +117,10 @@ public:
     indexPairCount = groupIndexRanges.size();
     indexpairs = new transformIndexPair[indexPairCount];
     std::copy(groupIndexRanges.begin(), groupIndexRanges.end(), indexpairs);
+
+    sceneobjectsCount = sceneObjects.size();
+    sceneobjects = new SceneObject[sceneobjectsCount];
+    std::copy(sceneObjects.begin(), sceneObjects.end(), sceneobjects);
 
     dynTrianglesCount = dynamicTriangles.size();
     dyntriangles = new size_t[dynTrianglesCount];

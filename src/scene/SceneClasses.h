@@ -8,7 +8,7 @@
 // Time, rotationAngles, relativePos
 typedef void (*TransformFunction)(u_int32_t, float3_L &, float3_L &);
 
-class SceneObject
+class SceneObjectPassthrough
 {
 public:
   float3_L rotationCenter;
@@ -20,7 +20,7 @@ public:
   std::vector<float3_L> points;
   std::vector<triangleidx> triangles;
 
-  SceneObject(float3_L rotationCenter_, float3_L defaultRot_,
+  SceneObjectPassthrough(float3_L rotationCenter_, float3_L defaultRot_,
               std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
   {
     rotationCenter = rotationCenter_;
@@ -28,7 +28,7 @@ public:
     points = points_;
     triangles = triangles_;
   }
-  SceneObject(float3_L rotationCenter_, TransformFunction trFunc_,
+  SceneObjectPassthrough(float3_L rotationCenter_, TransformFunction trFunc_,
               std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
   {
     rotationCenter = rotationCenter_;

@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include "../../scene/structs/SceneObject.h"
 #include "../../math/Definitions.h"
 
 void cudaAllocateAndCopy(size_t pointsSize,
-                         size_t triangleSize);
+                         size_t triangleSize,
+                         size_t sceneobjectsSize);
 
 void cudaCleanup();
 
@@ -20,9 +22,11 @@ void rayTrace(
 
     const float3_L *pointarray,
     const triangleidx *triangles,
-    size_t triangleNum,
+    const SceneObject *sceneobjects,
+    size_t sceneobjectsNum,
 
     size_t pointarraySize,
     size_t trianglesSize,
+    size_t sceneobjectsSize,
 
     const int bgColor);

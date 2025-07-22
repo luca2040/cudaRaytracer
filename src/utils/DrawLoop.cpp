@@ -25,6 +25,7 @@ void onSceneComposition()
   composeScene(scene.points, scene.pointsCount,
                scene.triangles, scene.triangleNum,
                scene.trIndexPairs, scene.trIndexPairCount,
+               scene.sceneobjects, scene.sceneobjectsNum,
                scene.dyntriangles, scene.dyntrianglesNum);
 }
 
@@ -36,12 +37,13 @@ void onSetupFrame(GLuint pbo)
 {
   scene.pointsSize = sizeof(float3_L) * scene.pointsCount;
   scene.triangleSize = sizeof(triangleidx) * scene.triangleNum;
+  scene.sceneObjectsSize = sizeof(SceneObject) * scene.sceneobjectsNum;
 
   cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard);
   setupQuad(quadVAO, quadVBO);
   shaderProgram = createShaderProgram();
 
-  cudaAllocateAndCopy(scene.pointsSize, scene.triangleSize);
+  cudaAllocateAndCopy(scene.pointsSize, scene.triangleSize, scene.sceneObjectsSize);
 }
 
 void onClose()
@@ -166,8 +168,8 @@ void drawFrame(GLuint tex, GLuint pbo)
            cam.camPos, camViewOrigin,
            imageX, imageY,
            inverseWidthMinus, inverseHeightMinus,
-           pointarray, scene.triangles, scene.triangleNum,
-           scene.pointsSize, scene.triangleSize,
+           pointarray, scene.triangles, scene.sceneobjects, scene.sceneobjectsNum,
+           scene.pointsSize, scene.triangleSize, scene.sceneObjectsSize,
            BG_COLOR);
 
   // Clean up
