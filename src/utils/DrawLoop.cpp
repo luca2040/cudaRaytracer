@@ -23,11 +23,7 @@
 
 void onSceneComposition()
 {
-  composeScene(scene.points, scene.pointsCount,
-               scene.triangles, scene.triangleNum,
-               scene.trIndexPairs, scene.trIndexPairCount,
-               scene.sceneobjects, scene.sceneobjectsNum,
-               scene.dyntriangles, scene.dyntrianglesNum);
+  composeScene();
 }
 
 cudaGraphicsResource *cudaPboResource;

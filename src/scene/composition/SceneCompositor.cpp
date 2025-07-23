@@ -26,11 +26,7 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
 
 // #####################################################
 
-void composeScene(float3_L *&pointarray, size_t &pointCount,
-                  triangleidx *&triangles, size_t &triangleCount,
-                  transformIndexPair *&indexpairs, size_t &indexPairCount,
-                  SceneObject *&sceneobjects, size_t &sceneobjectsCount,
-                  size_t *&dyntriangles, size_t &dynTrianglesCount)
+void composeScene()
 {
   SceneBuilder builder;
 
@@ -68,9 +64,5 @@ void composeScene(float3_L *&pointarray, size_t &pointCount,
                                               {2.5f, -2.5f, 3.5f},
                                               0x555555, 0.0f));
 
-  builder.compile(pointarray, pointCount,
-                  triangles, triangleCount,
-                  indexpairs, indexPairCount,
-                  sceneobjects, sceneobjectsCount,
-                  dyntriangles, dynTrianglesCount);
+  builder.compile();
 }

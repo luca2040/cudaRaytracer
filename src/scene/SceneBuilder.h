@@ -5,6 +5,7 @@
 #include "SceneClasses.h"
 #include "structs/transformIndexPair.h"
 #include "structs/SceneObject.h"
+#include "structs/Scene.h"
 #include "../math/Operations.h"
 
 class SceneBuilder
@@ -95,32 +96,28 @@ public:
     return groupIndexRanges.size() - 1;
   }
 
-  void compile(float3_L *&pointarray, size_t &pointCount,
-               triangleidx *&triangles, size_t &triangleCount,
-               transformIndexPair *&indexpairs, size_t &indexPairCount,
-               SceneObject *&sceneobjects, size_t &sceneobjectsCount,
-               size_t *&dyntriangles, size_t &dynTrianglesCount)
+  void compile()
   {
     computeNormals();
 
-    pointCount = scenePoints.size();
-    pointarray = new float3_L[pointCount];
-    std::copy(scenePoints.begin(), scenePoints.end(), pointarray);
+    scene.pointsCount = scenePoints.size();
+    scene.points = new float3_L[scene.pointsCount];
+    std::copy(scenePoints.begin(), scenePoints.end(), scene.points);
 
-    triangleCount = sceneTriangles.size();
-    triangles = new triangleidx[triangleCount];
-    std::copy(sceneTriangles.begin(), sceneTriangles.end(), triangles);
+    scene.triangleNum = sceneTriangles.size();
+    scene.triangles = new triangleidx[scene.triangleNum];
+    std::copy(sceneTriangles.begin(), sceneTriangles.end(), scene.triangles);
 
-    indexPairCount = groupIndexRanges.size();
-    indexpairs = new transformIndexPair[indexPairCount];
-    std::copy(groupIndexRanges.begin(), groupIndexRanges.end(), indexpairs);
+    scene.trIndexPairCount = groupIndexRanges.size();
+    scene.trIndexPairs = new transformIndexPair[scene.trIndexPairCount];
+    std::copy(groupIndexRanges.begin(), groupIndexRanges.end(), scene.trIndexPairs);
 
-    sceneobjectsCount = sceneObjects.size();
-    sceneobjects = new SceneObject[sceneobjectsCount];
-    std::copy(sceneObjects.begin(), sceneObjects.end(), sceneobjects);
+    scene.sceneobjectsNum = sceneObjects.size();
+    scene.sceneobjects = new SceneObject[scene.sceneobjectsNum];
+    std::copy(sceneObjects.begin(), sceneObjects.end(), scene.sceneobjects);
 
-    dynTrianglesCount = dynamicTriangles.size();
-    dyntriangles = new size_t[dynTrianglesCount];
-    std::copy(dynamicTriangles.begin(), dynamicTriangles.end(), dyntriangles);
+    scene.dyntrianglesNum = dynamicTriangles.size();
+    scene.dyntriangles = new size_t[scene.dyntrianglesNum];
+    std::copy(dynamicTriangles.begin(), dynamicTriangles.end(), scene.dyntriangles);
   }
 };
