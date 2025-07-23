@@ -3,6 +3,7 @@
 #include "../definitions/RenderingStructs.cuh"
 #include "ClosestHitKernel.cuh"
 #include "MissingHitKernel.cuh"
+#include "debug/IndexToUniqueColor.cuh"
 
 __device__ __forceinline__ void traceRay(SceneMemoryPointers memPointers,
                                          ray &ray, RayData &rayData,
@@ -17,29 +18,39 @@ __device__ __forceinline__ void traceRay(SceneMemoryPointers memPointers,
     triangleidx hitTriangle;
     float3_L hitPos;
 
-    for (size_t objNum = 0; objNum < memPointers.sceneobjectNum; objNum++) // TODO: Complete this or it wont compile
+    for (size_t objNum = 0; objNum < memPointers.sceneobjectNum; objNum++)
+    {
+      SceneObject currentObj = memPointers.sceneobjects[objNum];
+      bool rayIntersectsObj = rayBoxIntersection(ray, currentObj.boundingBox);
 
-      for (size_t i = 0; i < memPointers.triangleNum; i++)
+      if (rayIntersectsObj)
       {
-        triangleidx triangle = memPointers.triangles[i];
+        // rayData.color = indexToColor(objNum, memPointers.sceneobjectNum);
+        // break;
 
-        float t, u, v;
-        float3_L rayHit;
-
-        const float3_L *pointarray = memPointers.pointarray;
-
-        bool hasIntersected = rayTriangleIntersection(ray,
-                                                      pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
-                                                      t, u, v,
-                                                      rayHit);
-
-        if (hasIntersected && (t < currentZbuf))
+        for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleEndIdx; i++)
         {
-          currentZbuf = t;
-          hitTriangle = triangle;
-          hitPos = rayHit;
+          triangleidx triangle = memPointers.triangles[i];
+
+          float t, u, v;
+          float3_L rayHit;
+
+          const float3_L *pointarray = memPointers.pointarray;
+
+          bool hasIntersected = rayTriangleIntersection(ray,
+                                                        pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
+                                                        t, u, v,
+                                                        rayHit);
+
+          if (hasIntersected && (t < currentZbuf))
+          {
+            currentZbuf = t;
+            hitTriangle = triangle;
+            hitPos = rayHit;
+          }
         }
       }
+    }
 
     if (currentZbuf == INFINITY)
     {

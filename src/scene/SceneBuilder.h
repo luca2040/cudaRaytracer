@@ -83,10 +83,17 @@ public:
     size_t afterListTriangleIndex = sceneTriangles.size();
 
     AABB objBB = {};
-    setBBtoNew(objBB);
+    bool isBBnew = true;
 
     for (auto currentVertex : objPoints)
     {
+      if (isBBnew)
+      {
+        objBB.l = objBB.h = currentVertex;
+        isBBnew = false;
+        continue;
+      }
+
       growBBtoInclude(objBB, currentVertex);
     }
 

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <limits>
+#include <cmath>
 #include "../../math/Definitions.h"
 
 // Axis-aligned bounding box
@@ -12,25 +14,8 @@ struct AABB
   AABB(float3_L l, float3_L h) : l(l), h(h) {}
 };
 
-inline void setBBtoNew(AABB &box)
-{
-  box.l.x = INFINITY; // I use this like a keyword
-}
-
-inline bool isBBnew(const AABB &box)
-{
-  return box.l.x == INFINITY;
-}
-
 inline void growBBtoInclude(AABB &box, float3_L point)
 {
-  if (isBBnew(box))
-  {
-    box.l = point;
-    box.h = point;
-    return;
-  }
-
   box.l.x = fminf(point.x, box.l.x);
   box.l.y = fminf(point.y, box.l.y);
   box.l.z = fminf(point.z, box.l.z);
