@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Camera.h"
-#include "../../scene/composition/SceneCompositor.h"
+#include "SceneObject.h"
+#include "transformIndexPair.h"
 
 struct Scene
 {
@@ -12,6 +13,7 @@ struct Scene
   // Triangles and stuff
 
   float3_L *points;
+  float3_L *transformedPoints; // COPY OF "points"! Updated per frame
   triangleidx *triangles;
   size_t *dyntriangles;             // The indexes of all the triangles whose normals need to be recalculated
   transformIndexPair *trIndexPairs; // Basically start and end index of single objects in the vertex array

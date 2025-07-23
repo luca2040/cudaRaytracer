@@ -12,6 +12,7 @@
 #include "KeyBinds.h"
 
 #include "gui/GuiWindow.h"
+#include "../scene/structs/CameraCalcs.h"
 #include "../scene/structs/Scene.h"
 
 #include "opengl/Shader.h"
@@ -61,7 +62,8 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Copy vertexes array
 
-  float3_L *pointarray = new float3_L[scene.pointsCount];
+  auto &pointarray = scene.transformedPoints;
+  pointarray = new float3_L[scene.pointsCount];
   std::copy(scene.points, scene.points + scene.pointsCount, pointarray);
 
   // Time for transforms
@@ -128,49 +130,13 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   TracyCZoneN(cameraSettings, "Camera settings", true);
 
-  auto &cam = scene.cam;
-
-  float cx = cos(cam.camXrot), sx = sin(cam.camXrot);
-  float cy = cos(cam.camYrot), sy = sin(cam.camYrot);
-
-  float3_L cameraDirVec = {0, sy, cy};
-
-  mat3x3 yRotMat = {
-      float3_L(cx, 0.0f, sx),
-      float3_L(0.0f, 1.0f, 0.0f),
-      float3_L(-sx, 0.0f, cx)};
-
-  cam.camForward = yRotMat * cameraDirVec;
-  cam.camRight = normalize(cross3(cam.camForward, {0, -1, 0})); // camForward, worldUp
-  cam.camUp = cross3(cam.camRight, cam.camForward);
-
-  // Camera settings declaration
-
-  float camFOV = cam.camFOVdeg * M_PI / 180.0f;
-  float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
-  float imagePlaneWidth = imagePlaneHeight * ASPECT;
-
-  // Camera placement
-
-  float3_L imageCenter = cam.camPos + cam.camForward;
-  float3_L imageX = cam.camRight * imagePlaneWidth * cam.camZoom;
-  float3_L imageY = cam.camUp * imagePlaneHeight * cam.camZoom;
-  float3_L camViewOrigin = imageCenter - imageX * 0.5f - imageY * 0.5f;
-
-  constexpr float inverseWidthMinus = 1.0f / static_cast<float>(WIDTH - 1);
-  constexpr float inverseHeightMinus = 1.0f / static_cast<float>(HEIGHT - 1);
+  updateCameraRaygenData(scene.cam);
 
   TracyCZoneEnd(cameraSettings);
 
   // Generate and trace rays
 
-  rayTrace(pxlsPtr,
-           cam.camPos, camViewOrigin,
-           imageX, imageY,
-           inverseWidthMinus, inverseHeightMinus,
-           pointarray, scene.triangles, scene.sceneobjects, scene.sceneobjectsNum,
-           scene.pointsSize, scene.triangleSize, scene.sceneObjectsSize,
-           BG_COLOR);
+  rayTrace(pxlsPtr, BG_COLOR);
 
   // Clean up
 

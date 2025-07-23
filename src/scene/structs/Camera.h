@@ -20,5 +20,13 @@ struct Camera
   float camXrot = 0;
   float camYrot = 0;
 
+  // Raygen data
+
+  float3_L camViewOrigin;
+  float3_L imageX;
+  float3_L imageY;
+  float inverseWidthMinus;
+  float inverseHeightMinus;
+
   Camera() = default;
 };

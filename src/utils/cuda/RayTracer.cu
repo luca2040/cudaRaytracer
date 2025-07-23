@@ -3,6 +3,7 @@
 
 #include "RayTracer.cuh"
 #include "../DrawValues.h"
+#include "../../scene/structs/Scene.h"
 #include "../../scene/structs/SceneObject.h"
 #include "../../math/cuda/CudaMath.cuh"
 
@@ -39,43 +40,28 @@ void cudaCleanup()
 
 void rayTrace(
     uchar4 *pixelBuffer,
-
-    const float3_L camPos,
-    const float3_L camViewOrigin,
-    const float3_L imageX,
-    const float3_L imageY,
-    float inverseWidthMinus,
-    float inverseHeightMinus,
-
-    const float3_L *pointarray,
-    const triangleidx *triangles,
-    const SceneObject *sceneobjects,
-    size_t sceneobjectsNum,
-
-    size_t pointarraySize,
-    size_t trianglesSize,
-    size_t sceneobjectsSize,
-
     const int bgColor)
 {
   ZoneScopedN("rayTrace function");
 
   // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_pointarray, pointarray, pointarraySize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_triangles, triangles, trianglesSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_sceneobjects, sceneobjects, sceneobjectsSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_pointarray, scene.transformedPoints, scene.pointsSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_triangles, scene.triangles, scene.triangleSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_sceneobjects, scene.sceneobjects, scene.sceneObjectsSize, cudaMemcpyHostToDevice);
 
   constexpr dim3 blockDim(16, 16);
   constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
 
   float3_L f3lBg = intColToF3l(bgColor);
   SceneMemoryPointers memPointers = SceneMemoryPointers(d_pointarray, d_triangles, d_sceneobjects,
-                                                        sceneobjectsNum);
+                                                        scene.sceneobjectsNum);
+
+  auto &cam = scene.cam;
 
   rayTraceKernel<<<gridDim, blockDim>>>(
       pixelBuffer,
-      camPos, camViewOrigin, imageX, imageY,
-      inverseWidthMinus, inverseHeightMinus,
+      cam.camPos, cam.camViewOrigin, cam.imageX, cam.imageY,
+      cam.inverseWidthMinus, cam.inverseHeightMinus,
       memPointers,
       WIDTH, HEIGHT,
       f3lBg);
