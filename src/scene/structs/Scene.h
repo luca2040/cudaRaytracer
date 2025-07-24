@@ -29,6 +29,16 @@ struct Scene
   size_t triangleSize;
   size_t sceneObjectsSize;
 
+  // Device pointers
+  // ONLY FOR CUDA
+  float3_L *d_pointarray;
+  triangleidx *d_triangles;
+  SceneObject *d_sceneobjects;
+
+  // Settings
+
+  bool boundingBoxDebugView = false;
+
   Scene() = default;
 };
 

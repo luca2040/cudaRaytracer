@@ -90,7 +90,9 @@ public:
 
     SceneObject newSceneObj = {currentTriangleIndex, afterListTriangleIndex, objBB};
     sceneObjects.push_back(newSceneObj);
-    transformIndexPair toAddTransformPair = {currentPointIndex, afterListPointIndex, objTransform};
+    size_t currentSceneObjIdx = sceneObjects.size() - 1;
+
+    transformIndexPair toAddTransformPair = {currentPointIndex, afterListPointIndex, objTransform, currentSceneObjIdx};
     groupIndexRanges.push_back(toAddTransformPair);
 
     return groupIndexRanges.size() - 1;
@@ -102,6 +104,7 @@ public:
 
     scene.pointsCount = scenePoints.size();
     scene.points = new float3_L[scene.pointsCount];
+    scene.transformedPoints = new float3_L[scene.pointsCount];
     std::copy(scenePoints.begin(), scenePoints.end(), scene.points);
 
     scene.triangleNum = sceneTriangles.size();

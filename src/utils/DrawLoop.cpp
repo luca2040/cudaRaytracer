@@ -32,15 +32,15 @@ GLuint quadVAO = 0, quadVBO = 0;
 
 void onSetupFrame(GLuint pbo)
 {
-  scene.pointsSize = sizeof(float3_L) * scene.pointsCount;
-  scene.triangleSize = sizeof(triangleidx) * scene.triangleNum;
-  scene.sceneObjectsSize = sizeof(SceneObject) * scene.sceneobjectsNum;
+  scene.pointsSize = getItemSize<float3_L>(scene.pointsCount);
+  scene.triangleSize = getItemSize<triangleidx>(scene.triangleNum);
+  scene.sceneObjectsSize = getItemSize<SceneObject>(scene.sceneobjectsNum);
 
   cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard);
   setupQuad(quadVAO, quadVBO);
   shaderProgram = createShaderProgram();
 
-  cudaAllocateAndCopy(scene.pointsSize, scene.triangleSize, scene.sceneObjectsSize);
+  cudaAllocateScene();
 }
 
 void onClose()
@@ -59,7 +59,6 @@ void drawFrame(GLuint tex, GLuint pbo)
   // Copy vertexes array
 
   auto &pointarray = scene.transformedPoints;
-  pointarray = new float3_L[scene.pointsCount];
   std::copy(scene.points, scene.points + scene.pointsCount, pointarray);
 
   // Time for transforms
@@ -68,7 +67,7 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Apply rotations to copied list
 
-  TracyCZoneN(matRotateVerts, "Matrix rotate vertices", true);
+  TracyCZoneN(matRotateVerts, "Apply scene transforms", true);
 
   // Rotate vertices and apply transforms
   // #pragma omp parallel for
@@ -87,6 +86,10 @@ void drawFrame(GLuint tex, GLuint pbo)
     float3_L rotCenter = currentTransform.rotationCenter;
     float3_L centerShifted = rotCenter + currentTransform.relativePos;
 
+    // BB recalculation
+    AABB newObjBB = {};
+    bool isBBnew = true;
+
     for (size_t i = currentPair.startIdx; i < currentPair.endIdx; i++)
     {
       float3_L &pt = pointarray[i];
@@ -94,7 +97,23 @@ void drawFrame(GLuint tex, GLuint pbo)
       pt -= rotCenter;
       pt = currentMat * pt;
       pt += centerShifted;
+
+      // BB recalculation
+      {
+        if (isBBnew)
+        {
+          newObjBB.l = newObjBB.h = pt;
+          isBBnew = false;
+          continue;
+        }
+
+        growBBtoInclude(newObjBB, pt);
+      }
     }
+
+    // BB recalculation
+    size_t currentSceneObjIndex = currentPair.sceneObjectReference;
+    scene.sceneobjects[currentSceneObjIndex].boundingBox = newObjBB;
   }
 
   // Recalculate normals
@@ -133,10 +152,6 @@ void drawFrame(GLuint tex, GLuint pbo)
   // Generate and trace rays
 
   rayTrace(pxlsPtr, BG_COLOR);
-
-  // Clean up
-
-  delete[] pointarray;
 
   // Unlock and render texture
 

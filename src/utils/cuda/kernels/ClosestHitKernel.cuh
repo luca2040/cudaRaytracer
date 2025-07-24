@@ -2,7 +2,7 @@
 
 #include "TracingKernel.cuh"
 
-__device__ __forceinline__ bool onClosestHit(SceneMemoryPointers memPointers,
+__device__ __forceinline__ bool onClosestHit(Scene *scene,
                                              ray &ray, RayData &rayData, triangleidx hitTriangle, float3_L hitPos,
                                              const float3_L bgColor)
 {

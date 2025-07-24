@@ -5,14 +5,7 @@
 __global__ void rayTraceKernel(
     uchar4 *pixelBuffer,
 
-    float3_L camPos,
-    float3_L camViewOrigin,
-    float3_L imageX,
-    float3_L imageY,
-    float inverseWidthMinus,
-    float inverseHeightMinus,
-
-    SceneMemoryPointers memPointers,
+    Scene *scene,
 
     const int imageWidth,
     const int imageHeight,
@@ -25,14 +18,16 @@ __global__ void rayTraceKernel(
   if (x >= imageWidth || y >= imageHeight)
     return;
 
-  float3_L rawDirection = camViewOrigin + imageX * (static_cast<float>(x) * inverseWidthMinus) + imageY * (static_cast<float>(y) * inverseHeightMinus) - camPos;
+  auto &cam = scene->cam;
+
+  float3_L rawDirection = cam.camViewOrigin + cam.imageX * (static_cast<float>(x) * cam.inverseWidthMinus) + cam.imageY * (static_cast<float>(y) * cam.inverseHeightMinus) - cam.camPos;
 
   ray currentRay = ray(
-      camPos,
+      cam.camPos,
       normalize3_cuda(rawDirection));
   RayData currentRayData;
 
-  traceRay(memPointers,
+  traceRay(scene,
            currentRay, currentRayData,
            bgColor);
 

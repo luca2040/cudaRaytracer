@@ -2,7 +2,7 @@
 
 #include "TracingKernel.cuh"
 
-__device__ __forceinline__ void onHitMissing(SceneMemoryPointers memPointers,
+__device__ __forceinline__ void onHitMissing(Scene *scene,
                                              ray &ray, RayData &rayData,
                                              const float3_L bgColor)
 {

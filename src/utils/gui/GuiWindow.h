@@ -83,7 +83,7 @@ public:
 
     // Controls window
     {
-      constexpr const ImVec2 windowSize = ImVec2(1000, 400);
+      constexpr const ImVec2 windowSize = ImVec2(1000, 300);
       constexpr const ImVec2 windwoPos = ImVec2(WINDOW_WIDTH - windowSize.x - 10, 10);
 
       ImGui::SetNextWindowPos(windwoPos, ImGuiCond_Once);
@@ -91,7 +91,13 @@ public:
 
       ImGui::Begin("Controls");
 
-      ImGui::SetNextItemOpen(true, ImGuiCond_Once);
+      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+      if (ImGui::CollapsingHeader("Debug"))
+      {
+        ImGui::Checkbox("Bounding box view mode", &scene.boundingBoxDebugView);
+      }
+
+      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Zoom"))
       {
         float contentWidth = ImGui::GetContentRegionAvail().x;

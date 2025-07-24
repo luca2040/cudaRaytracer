@@ -5,7 +5,7 @@
 #include "MissingHitKernel.cuh"
 #include "debug/IndexToUniqueColor.cuh"
 
-__device__ __forceinline__ void traceRay(SceneMemoryPointers memPointers,
+__device__ __forceinline__ void traceRay(Scene *scene,
                                          ray &ray, RayData &rayData,
                                          const float3_L bgColor)
 {
@@ -18,24 +18,27 @@ __device__ __forceinline__ void traceRay(SceneMemoryPointers memPointers,
     triangleidx hitTriangle;
     float3_L hitPos;
 
-    for (size_t objNum = 0; objNum < memPointers.sceneobjectNum; objNum++)
+    for (size_t objNum = 0; objNum < scene->sceneobjectsNum; objNum++)
     {
-      SceneObject currentObj = memPointers.sceneobjects[objNum];
+      SceneObject currentObj = scene->d_sceneobjects[objNum];
       bool rayIntersectsObj = rayBoxIntersection(ray, currentObj.boundingBox);
 
       if (rayIntersectsObj)
       {
-        // rayData.color = indexToColor(objNum, memPointers.sceneobjectNum);
-        // break;
+        if (scene->boundingBoxDebugView)
+        {
+          rayData.color = indexToColor(objNum, scene->sceneobjectsNum);
+          break;
+        }
 
         for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleEndIdx; i++)
         {
-          triangleidx triangle = memPointers.triangles[i];
+          triangleidx triangle = scene->d_triangles[i];
 
           float t, u, v;
           float3_L rayHit;
 
-          const float3_L *pointarray = memPointers.pointarray;
+          const float3_L *pointarray = scene->d_pointarray;
 
           bool hasIntersected = rayTriangleIntersection(ray,
                                                         pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
@@ -54,13 +57,13 @@ __device__ __forceinline__ void traceRay(SceneMemoryPointers memPointers,
 
     if (currentZbuf == INFINITY)
     {
-      onHitMissing(memPointers,
+      onHitMissing(scene,
                    ray, rayData,
                    bgColor);
       break;
     }
 
-    bool stopReflection = onClosestHit(memPointers,
+    bool stopReflection = onClosestHit(scene,
                                        ray, rayData, hitTriangle, hitPos,
                                        bgColor);
     if (stopReflection)

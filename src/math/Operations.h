@@ -1,8 +1,13 @@
 #pragma once
 
 #include <xmmintrin.h>
-
 #include "Definitions.h"
+
+template <typename T>
+size_t getItemSize(size_t lenght)
+{
+  return sizeof(T) * lenght;
+}
 
 inline float clamp(float val, float min, float max) noexcept
 {
