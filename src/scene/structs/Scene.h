@@ -38,6 +38,7 @@ struct Scene
   // Settings
 
   bool boundingBoxDebugView = false;
+  int maxRayReflections = 5;
 
   Scene() = default;
 };

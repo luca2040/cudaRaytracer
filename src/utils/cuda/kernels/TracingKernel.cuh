@@ -9,9 +9,7 @@ __device__ __forceinline__ void traceRay(Scene *scene,
                                          ray &ray, RayData &rayData,
                                          const float3_L bgColor)
 {
-  // Bruteforce all the triangles - TODO: optimize this shit
-
-  for (size_t depth = 0; depth < RAY_MAX_REFLECTIONS; depth++)
+  for (int depth = 0; depth < scene->maxRayReflections; depth++)
   {
 
     float currentZbuf = INFINITY;

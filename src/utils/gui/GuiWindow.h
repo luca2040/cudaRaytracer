@@ -14,21 +14,32 @@
 class GuiWindow
 {
 private:
+  template <typename T>
   inline void MakeEditableSlider(const char *title, const char *sliderName, const char *valueName,
-                                 float &value, float sliderMin, float sliderMax,
+                                 T &value, T sliderMin, T sliderMax,
                                  float sliderWidth, float valueWidth)
   {
     ImGui::TextUnformatted(title);
     ImGui::SameLine();
 
     ImGui::PushItemWidth(sliderWidth);
-    ImGui::SliderFloat(sliderName, &value, sliderMin, sliderMax, "%0.1f");
+
+    if constexpr (std::is_same_v<T, float>)
+      ImGui::SliderFloat(sliderName, &value, sliderMin, sliderMax, "%0.1f");
+    else
+      ImGui::SliderInt(sliderName, &value, sliderMin, sliderMax);
+
     ImGui::PopItemWidth();
 
     ImGui::SameLine();
 
     ImGui::PushItemWidth(valueWidth);
-    ImGui::InputFloat(valueName, &value);
+
+    if constexpr (std::is_same_v<T, float>)
+      ImGui::InputFloat(valueName, &value);
+    else
+      ImGui::InputInt(valueName, &value);
+
     ImGui::PopItemWidth();
   }
 
@@ -72,12 +83,6 @@ public:
         ImGui::Text("Dyn triangles: %zu", scene.dyntrianglesNum);
       }
 
-      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
-      if (ImGui::CollapsingHeader("Rendering settings"))
-      {
-        ImGui::Text("Max reflections: %i", RAY_MAX_REFLECTIONS);
-      }
-
       ImGui::End();
     }
 
@@ -85,6 +90,10 @@ public:
     {
       constexpr const ImVec2 windowSize = ImVec2(1000, 300);
       constexpr const ImVec2 windwoPos = ImVec2(WINDOW_WIDTH - windowSize.x - 10, 10);
+
+      float contentWidth = ImGui::GetContentRegionAvail().x;
+      float sliderWidth = contentWidth * 0.6f;
+      float inputWidth = contentWidth * 0.2f;
 
       ImGui::SetNextWindowPos(windwoPos, ImGuiCond_Once);
       ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
@@ -98,20 +107,25 @@ public:
       }
 
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
-      if (ImGui::CollapsingHeader("Zoom"))
+      if (ImGui::CollapsingHeader("Camera"))
       {
-        float contentWidth = ImGui::GetContentRegionAvail().x;
+        MakeEditableSlider<float>("Cam FOV:", "##fovSlider", "##fovInput",
+                                  cam.camFOVdeg, 20.0f, 120.0f,
+                                  sliderWidth, inputWidth);
 
-        float sliderWidth = contentWidth * 0.6f;
-        float inputWidth = contentWidth * 0.2f;
+        MakeEditableSlider<float>("Cam Zoom:", "##zoomSlider", "##zoomInput",
+                                  cam.camZoom, 0.1f, 4.0f,
+                                  sliderWidth, inputWidth);
+      }
 
-        MakeEditableSlider("Cam FOV:", "##fovSlider", "##fovInput",
-                           cam.camFOVdeg, 20.0f, 120.0f,
-                           sliderWidth, inputWidth);
+      ImGui::SetNextItemOpen(false, ImGuiCond_Once);
+      if (ImGui::CollapsingHeader("Rendering"))
+      {
+        ImGui::Checkbox("Bounding box view mode", &scene.boundingBoxDebugView);
 
-        MakeEditableSlider("Cam Zoom:", "##zoomSlider", "##zoomInput",
-                           cam.camZoom, 0.1f, 4.0f,
-                           sliderWidth, inputWidth);
+        MakeEditableSlider<int>("Max ray reflections:", "##rayReflectionsSlider", "##rayReflectionsInput",
+                                scene.maxRayReflections, 0, 25,
+                                sliderWidth, inputWidth);
       }
 
       ImGui::End();

@@ -15,9 +15,6 @@
 #define EPSILON 1.1920929e-05f
 const int BG_COLOR = 0x224422;
 
-// How many times rays should be traced, 2 means an hit and single reflection
-#define RAY_MAX_REFLECTIONS 5
-
 // ##########################################
 
 const unsigned int WINDOW_WIDTH = windowWidth;
