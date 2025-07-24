@@ -15,32 +15,40 @@ class GuiWindow
 {
 private:
   template <typename T>
-  inline void MakeEditableSlider(const char *title, const char *sliderName, const char *valueName,
-                                 T &value, T sliderMin, T sliderMax,
-                                 float sliderWidth, float valueWidth)
+  inline void MakeEditableSlider(const char *label, T &value, T sliderMin, T sliderMax)
   {
-    ImGui::TextUnformatted(title);
-    ImGui::SameLine();
+    ImGui::PushID(label); // Avoid id conflicts
 
-    ImGui::PushItemWidth(sliderWidth);
+    // Title
+    ImGui::TextUnformatted(label);
 
-    if constexpr (std::is_same_v<T, float>)
-      ImGui::SliderFloat(sliderName, &value, sliderMin, sliderMax, "%0.1f");
-    else
-      ImGui::SliderInt(sliderName, &value, sliderMin, sliderMax);
+    if (ImGui::BeginTable("slider_table", 2, ImGuiTableFlags_SizingStretchSame))
+    {
+      ImGui::TableSetupColumn("Slider", ImGuiTableColumnFlags_WidthStretch);
+      ImGui::TableSetupColumn("Input", ImGuiTableColumnFlags_WidthStretch);
 
-    ImGui::PopItemWidth();
+      ImGui::TableNextRow();
 
-    ImGui::SameLine();
+      // Slider
+      ImGui::TableSetColumnIndex(0);
+      ImGui::PushItemWidth(-FLT_MIN);
+      if constexpr (std::is_same_v<T, float>)
+        ImGui::SliderFloat("##slider", &value, sliderMin, sliderMax, "%.1f");
+      else
+        ImGui::SliderInt("##slider", &value, sliderMin, sliderMax);
 
-    ImGui::PushItemWidth(valueWidth);
+      // Input
+      ImGui::TableSetColumnIndex(1);
+      ImGui::PushItemWidth(-FLT_MIN);
+      if constexpr (std::is_same_v<T, float>)
+        ImGui::InputFloat("##input", &value);
+      else
+        ImGui::InputInt("##input", &value);
 
-    if constexpr (std::is_same_v<T, float>)
-      ImGui::InputFloat(valueName, &value);
-    else
-      ImGui::InputInt(valueName, &value);
+      ImGui::EndTable();
+    }
 
-    ImGui::PopItemWidth();
+    ImGui::PopID();
   }
 
 public:
@@ -91,10 +99,6 @@ public:
       constexpr const ImVec2 windowSize = ImVec2(1000, 300);
       constexpr const ImVec2 windwoPos = ImVec2(WINDOW_WIDTH - windowSize.x - 10, 10);
 
-      float contentWidth = ImGui::GetContentRegionAvail().x;
-      float sliderWidth = contentWidth * 0.6f;
-      float inputWidth = contentWidth * 0.2f;
-
       ImGui::SetNextWindowPos(windwoPos, ImGuiCond_Once);
       ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
@@ -109,23 +113,14 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Camera"))
       {
-        MakeEditableSlider<float>("Cam FOV:", "##fovSlider", "##fovInput",
-                                  cam.camFOVdeg, 20.0f, 120.0f,
-                                  sliderWidth, inputWidth);
-
-        MakeEditableSlider<float>("Cam Zoom:", "##zoomSlider", "##zoomInput",
-                                  cam.camZoom, 0.1f, 4.0f,
-                                  sliderWidth, inputWidth);
+        MakeEditableSlider("Cam FOV", cam.camFOVdeg, 20.0f, 120.0f);
+        MakeEditableSlider("Cam Zoom", cam.camZoom, 0.1f, 4.0f);
       }
 
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Rendering"))
       {
-        ImGui::Checkbox("Bounding box view mode", &scene.boundingBoxDebugView);
-
-        MakeEditableSlider<int>("Max ray reflections:", "##rayReflectionsSlider", "##rayReflectionsInput",
-                                scene.maxRayReflections, 0, 25,
-                                sliderWidth, inputWidth);
+        MakeEditableSlider("Max ray reflections", scene.maxRayReflections, 0, 25);
       }
 
       ImGui::End();
