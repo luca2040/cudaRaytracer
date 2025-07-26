@@ -120,7 +120,7 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Rendering"))
       {
-        MakeEditableSlider("Max ray reflections", scene.maxRayReflections, 0, 25);
+        MakeEditableSlider("Max ray reflections", scene.maxRayReflections, 0, 100);
       }
 
       ImGui::End();

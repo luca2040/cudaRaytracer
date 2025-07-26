@@ -10,6 +10,7 @@
 #include "kernels/RaytraceKernel.cuh"
 
 #include "../../third_party/tracy/tracy/Tracy.hpp"
+#include "../../third_party/tracy/tracy/TracyC.h"
 
 // Device Scene
 Scene *d_scene;
@@ -49,7 +50,13 @@ void rayTrace(
   cudaMemcpy(scene.d_triangles, scene.triangles, scene.triangleSize, cudaMemcpyHostToDevice);
   cudaMemcpy(scene.d_sceneobjects, scene.sceneobjects, scene.sceneObjectsSize, cudaMemcpyHostToDevice);
 
+  TracyCZoneN(cudaMemCopy, "Cuda mem copy", true);
+
   cudaMemcpy(d_scene, &scene, sceneSize, cudaMemcpyHostToDevice);
+
+  TracyCZoneEnd(cudaMemCopy);
+
+  TracyCZoneN(cudaTrace, "Cuda trace", true);
 
   constexpr dim3 blockDim(16, 16);
   constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
@@ -61,4 +68,8 @@ void rayTrace(
       d_scene,
       WIDTH, HEIGHT,
       f3lBg);
+
+  cudaDeviceSynchronize();
+
+  TracyCZoneEnd(cudaTrace);
 }
