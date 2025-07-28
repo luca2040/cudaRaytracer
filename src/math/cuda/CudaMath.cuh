@@ -198,14 +198,12 @@ __device__ __forceinline__ bool rayTriangleIntersection(
     return false;
 }
 
-// Since this is looped per each box with the same ray, couldnt the inverse
-// ray be pre-computed before the loop for the whole cycle? Need to try this
+// RETURNS TRUE WHEN RAY DOESNT INTERSECT THE BOX
+// NEEDS RAY WITH INVERTED DIRECTION (for optimizations in ray check loop)
 __device__ __forceinline__ bool rayBoxIntersection(ray testRay, AABB bb)
 {
-  float3_L invDirComponents = inverse(testRay.direction);
-
-  float3_L tLowComponents = (bb.l - testRay.origin) * invDirComponents;
-  float3_L tHighComponents = (bb.h - testRay.origin) * invDirComponents;
+  float3_L tLowComponents = (bb.l - testRay.origin) * testRay.direction;
+  float3_L tHighComponents = (bb.h - testRay.origin) * testRay.direction;
 
   float3_L tCloseComponents = min(tLowComponents, tHighComponents);
   float3_L tFarComponents = max(tLowComponents, tHighComponents);
@@ -215,8 +213,9 @@ __device__ __forceinline__ bool rayBoxIntersection(ray testRay, AABB bb)
 
   // If tClose is less than 0 it intersects behind the ray, and that no good.
   // Intersection happens if tClose <= tFar and neither of them is NaN.
-  // return tClose < 0 ? false : tClose <= tFar;
-  return tClose <= tFar && tFar >= 0.0f;
+  // return !(tClose < 0 ? false : tClose <= tFar);
+  // return !(tClose <= tFar && tFar >= 0.0f);
+  return tClose > tFar || tFar < 0.0f;
 }
 
 __device__ __forceinline__ void reflectRay(float3_L &rayDir, float3_L &normal)

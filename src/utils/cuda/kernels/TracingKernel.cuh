@@ -6,49 +6,53 @@
 #include "debug/IndexToUniqueColor.cuh"
 
 __device__ __forceinline__ void traceRay(Scene *scene,
-                                         ray &ray, RayData &rayData,
+                                         ray &currentRay, RayData &rayData,
                                          const float3_L bgColor)
 {
   for (int depth = 0; depth < scene->maxRayReflections; depth++)
   {
-
     float currentZbuf = INFINITY;
     triangleidx hitTriangle;
     float3_L hitPos;
 
+    ray invertedDirRay = currentRay;
+    invertedDirRay.direction = inverse(currentRay.direction);
+
     for (size_t objNum = 0; objNum < scene->sceneobjectsNum; objNum++)
     {
       SceneObject currentObj = scene->d_sceneobjects[objNum];
-      bool rayIntersectsObj = rayBoxIntersection(ray, currentObj.boundingBox);
 
-      if (rayIntersectsObj)
+      // rayBoxIntersection NEEDS a ray with inversed direction
+      bool rayDoesntIntersectObj = rayBoxIntersection(invertedDirRay, currentObj.boundingBox);
+
+      if (rayDoesntIntersectObj)
+        continue;
+
+      if (scene->boundingBoxDebugView)
       {
-        if (scene->boundingBoxDebugView)
+        rayData.color = indexToColor(objNum, scene->sceneobjectsNum);
+        break;
+      }
+
+      for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleStartIdx + currentObj.triangleNum; i++)
+      {
+        triangleidx triangle = scene->d_triangles[i];
+
+        float t, u, v;
+        float3_L rayHit;
+
+        const float3_L *pointarray = scene->d_trsfrmdpoints;
+
+        bool hasIntersected = rayTriangleIntersection(currentRay,
+                                                      pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
+                                                      t, u, v,
+                                                      rayHit);
+
+        if (hasIntersected && (t < currentZbuf))
         {
-          rayData.color = indexToColor(objNum, scene->sceneobjectsNum);
-          break;
-        }
-
-        for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleStartIdx + currentObj.triangleNum; i++)
-        {
-          triangleidx triangle = scene->d_triangles[i];
-
-          float t, u, v;
-          float3_L rayHit;
-
-          const float3_L *pointarray = scene->d_trsfrmdpoints;
-
-          bool hasIntersected = rayTriangleIntersection(ray,
-                                                        pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
-                                                        t, u, v,
-                                                        rayHit);
-
-          if (hasIntersected && (t < currentZbuf))
-          {
-            currentZbuf = t;
-            hitTriangle = triangle;
-            hitPos = rayHit;
-          }
+          currentZbuf = t;
+          hitTriangle = triangle;
+          hitPos = rayHit;
         }
       }
     }
@@ -56,13 +60,13 @@ __device__ __forceinline__ void traceRay(Scene *scene,
     if (currentZbuf == INFINITY)
     {
       onHitMissing(scene,
-                   ray, rayData,
+                   currentRay, rayData,
                    bgColor);
       break;
     }
 
     bool stopReflection = onClosestHit(scene,
-                                       ray, rayData, hitTriangle, hitPos,
+                                       currentRay, rayData, hitTriangle, hitPos,
                                        bgColor);
     if (stopReflection)
       break;
