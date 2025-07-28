@@ -57,7 +57,7 @@ public:
 
   inline void RenderGui()
   {
-    auto &cam = scene.cam;
+    auto &cam = scene->cam;
 
     // Status window
     {
@@ -86,9 +86,9 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Scene"))
       {
-        ImGui::Text("Vertices: %zu", scene.pointsCount);
-        ImGui::Text("Triangles: %zu", scene.triangleNum);
-        ImGui::Text("Dyn triangles: %zu", scene.dyntrianglesNum);
+        ImGui::Text("Vertices: %zu", scene->pointsCount);
+        ImGui::Text("Triangles: %zu", scene->triangleNum);
+        ImGui::Text("Models: %zu", scene->sceneobjectsNum);
       }
 
       ImGui::End();
@@ -107,7 +107,7 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Debug"))
       {
-        ImGui::Checkbox("Bounding box view mode", &scene.boundingBoxDebugView);
+        ImGui::Checkbox("Bounding box view mode", &scene->boundingBoxDebugView);
       }
 
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
@@ -120,7 +120,7 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Rendering"))
       {
-        MakeEditableSlider("Max ray reflections", scene.maxRayReflections, 0, 100);
+        MakeEditableSlider("Max ray reflections", scene->maxRayReflections, 0, 100);
       }
 
       ImGui::End();

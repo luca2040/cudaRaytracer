@@ -12,30 +12,37 @@
 #include "../../third_party/tracy/tracy/Tracy.hpp"
 #include "../../third_party/tracy/tracy/TracyC.h"
 
-// Device Scene
-Scene *d_scene;
-size_t sceneSize;
-
 void cudaAllocateScene()
 {
-  // Allocate all the memory needed
-  cudaMalloc(&scene.d_pointarray, scene.pointsSize);
-  cudaMalloc(&scene.d_triangles, scene.triangleSize);
-  cudaMalloc(&scene.d_sceneobjects, scene.sceneObjectsSize);
+  sceneStructSize = sizeof(Scene);
 
-  sceneSize = sizeof(Scene);
-  cudaMalloc(&d_scene, sceneSize);
+  // Allocate all the memory needed - * means cudamemcpy'd each frame
+  cudaMalloc(&scene->d_pointarray, scene->pointsSize);
+  cudaMalloc(&scene->d_trsfrmdpoints, scene->pointsSize);
+  cudaMalloc(&scene->d_pointToObjIdxTable, scene->pointTableSize);
+  cudaMalloc(&scene->d_triangles, scene->triangleSize);
+  cudaMalloc(&scene->d_sceneobjects, scene->sceneObjectsSize);
+  cudaMalloc(&scene->d_transformMatrices, scene->matricesSize); // *
+  cudaMalloc(&d_scene, sceneStructSize);                        // *
 
-  // Copy the triangles index array, since its always static - not anymore because normals need to be recalculated each frame
-  // cudaMemcpy(d_triangles, triangles, triangleSize, cudaMemcpyHostToDevice);
+  // Initial cudamemcpy
+  cudaMemcpy(scene->d_pointarray, scene->points, scene->pointsSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(scene->d_triangles, scene->triangles, scene->triangleSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(scene->d_pointToObjIdxTable, scene->pointToObjIdxTable, scene->pointTableSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(scene->d_sceneobjects, scene->sceneobjects, scene->sceneObjectsSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(scene->d_transformMatrices, scene->transformMatrices, scene->matricesSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(d_scene, scene, sceneStructSize, cudaMemcpyHostToDevice);
 }
 
 void cudaCleanup()
 {
-  cudaFree(scene.d_pointarray);
-  cudaFree(scene.d_triangles);
-  cudaFree(scene.d_sceneobjects);
+  cudaFreeHost(scene->transformMatrices);
 
+  cudaFree(scene->d_pointarray);
+  cudaFree(scene->d_trsfrmdpoints);
+  cudaFree(scene->d_triangles);
+  cudaFree(scene->d_sceneobjects);
+  cudaFree(scene->d_transformMatrices);
   cudaFree(d_scene);
 }
 
@@ -44,22 +51,11 @@ void rayTrace(
     const int bgColor)
 {
   ZoneScopedN("rayTrace function");
-
-  // cudaMemcpy(d_pixelBuffer, pixelBuffer, pixelBufferSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(scene.d_pointarray, scene.transformedPoints, scene.pointsSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(scene.d_triangles, scene.triangles, scene.triangleSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(scene.d_sceneobjects, scene.sceneobjects, scene.sceneObjectsSize, cudaMemcpyHostToDevice);
-
-  TracyCZoneN(cudaMemCopy, "Cuda mem copy", true);
-
-  cudaMemcpy(d_scene, &scene, sceneSize, cudaMemcpyHostToDevice);
-
-  TracyCZoneEnd(cudaMemCopy);
-
   TracyCZoneN(cudaTrace, "Cuda trace", true);
 
-  constexpr dim3 blockDim(16, 16);
-  constexpr dim3 gridDim((WIDTH + 15) / 16, (HEIGHT + 15) / 16);
+  constexpr dim3 blockDim(RAYTRACE_BLOCK_SIDE, RAYTRACE_BLOCK_SIDE);
+  constexpr dim3 gridDim((WIDTH + (RAYTRACE_BLOCK_SIDE - 1)) / RAYTRACE_BLOCK_SIDE,
+                         (HEIGHT + (RAYTRACE_BLOCK_SIDE - 1)) / RAYTRACE_BLOCK_SIDE);
 
   float3_L f3lBg = intColToF3l(bgColor);
 
@@ -68,8 +64,6 @@ void rayTrace(
       d_scene,
       WIDTH, HEIGHT,
       f3lBg);
-
-  cudaDeviceSynchronize();
 
   TracyCZoneEnd(cudaTrace);
 }

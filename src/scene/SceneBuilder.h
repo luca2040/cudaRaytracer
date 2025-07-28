@@ -11,23 +11,9 @@
 class SceneBuilder
 {
 private:
-  void computeNormals()
-  {
-    for (auto &triangle : sceneTriangles)
-    {
-      float3_L v1 = scenePoints[triangle.v1];
-      float3_L v2 = scenePoints[triangle.v2];
-      float3_L v3 = scenePoints[triangle.v3];
-
-      float3_L side1 = v2 - v1;
-      float3_L side2 = v3 - v1;
-
-      triangle.normal = normalize(cross3(side1, side2));
-    }
-  }
-
 public:
   std::vector<float3_L> scenePoints;
+  std::vector<size_t> pointToObjTable;
   std::vector<triangleidx> sceneTriangles;
   std::vector<size_t> dynamicTriangles;
   std::vector<SceneObject> sceneObjects;
@@ -68,31 +54,26 @@ public:
       }
     }
 
-    scenePoints.insert(scenePoints.end(), objPoints.begin(), objPoints.end()); // Add obj's points to scene points
+    size_t currentSceneObjIdx = sceneObjects.size();
 
-    size_t afterListPointIndex = scenePoints.size();
-    size_t afterListTriangleIndex = sceneTriangles.size();
+    for (auto modelPoint : objPoints)
+    {
+      scenePoints.push_back(modelPoint);
+      pointToObjTable.push_back(currentSceneObjIdx);
+    }
 
     AABB objBB = {};
-    bool isBBnew = true;
-
     for (auto currentVertex : objPoints)
     {
-      if (isBBnew)
-      {
-        objBB.l = objBB.h = currentVertex;
-        isBBnew = false;
-        continue;
-      }
-
       growBBtoInclude(objBB, currentVertex);
     }
 
-    SceneObject newSceneObj = {currentTriangleIndex, afterListTriangleIndex, objBB};
+    SceneObject newSceneObj = {currentTriangleIndex, objToAdd.triangles.size(),
+                               currentPointIndex, objToAdd.points.size(),
+                               objBB};
     sceneObjects.push_back(newSceneObj);
-    size_t currentSceneObjIdx = sceneObjects.size() - 1;
 
-    transformIndexPair toAddTransformPair = {currentPointIndex, afterListPointIndex, objTransform, currentSceneObjIdx};
+    transformIndexPair toAddTransformPair = {objTransform, currentSceneObjIdx};
     groupIndexRanges.push_back(toAddTransformPair);
 
     return groupIndexRanges.size() - 1;
@@ -100,27 +81,23 @@ public:
 
   void compile()
   {
-    computeNormals();
+    scene->pointsCount = scenePoints.size();
+    scene->points = new float3_L[scene->pointsCount];
+    std::copy(scenePoints.begin(), scenePoints.end(), scene->points);
 
-    scene.pointsCount = scenePoints.size();
-    scene.points = new float3_L[scene.pointsCount];
-    scene.transformedPoints = new float3_L[scene.pointsCount];
-    std::copy(scenePoints.begin(), scenePoints.end(), scene.points);
+    scene->pointToObjIdxTable = new size_t[scene->pointsCount];
+    std::copy(pointToObjTable.begin(), pointToObjTable.end(), scene->pointToObjIdxTable);
 
-    scene.triangleNum = sceneTriangles.size();
-    scene.triangles = new triangleidx[scene.triangleNum];
-    std::copy(sceneTriangles.begin(), sceneTriangles.end(), scene.triangles);
+    scene->triangleNum = sceneTriangles.size();
+    scene->triangles = new triangleidx[scene->triangleNum];
+    std::copy(sceneTriangles.begin(), sceneTriangles.end(), scene->triangles);
 
-    scene.trIndexPairCount = groupIndexRanges.size();
-    scene.trIndexPairs = new transformIndexPair[scene.trIndexPairCount];
-    std::copy(groupIndexRanges.begin(), groupIndexRanges.end(), scene.trIndexPairs);
+    scene->trIndexPairCount = groupIndexRanges.size();
+    scene->trIndexPairs = new transformIndexPair[scene->trIndexPairCount];
+    std::copy(groupIndexRanges.begin(), groupIndexRanges.end(), scene->trIndexPairs);
 
-    scene.sceneobjectsNum = sceneObjects.size();
-    scene.sceneobjects = new SceneObject[scene.sceneobjectsNum];
-    std::copy(sceneObjects.begin(), sceneObjects.end(), scene.sceneobjects);
-
-    scene.dyntrianglesNum = dynamicTriangles.size();
-    scene.dyntriangles = new size_t[scene.dyntrianglesNum];
-    std::copy(dynamicTriangles.begin(), dynamicTriangles.end(), scene.dyntriangles);
+    scene->sceneobjectsNum = sceneObjects.size();
+    scene->sceneobjects = new SceneObject[scene->sceneobjectsNum];
+    std::copy(sceneObjects.begin(), sceneObjects.end(), scene->sceneobjects);
   }
 };

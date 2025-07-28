@@ -65,6 +65,17 @@ struct float3_L
   }
 };
 
+struct float4_L
+{
+  float x;
+  float y;
+  float z;
+  float k;
+
+  inline float4_L() = default;
+  inline float4_L(float x, float y, float z, float k) : x(x), y(y), z(z), k(k) {}
+};
+
 struct mat3x3
 {
   float3_L rows[3];
@@ -89,6 +100,28 @@ struct mat3x3
           rows[i].x * b[0].x + rows[i].y * b[1].x + rows[i].z * b[2].x,
           rows[i].x * b[0].y + rows[i].y * b[1].y + rows[i].z * b[2].y,
           rows[i].x * b[0].z + rows[i].y * b[1].z + rows[i].z * b[2].z};
+    }
+    return r;
+  }
+};
+
+struct mat4x4
+{
+  float4_L rows[4];
+
+  inline const float4_L &operator[](int i) const { return rows[i]; }
+  inline float4_L &operator[](int i) { return rows[i]; }
+
+  inline mat4x4 operator*(const mat4x4 &b) const
+  {
+    mat4x4 r;
+    for (int i = 0; i < 4; ++i)
+    {
+      r.rows[i] = {
+          rows[i].x * b[0].x + rows[i].y * b[1].x + rows[i].z * b[2].x + rows[i].k * b[3].x,
+          rows[i].x * b[0].y + rows[i].y * b[1].y + rows[i].z * b[2].y + rows[i].k * b[3].y,
+          rows[i].x * b[0].z + rows[i].y * b[1].z + rows[i].z * b[2].z + rows[i].k * b[3].z,
+          rows[i].x * b[0].k + rows[i].y * b[1].k + rows[i].z * b[2].k + rows[i].k * b[3].k};
     }
     return r;
   }

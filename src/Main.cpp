@@ -1,6 +1,7 @@
 #include <iostream>
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <cuda_runtime.h>
 
 #include "utils/DrawLoop.h"
 #include "utils/gui/GuiWindow.h"
@@ -78,6 +79,12 @@ int main()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
   SDL_GL_SetSwapInterval(0);
+
+  // Allocate scene
+
+  cudaHostAlloc(&scene, sizeof(Scene), cudaHostAllocDefault);
+  Scene newScene;
+  *scene = newScene;
 
   // Imgui settings
 

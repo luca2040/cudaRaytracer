@@ -7,8 +7,8 @@
 // Axis-aligned bounding box
 struct AABB
 {
-  float3_L l;
-  float3_L h;
+  float3_L l = {INFINITY, INFINITY, INFINITY};
+  float3_L h = {-INFINITY, -INFINITY, -INFINITY};
 
   AABB() = default;
   AABB(float3_L l, float3_L h) : l(l), h(h) {}

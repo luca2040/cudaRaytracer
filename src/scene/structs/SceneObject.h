@@ -6,13 +6,24 @@
 struct SceneObject
 {
   size_t triangleStartIdx;
-  size_t triangleEndIdx;
+  size_t triangleNum;
+
+  size_t vertStartIdx;
+  size_t vertNum;
+
+  // size_t matrixIdx; // Dont need, mat idx is the same as the object's one
 
   AABB boundingBox;
 
   SceneObject() = default;
-  SceneObject(size_t triangleStartIdx, size_t triangleEndIdx, AABB boundingBox)
+  SceneObject(size_t triangleStartIdx, size_t triangleNum,
+              size_t vertStartIdx, size_t vertNum,
+              // size_t matrixIdx,
+              AABB boundingBox)
       : triangleStartIdx(triangleStartIdx),
-        triangleEndIdx(triangleEndIdx),
+        triangleNum(triangleNum),
+        vertStartIdx(vertStartIdx),
+        vertNum(vertNum),
+        // matrixIdx(matrixIdx),
         boundingBox(boundingBox) {}
 };

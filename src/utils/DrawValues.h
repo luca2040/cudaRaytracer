@@ -15,6 +15,9 @@
 #define EPSILON 1.1920929e-05f
 const int BG_COLOR = 0x224422;
 
+#define RAYTRACE_BLOCK_SIDE 16
+#define VERT_THREADS_PER_BLOCK 256
+
 // ##########################################
 
 const unsigned int WINDOW_WIDTH = windowWidth;

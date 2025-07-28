@@ -25,6 +25,16 @@ __host__ __device__ __forceinline__ static float3_L make_float3_L(float x, float
   return v;
 };
 
+__host__ __device__ __forceinline__ static float4_L make_float4_L(float x, float y, float z, float k) noexcept
+{
+  float4_L v;
+  v.x = x;
+  v.y = y;
+  v.z = z;
+  v.k = k;
+  return v;
+};
+
 __host__ __device__ __forceinline__ float3_L intColToF3l(const int c)
 {
   float x = static_cast<float>((c >> 16) & 0xFF) / 255.0f; // red
@@ -96,6 +106,16 @@ __device__ __forceinline__ float3_L normalize3_cuda(const float3_L &a) noexcept
   return a * rsqrtf(dot3_cuda(a, a));
 }
 
+// Takes a 1x4 mat and multiplies it by a 4x4 mat
+__device__ __forceinline__ float4_L operator*(const float4_L &val, const mat4x4 &mat) noexcept
+{
+  return make_float4_L(
+      mat.rows[0].x * val.x + mat.rows[0].y * val.y + mat.rows[0].z * val.z + mat.rows[0].k * val.k,
+      mat.rows[1].x * val.x + mat.rows[1].y * val.y + mat.rows[1].z * val.z + mat.rows[1].k * val.k,
+      mat.rows[2].x * val.x + mat.rows[2].y * val.y + mat.rows[2].z * val.z + mat.rows[2].k * val.k,
+      mat.rows[3].x * val.x + mat.rows[3].y * val.y + mat.rows[3].z * val.z + mat.rows[3].k * val.k);
+}
+
 // Per-component max
 __device__ __forceinline__ float3_L max(const float3_L &val1, const float3_L &val2) noexcept
 {
@@ -114,6 +134,22 @@ __device__ __forceinline__ float3_L min(const float3_L &val1, const float3_L &va
   ret.y = fminf(val1.y, val2.y);
   ret.z = fminf(val1.z, val2.z);
   return ret;
+}
+
+__device__ __forceinline__ float atomicMinFloat(float *addr, float value)
+{
+  float old;
+  old = (value >= 0) ? __int_as_float(atomicMin((int *)addr, __float_as_int(value))) : __uint_as_float(atomicMax((unsigned int *)addr, __float_as_uint(value)));
+
+  return old;
+}
+
+__device__ __forceinline__ float atomicMaxFloat(float *addr, float value)
+{
+  float old;
+  old = (value >= 0) ? __int_as_float(atomicMax((int *)addr, __float_as_int(value))) : __uint_as_float(atomicMin((unsigned int *)addr, __float_as_uint(value)));
+
+  return old;
 }
 
 // Möller–Trumbore intersection algorithm for ray-triangle intersection

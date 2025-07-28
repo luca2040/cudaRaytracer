@@ -21,7 +21,7 @@ public:
   std::vector<triangleidx> triangles;
 
   SceneObjectPassthrough(float3_L rotationCenter_, float3_L defaultRot_,
-              std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
+                         std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
   {
     rotationCenter = rotationCenter_;
     defaultRot = defaultRot_;
@@ -29,7 +29,7 @@ public:
     triangles = triangles_;
   }
   SceneObjectPassthrough(float3_L rotationCenter_, TransformFunction trFunc_,
-              std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
+                         std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
   {
     rotationCenter = rotationCenter_;
     points = points_;
@@ -69,7 +69,7 @@ public:
     float cy = std::cos(rotationAngles.y), sy = std::sin(rotationAngles.y);
     float cz = std::cos(rotationAngles.z), sz = std::sin(rotationAngles.z);
 
-    // Combined rotation matrix: xrot * yrot * zrot
+    // Combined rotation matrix: zrot * yrot * xrot
     return {
         float3_L(
             cy * cz,
@@ -83,5 +83,35 @@ public:
             -cx * sy * cz + sx * sz,
             cx * sy * sz + sx * cz,
             cx * cy)};
+  }
+
+  inline mat4x4 getRotationMatrix4x4()
+  {
+    float cx = std::cos(rotationAngles.x), sx = std::sin(rotationAngles.x);
+    float cy = std::cos(rotationAngles.y), sy = std::sin(rotationAngles.y);
+    float cz = std::cos(rotationAngles.z), sz = std::sin(rotationAngles.z);
+
+    // Combined rotation matrix: zrot * yrot * xrot - with no translation and anything else
+    return {
+        float4_L(
+            cy * cz,
+            -cy * sz,
+            sy,
+            0.0f),
+        float4_L(
+            sx * sy * cz + cx * sz,
+            -sx * sy * sz + cx * cz,
+            -sx * cy,
+            0.0f),
+        float4_L(
+            -cx * sy * cz + sx * sz,
+            cx * sy * sz + sx * cz,
+            cx * cy,
+            0.0f),
+        float4_L(
+            0.0f,
+            0.0f,
+            0.0f,
+            1.0f)};
   }
 };

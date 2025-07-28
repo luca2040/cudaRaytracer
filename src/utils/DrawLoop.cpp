@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include <GL/glew.h>
+#include <cuda_runtime.h>
 #include <cuda_gl_interop.h>
-// #include <omp.h>
 
 #include <iostream>
 
@@ -17,6 +17,7 @@
 
 #include "opengl/Shader.h"
 #include "cuda/RayTracer.cuh"
+#include "cuda/ComputeTransforms.cuh"
 
 #include "../third_party/tracy/tracy/Tracy.hpp"
 #include "../third_party/tracy/tracy/TracyC.h"
@@ -32,9 +33,15 @@ GLuint quadVAO = 0, quadVBO = 0;
 
 void onSetupFrame(GLuint pbo)
 {
-  scene.pointsSize = getItemSize<float3_L>(scene.pointsCount);
-  scene.triangleSize = getItemSize<triangleidx>(scene.triangleNum);
-  scene.sceneObjectsSize = getItemSize<SceneObject>(scene.sceneobjectsNum);
+  scene->pointsSize = getItemSize<float3_L>(scene->pointsCount);
+  scene->pointTableSize = getItemSize<size_t>(scene->pointsCount);
+  scene->triangleSize = getItemSize<triangleidx>(scene->triangleNum);
+  scene->sceneObjectsSize = getItemSize<SceneObject>(scene->sceneobjectsNum);
+  scene->matricesSize = getItemSize<mat4x4>(scene->sceneobjectsNum);
+
+  mat4x4 *transformMatrices = nullptr;
+  cudaHostAlloc(&transformMatrices, scene->matricesSize, cudaHostAllocDefault);
+  scene->transformMatrices = transformMatrices;
 
   cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard);
   setupQuad(quadVAO, quadVBO);
@@ -55,80 +62,31 @@ void onClose()
 void drawFrame(GLuint tex, GLuint pbo)
 {
   ZoneScopedN("drawFrame function");
-
-  // Copy vertexes array
-
-  auto &pointarray = scene.transformedPoints;
-  std::copy(scene.points, scene.points + scene.pointsCount, pointarray);
-
-  // Time for transforms
+  TracyCZoneN(matRotateVerts, "Compute transform matrices", true);
 
   Uint32 time = SDL_GetTicks();
 
-  // Apply rotations to copied list
-
-  TracyCZoneN(matRotateVerts, "Apply scene transforms", true);
-
   // Rotate vertices and apply transforms
-  // #pragma omp parallel for
-  for (size_t indexPairI = 0; indexPairI < scene.trIndexPairCount; indexPairI++)
+  for (size_t indexPairI = 0; indexPairI < scene->trIndexPairCount; indexPairI++)
   {
-    transformIndexPair currentPair = scene.trIndexPairs[indexPairI];
+    transformIndexPair currentPair = scene->trIndexPairs[indexPairI];
     ObjTransform currentTransform = currentPair.transform;
+
+    mat4x4 &currentMatrix = scene->transformMatrices[currentPair.sceneObjectReference];
 
     if (currentTransform.hasTransformFunction)
     {
       currentTransform.trFunc(time, currentTransform.rotationAngles, currentTransform.relativePos);
     }
 
-    mat3x3 currentMat = currentTransform.getRotationMatrix();
-
     float3_L rotCenter = currentTransform.rotationCenter;
-    float3_L centerShifted = rotCenter + currentTransform.relativePos;
+    float3_L totalTranslation = rotCenter + currentTransform.relativePos;
 
-    // BB recalculation
-    AABB newObjBB = {};
-    bool isBBnew = true;
+    mat4x4 moveToCenterMat = translation4x4mat(0.0f - rotCenter);
+    mat4x4 rotateMat = currentTransform.getRotationMatrix4x4();
+    mat4x4 moveBackMat = translation4x4mat(totalTranslation);
 
-    for (size_t i = currentPair.startIdx; i < currentPair.endIdx; i++)
-    {
-      float3_L &pt = pointarray[i];
-
-      pt -= rotCenter;
-      pt = currentMat * pt;
-      pt += centerShifted;
-
-      // BB recalculation
-      {
-        if (isBBnew)
-        {
-          newObjBB.l = newObjBB.h = pt;
-          isBBnew = false;
-          continue;
-        }
-
-        growBBtoInclude(newObjBB, pt);
-      }
-    }
-
-    // BB recalculation
-    size_t currentSceneObjIndex = currentPair.sceneObjectReference;
-    scene.sceneobjects[currentSceneObjIndex].boundingBox = newObjBB;
-  }
-
-  // Recalculate normals
-  for (size_t i = 0; i < scene.dyntrianglesNum; i++)
-  {
-    triangleidx &currentTriangle = scene.triangles[scene.dyntriangles[i]];
-
-    float3_L v1 = pointarray[currentTriangle.v1];
-    float3_L v2 = pointarray[currentTriangle.v2];
-    float3_L v3 = pointarray[currentTriangle.v3];
-
-    float3_L side1 = v2 - v1;
-    float3_L side2 = v3 - v1;
-
-    currentTriangle.normal = normalize(cross3(side1, side2));
+    currentMatrix = moveBackMat * rotateMat * moveToCenterMat;
   }
 
   TracyCZoneEnd(matRotateVerts);
@@ -145,9 +103,13 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   TracyCZoneN(cameraSettings, "Camera settings", true);
 
-  updateCameraRaygenData(scene.cam);
+  updateCameraRaygenData(scene->cam);
 
   TracyCZoneEnd(cameraSettings);
+
+  // Apply transforms to device objects
+
+  computeDeviceTransforms();
 
   // Generate and trace rays
 
@@ -187,7 +149,7 @@ void mouseMoved(int2_L &mouse, int2_L &pMouse)
 
   if (mouseState & SDL_BUTTON(SDL_BUTTON_RIGHT))
   {
-    auto &cam = scene.cam;
+    auto &cam = scene->cam;
 
     cam.camXrot = fmod(cam.camXrot += 0.00075f * dMouse.x, TWO_PI);
     cam.camYrot = clamp(cam.camYrot += 0.001f * dMouse.y, cameraVerticalMinRot, cameraVerticalMaxRot);
@@ -204,7 +166,7 @@ void checkForKeys()
   if (sameDirMov == 0.0f && rightDirMov == 0.0f)
     return;
 
-  auto &cam = scene.cam;
+  auto &cam = scene->cam;
 
   float3_L frontMovement = cam.camForward * sameDirMov;
   float3_L rightMovement = cam.camRight * rightDirMov;

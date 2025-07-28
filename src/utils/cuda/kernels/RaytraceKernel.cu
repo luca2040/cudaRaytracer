@@ -30,6 +30,6 @@ __global__ void rayTraceKernel(
   traceRay(scene,
            currentRay, currentRayData,
            bgColor);
-
+  
   pixelBuffer[y * imageWidth + x] = make_uchar4_from_f3l(currentRayData.color);
 }

@@ -29,14 +29,14 @@ __device__ __forceinline__ void traceRay(Scene *scene,
           break;
         }
 
-        for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleEndIdx; i++)
+        for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleStartIdx + currentObj.triangleNum; i++)
         {
           triangleidx triangle = scene->d_triangles[i];
 
           float t, u, v;
           float3_L rayHit;
 
-          const float3_L *pointarray = scene->d_pointarray;
+          const float3_L *pointarray = scene->d_trsfrmdpoints;
 
           bool hasIntersected = rayTriangleIntersection(ray,
                                                         pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
