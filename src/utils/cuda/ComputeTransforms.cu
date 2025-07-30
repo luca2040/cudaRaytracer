@@ -13,8 +13,10 @@ void computeDeviceTransforms()
   ZONESCOPEDNC("computeDeviceTransforms function", PROFILER_PINK);
   TRACYCZONENC(transformsMemcpy, "Transforms cudamemcpy", true, PROFILER_RED);
 
-  cudaMemcpy(scene->d_transformMatrices, scene->transformMatrices, scene->matricesSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(d_scene, scene, sceneStructSize, cudaMemcpyHostToDevice);
+  cudaMemcpyAsync(d_scene, scene, sceneStructSize, cudaMemcpyHostToDevice);
+
+  if (scene->transformSync)
+    cudaDeviceSynchronize();
 
   TRACYCZONEEND(transformsMemcpy);
 
@@ -26,6 +28,9 @@ void computeDeviceTransforms()
   size_t numResetBlocks = (scene->sceneobjectsNum + threadsPerBlock - 1) / threadsPerBlock;
   resetAABBsKernel<<<numResetBlocks, threadsPerBlock>>>(d_scene);
 
+  if (scene->transformSync)
+    cudaDeviceSynchronize();
+
   TRACYCZONEEND(resetbbsKernelRun);
 
   TRACYCZONENC(transformKernelRun, "Transforms kernel", true, PROFILER_DARK_GREEN);
@@ -34,6 +39,9 @@ void computeDeviceTransforms()
   size_t numTransformBlocks = (scene->pointsCount + threadsPerBlock - 1) / threadsPerBlock;
   transformKernel<<<numTransformBlocks, threadsPerBlock>>>(d_scene);
 
+  if (scene->transformSync)
+    cudaDeviceSynchronize();
+
   TRACYCZONEEND(transformKernelRun);
 
   TRACYCZONENC(normalsKernelRun, "Normals kernel", true, PROFILER_DARK_GREEN);
@@ -41,6 +49,9 @@ void computeDeviceTransforms()
   // Launch a thread per triangle
   size_t numNormalBlocks = (scene->triangleNum + threadsPerBlock - 1) / threadsPerBlock;
   normalComputeKernel<<<numNormalBlocks, threadsPerBlock>>>(d_scene);
+
+  if (scene->transformSync)
+    cudaDeviceSynchronize();
 
   TRACYCZONEEND(normalsKernelRun);
 }

@@ -39,8 +39,11 @@ void onSetupFrame(GLuint pbo)
   scene->matricesSize = getItemSize<mat4x4>(scene->sceneobjectsNum);
 
   mat4x4 *transformMatrices = nullptr;
-  cudaHostAlloc(&transformMatrices, scene->matricesSize, cudaHostAllocDefault);
+  mat4x4 *d_transformMatrices = nullptr;
+  cudaHostAlloc((void **)&transformMatrices, scene->matricesSize, cudaHostAllocMapped);
   scene->transformMatrices = transformMatrices;
+  cudaHostGetDevicePointer((void **)&d_transformMatrices, (void *)transformMatrices, 0);
+  scene->d_transformMatrices = d_transformMatrices;
 
   cudaGraphicsGLRegisterBuffer(&cudaPboResource, pbo, cudaGraphicsRegisterFlagsWriteDiscard);
   setupQuad(quadVAO, quadVBO);

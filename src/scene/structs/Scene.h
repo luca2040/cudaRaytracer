@@ -42,6 +42,9 @@ struct Scene
 
   // Settings
 
+  bool transformSync = false;
+  bool afterTraceSync = true;
+
   bool boundingBoxDebugView = false;
   int maxRayReflections = 15;
 

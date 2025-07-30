@@ -107,6 +107,8 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Debug"))
       {
+        ImGui::Checkbox("Cuda transform kernel sync", &scene->transformSync);
+        ImGui::Checkbox("Cuda after trace sync", &scene->afterTraceSync);
         ImGui::Checkbox("Bounding box view mode", &scene->boundingBoxDebugView);
       }
 

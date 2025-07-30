@@ -21,15 +21,13 @@ void cudaAllocateScene()
   cudaMalloc(&scene->d_pointToObjIdxTable, scene->pointTableSize);
   cudaMalloc(&scene->d_triangles, scene->triangleSize);
   cudaMalloc(&scene->d_sceneobjects, scene->sceneObjectsSize);
-  cudaMalloc(&scene->d_transformMatrices, scene->matricesSize); // *
-  cudaMalloc(&d_scene, sceneStructSize);                        // *
+  cudaMalloc(&d_scene, sceneStructSize); // *
 
   // Initial cudamemcpy
   cudaMemcpy(scene->d_pointarray, scene->points, scene->pointsSize, cudaMemcpyHostToDevice);
   cudaMemcpy(scene->d_triangles, scene->triangles, scene->triangleSize, cudaMemcpyHostToDevice);
   cudaMemcpy(scene->d_pointToObjIdxTable, scene->pointToObjIdxTable, scene->pointTableSize, cudaMemcpyHostToDevice);
   cudaMemcpy(scene->d_sceneobjects, scene->sceneobjects, scene->sceneObjectsSize, cudaMemcpyHostToDevice);
-  cudaMemcpy(scene->d_transformMatrices, scene->transformMatrices, scene->matricesSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_scene, scene, sceneStructSize, cudaMemcpyHostToDevice);
 }
 
@@ -43,6 +41,8 @@ void cudaCleanup()
   cudaFree(scene->d_sceneobjects);
   cudaFree(scene->d_transformMatrices);
   cudaFree(d_scene);
+
+  cudaFreeHost(scene);
 }
 
 void rayTrace(
@@ -63,6 +63,9 @@ void rayTrace(
       d_scene,
       WIDTH, HEIGHT,
       f3lBg);
+
+  if (scene->afterTraceSync)
+    cudaDeviceSynchronize();
 
   TRACYCZONEEND(cudaTrace);
 }
