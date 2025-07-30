@@ -4,44 +4,43 @@
 #include "../../scene/structs/Scene.h"
 #include "kernels/transform/TransformKernel.cuh"
 
-#include "../../third_party/tracy/tracy/Tracy.hpp"
-#include "../../third_party/tracy/tracy/TracyC.h"
+#include "../Profiling.h"
 
 #include <iostream>
 
 void computeDeviceTransforms()
 {
-  ZoneScopedN("computeDeviceTransforms function");
-  TracyCZoneN(transformsMemcpy, "Transforms cudamemcpy", true);
+  ZONESCOPEDNC("computeDeviceTransforms function", PROFILER_PINK);
+  TRACYCZONENC(transformsMemcpy, "Transforms cudamemcpy", true, PROFILER_RED);
 
   cudaMemcpy(scene->d_transformMatrices, scene->transformMatrices, scene->matricesSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_scene, scene, sceneStructSize, cudaMemcpyHostToDevice);
 
-  TracyCZoneEnd(transformsMemcpy);
+  TRACYCZONEEND(transformsMemcpy);
 
   size_t threadsPerBlock = VERT_THREADS_PER_BLOCK;
 
-  TracyCZoneN(resetbbsKernelRun, "Reset AABBs kernel", true);
+  TRACYCZONENC(resetbbsKernelRun, "Reset AABBs kernel", true, PROFILER_DARK_GREEN);
 
   // Launch a thread per model
   size_t numResetBlocks = (scene->sceneobjectsNum + threadsPerBlock - 1) / threadsPerBlock;
   resetAABBsKernel<<<numResetBlocks, threadsPerBlock>>>(d_scene);
 
-  TracyCZoneEnd(resetbbsKernelRun);
+  TRACYCZONEEND(resetbbsKernelRun);
 
-  TracyCZoneN(transformKernelRun, "Transforms kernel", true);
+  TRACYCZONENC(transformKernelRun, "Transforms kernel", true, PROFILER_DARK_GREEN);
 
   // Launch a thread per vert
   size_t numTransformBlocks = (scene->pointsCount + threadsPerBlock - 1) / threadsPerBlock;
   transformKernel<<<numTransformBlocks, threadsPerBlock>>>(d_scene);
 
-  TracyCZoneEnd(transformKernelRun);
+  TRACYCZONEEND(transformKernelRun);
 
-  TracyCZoneN(normalsKernelRun, "Normals kernel", true);
+  TRACYCZONENC(normalsKernelRun, "Normals kernel", true, PROFILER_DARK_GREEN);
 
   // Launch a thread per triangle
   size_t numNormalBlocks = (scene->triangleNum + threadsPerBlock - 1) / threadsPerBlock;
   normalComputeKernel<<<numNormalBlocks, threadsPerBlock>>>(d_scene);
 
-  TracyCZoneEnd(normalsKernelRun);
+  TRACYCZONEEND(normalsKernelRun);
 }

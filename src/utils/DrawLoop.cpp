@@ -19,8 +19,7 @@
 #include "cuda/RayTracer.cuh"
 #include "cuda/ComputeTransforms.cuh"
 
-#include "../third_party/tracy/tracy/Tracy.hpp"
-#include "../third_party/tracy/tracy/TracyC.h"
+#include "Profiling.h"
 
 void onSceneComposition()
 {
@@ -61,8 +60,8 @@ void onClose()
 
 void drawFrame(GLuint tex, GLuint pbo)
 {
-  ZoneScopedN("drawFrame function");
-  TracyCZoneN(matRotateVerts, "Compute transform matrices", true);
+  ZONESCOPEDNC("drawFrame function", PROFILER_BROWN);
+  TRACYCZONENC(matRotateVerts, "Compute transform matrices", true, PROFILER_BLUE);
 
   Uint32 time = SDL_GetTicks();
 
@@ -89,9 +88,11 @@ void drawFrame(GLuint tex, GLuint pbo)
     currentMatrix = moveBackMat * rotateMat * moveToCenterMat;
   }
 
-  TracyCZoneEnd(matRotateVerts);
+  TRACYCZONEEND(matRotateVerts);
 
   // Map the PBO for CUDA access
+
+  TRACYCZONENC(cudaMapPbo, "Cuda map PBO", true, PROFILER_DARK_GREEN);
 
   cudaGraphicsMapResources(1, &cudaPboResource, 0);
 
@@ -99,13 +100,15 @@ void drawFrame(GLuint tex, GLuint pbo)
   size_t pxlsPtrSize;
   cudaGraphicsResourceGetMappedPointer((void **)&pxlsPtr, &pxlsPtrSize, cudaPboResource);
 
+  TRACYCZONEEND(cudaMapPbo);
+
   // Camera setup
 
-  TracyCZoneN(cameraSettings, "Camera settings", true);
+  TRACYCZONENC(cameraSettings, "Camera settings", true, PROFILER_TURQUOISE);
 
   updateCameraRaygenData(scene->cam);
 
-  TracyCZoneEnd(cameraSettings);
+  TRACYCZONEEND(cameraSettings);
 
   // Apply transforms to device objects
 
@@ -135,7 +138,7 @@ void drawFrame(GLuint tex, GLuint pbo)
   glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
   glBindVertexArray(0);
 
-  FrameMark;
+  FRAMEMARK;
 }
 
 void keyPressed(SDL_Keycode key)

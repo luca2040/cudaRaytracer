@@ -11,7 +11,7 @@
 #include "third_party/imgui/imgui_impl_sdl2.h"
 #include "third_party/imgui/imgui_impl_opengl3.h"
 
-#include "third_party/tracy/tracy/Tracy.hpp"
+#include "utils/Profiling.h"
 
 int main()
 {
@@ -121,7 +121,7 @@ int main()
 
   while (running)
   {
-    ZoneScopedN("Main SDL while cycle");
+    ZONESCOPEDNC("Main SDL while cycle", PROFILER_ORANGE);
 
     while (SDL_PollEvent(&event))
     {

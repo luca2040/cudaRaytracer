@@ -9,8 +9,7 @@
 
 #include "kernels/RaytraceKernel.cuh"
 
-#include "../../third_party/tracy/tracy/Tracy.hpp"
-#include "../../third_party/tracy/tracy/TracyC.h"
+#include "../Profiling.h"
 
 void cudaAllocateScene()
 {
@@ -50,8 +49,8 @@ void rayTrace(
     uchar4 *pixelBuffer,
     const int bgColor)
 {
-  ZoneScopedN("rayTrace function");
-  TracyCZoneN(cudaTrace, "Cuda trace", true);
+  ZONESCOPEDNC("rayTrace function", PROFILER_LIME_GREEN);
+  TRACYCZONENC(cudaTrace, "Cuda trace", true, PROFILER_GOLD);
 
   constexpr dim3 blockDim(RAYTRACE_BLOCK_SIDE, RAYTRACE_BLOCK_SIDE);
   constexpr dim3 gridDim((WIDTH + (RAYTRACE_BLOCK_SIDE - 1)) / RAYTRACE_BLOCK_SIDE,
@@ -65,5 +64,5 @@ void rayTrace(
       WIDTH, HEIGHT,
       f3lBg);
 
-  TracyCZoneEnd(cudaTrace);
+  TRACYCZONEEND(cudaTrace);
 }
