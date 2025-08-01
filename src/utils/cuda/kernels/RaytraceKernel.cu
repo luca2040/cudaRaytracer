@@ -8,9 +8,7 @@ __global__ void rayTraceKernel(
     Scene *scene,
 
     const int imageWidth,
-    const int imageHeight,
-
-    const float3_L bgColor)
+    const int imageHeight)
 {
   int x = blockIdx.x * blockDim.x + threadIdx.x;
   int y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -28,8 +26,7 @@ __global__ void rayTraceKernel(
   RayData currentRayData;
 
   traceRay(scene,
-           currentRay, currentRayData,
-           bgColor);
-  
+           currentRay, currentRayData);
+
   pixelBuffer[y * imageWidth + x] = make_uchar4_from_f3l(currentRayData.color);
 }

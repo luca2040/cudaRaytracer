@@ -6,6 +6,4 @@
 
 void cudaAllocateScene();
 void cudaCleanup();
-void rayTrace(
-    uchar4 *pixelBuffer,
-    const int bgColor);
+void rayTrace(uchar4 *pixelBuffer);

@@ -119,7 +119,7 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Generate and trace rays
 
-  rayTrace(pxlsPtr, BG_COLOR);
+  rayTrace(pxlsPtr);
 
   // Unlock and render texture
 

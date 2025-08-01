@@ -122,6 +122,7 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Rendering"))
       {
+        ImGui::ColorEdit3("Background color", &scene->backgroundColor.x);
         MakeEditableSlider("Max ray reflections", scene->maxRayReflections, 0, 100);
       }
 

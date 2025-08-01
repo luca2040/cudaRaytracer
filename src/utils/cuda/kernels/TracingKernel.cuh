@@ -6,8 +6,7 @@
 #include "debug/IndexToUniqueColor.cuh"
 
 __device__ __forceinline__ void traceRay(Scene *scene,
-                                         ray &currentRay, RayData &rayData,
-                                         const float3_L bgColor)
+                                         ray &currentRay, RayData &rayData)
 {
   for (int depth = 0; depth < scene->maxRayReflections; depth++)
   {
@@ -60,14 +59,12 @@ __device__ __forceinline__ void traceRay(Scene *scene,
     if (currentZbuf == INFINITY)
     {
       onHitMissing(scene,
-                   currentRay, rayData,
-                   bgColor);
+                   currentRay, rayData);
       break;
     }
 
     bool stopReflection = onClosestHit(scene,
-                                       currentRay, rayData, hitTriangle, hitPos,
-                                       bgColor);
+                                       currentRay, rayData, hitTriangle, hitPos);
     if (stopReflection)
       break;
   }
