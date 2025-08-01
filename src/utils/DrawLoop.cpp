@@ -119,7 +119,7 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Generate and trace rays
 
-  rayTrace(pxlsPtr);
+  rayTrace(pxlsPtr, guiWindow.winDims.renderingWidth, guiWindow.winDims.renderingHeight);
 
   // Unlock and render texture
 
@@ -127,7 +127,7 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
   glBindTexture(GL_TEXTURE_2D, tex);
-  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WIDTH, HEIGHT, GL_RGBA, GL_UNSIGNED_BYTE, 0);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, guiWindow.winDims.renderingWidth, guiWindow.winDims.renderingHeight, GL_RGBA, GL_UNSIGNED_BYTE, 0);
 
   glClear(GL_COLOR_BUFFER_BIT);
 

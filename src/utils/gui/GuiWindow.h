@@ -11,6 +11,40 @@
 // #include "../../third_party/imgui/imgui_impl_sdl2.h"
 // #include "../../third_party/imgui/imgui_impl_opengl3.h"
 
+struct windowDimensions
+{
+  int windowWidth;
+  int windowHeight;
+
+  int renderingWidth;
+  int renderingHeight;
+
+  float renderingScale;
+
+  // Referred to rendering resolution
+  float halfWidth;
+  float halfHeight;
+
+  float aspect;
+
+  inline void updateValues()
+  {
+    renderingWidth = windowWidth * renderingScale;
+    renderingHeight = windowHeight * renderingScale;
+
+    halfWidth = static_cast<float>(renderingWidth) * 0.5f;
+    halfHeight = static_cast<float>(renderingHeight) * 0.5f;
+
+    aspect = static_cast<float>(renderingWidth) / static_cast<float>(renderingHeight);
+  }
+
+  windowDimensions() = default;
+  windowDimensions(int winWidth, int winHeight, float scale) : windowWidth(winWidth), windowHeight(winHeight), renderingScale(scale)
+  {
+    updateValues();
+  }
+};
+
 class GuiWindow
 {
 private:
@@ -52,8 +86,14 @@ private:
   }
 
 public:
+  bool resChanged = false; // Variable used to indicate when a change to the resolution has been made
+
   ImGuiIO *io = nullptr;
+
   const GLubyte *openGLversion;
+  const GLubyte *openGLrenderer;
+
+  windowDimensions winDims = {3840, 2160, 0.5f};
 
   inline void RenderGui()
   {
@@ -62,17 +102,22 @@ public:
     // Status window
     {
       ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Once);
-      ImGui::SetNextWindowSize(ImVec2(800, 300), ImGuiCond_Once);
+      ImGui::SetNextWindowSize(ImVec2(800, 400), ImGuiCond_Once);
 
       ImGui::Begin("Status");
 
       ImGui::Text("OpenGL version: %s", openGLversion);
-      ImGui::Text("Rendering resolution: %i x %i", WIDTH, HEIGHT);
+      ImGui::Text("%s", openGLrenderer);
+      ImGui::Text("Rendering resolution: %i x %i", winDims.renderingWidth, winDims.renderingHeight);
+      if (ImGui::SliderFloat("##ResolutionMultiplier", &winDims.renderingScale, 0.1f, 1.0f, "%.01f"))
+      {
+        resChanged = true;
+      }
 
       ImGui::Separator();
 
       ImGui::Text("FPS: %.1f", io->Framerate);
-      ImGui::Text("DeltaTime: %.4f s", io->DeltaTime);
+      ImGui::Text("Frame time: %.4f ms", io->DeltaTime * 1000.0f);
 
       ImGui::Separator();
 
@@ -96,10 +141,10 @@ public:
 
     // Controls window
     {
-      constexpr const ImVec2 windowSize = ImVec2(1000, 300);
-      constexpr const ImVec2 windwoPos = ImVec2(WINDOW_WIDTH - windowSize.x - 10, 10);
+      const ImVec2 windowSize = ImVec2(1000, 300);
+      const ImVec2 windowPos = ImVec2(winDims.windowWidth - windowSize.x - 10, 10);
 
-      ImGui::SetNextWindowPos(windwoPos, ImGuiCond_Once);
+      ImGui::SetNextWindowPos(windowPos, ImGuiCond_Once);
       ImGui::SetNextWindowSize(windowSize, ImGuiCond_Once);
 
       ImGui::Begin("Controls");

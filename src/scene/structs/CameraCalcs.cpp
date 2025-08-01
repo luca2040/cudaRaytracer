@@ -1,4 +1,5 @@
 #include "CameraCalcs.h"
+#include "../../utils/gui/GuiWindow.h"
 #include "../../math/Operations.h"
 #include "../../utils/DrawValues.h"
 
@@ -22,7 +23,7 @@ void updateCameraRaygenData(Camera &cam)
 
   float camFOV = cam.camFOVdeg * M_PI / 180.0f;
   float imagePlaneHeight = 2.0f * tan(camFOV / 2.0f);
-  float imagePlaneWidth = imagePlaneHeight * ASPECT;
+  float imagePlaneWidth = imagePlaneHeight * guiWindow.winDims.aspect;
 
   // Camera placement
 
@@ -31,9 +32,6 @@ void updateCameraRaygenData(Camera &cam)
   cam.imageY = cam.camUp * imagePlaneHeight * cam.camZoom;
   cam.camViewOrigin = imageCenter - cam.imageX * 0.5f - cam.imageY * 0.5f;
 
-  constexpr float inverseWidthMinus = 1.0f / static_cast<float>(WIDTH - 1);
-  constexpr float inverseHeightMinus = 1.0f / static_cast<float>(HEIGHT - 1);
-
-  cam.inverseWidthMinus = inverseWidthMinus;
-  cam.inverseHeightMinus = inverseHeightMinus;
+  cam.inverseWidthMinus = 1.0f / static_cast<float>(guiWindow.winDims.renderingWidth - 1);
+  cam.inverseHeightMinus = 1.0f / static_cast<float>(guiWindow.winDims.renderingHeight - 1);
 }
