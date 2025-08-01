@@ -37,6 +37,7 @@ void onSetupFrame(GLuint pbo)
   scene->triangleSize = getItemSize<triangleidx>(scene->triangleNum);
   scene->sceneObjectsSize = getItemSize<SceneObject>(scene->sceneobjectsNum);
   scene->matricesSize = getItemSize<mat4x4>(scene->sceneobjectsNum);
+  scene->materialsSize = getItemSize<Material>(scene->materialsNum);
 
   mat4x4 *transformMatrices = nullptr;
   mat4x4 *d_transformMatrices = nullptr;

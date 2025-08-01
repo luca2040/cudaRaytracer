@@ -4,13 +4,9 @@
 #include "../../math/Operations.h"
 
 SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         float3_L defaultRot, TransformFunction trFunc, bool hasTransformFunction,
-                         int face1Col, float reflectiveness1,
-                         int face2Col, float reflectiveness2,
-                         int face3Col, float reflectiveness3,
-                         int face4Col, float reflectiveness4,
-                         int face5Col, float reflectiveness5,
-                         int face6Col, float reflectiveness6)
+                                    float3_L defaultRot, TransformFunction trFunc, bool hasTransformFunction,
+                                    size_t material1, size_t material2, size_t material3,
+                                    size_t material4, size_t material5, size_t material6)
 {
   std::vector<float3_L> cubePoints;
 
@@ -24,23 +20,23 @@ SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
       }
 
   std::vector<triangleidx> cubeTriangles = {
-      {0, 1, 3, face1Col, reflectiveness1},
-      {0, 3, 2, face1Col, reflectiveness1},
+      {0, 1, 3, material1},
+      {0, 3, 2, material1},
 
-      {1, 5, 3, face2Col, reflectiveness2},
-      {5, 7, 3, face2Col, reflectiveness2},
+      {1, 5, 3, material2},
+      {5, 7, 3, material2},
 
-      {0, 4, 2, face3Col, reflectiveness3},
-      {4, 6, 2, face3Col, reflectiveness3},
+      {0, 4, 2, material3},
+      {4, 6, 2, material3},
 
-      {4, 5, 7, face4Col, reflectiveness4},
-      {4, 7, 6, face4Col, reflectiveness4},
+      {4, 5, 7, material4},
+      {4, 7, 6, material4},
 
-      {0, 1, 5, face5Col, reflectiveness5},
-      {0, 5, 4, face5Col, reflectiveness5},
+      {0, 1, 5, material5},
+      {0, 5, 4, material5},
 
-      {2, 3, 7, face6Col, reflectiveness6},
-      {2, 7, 6, face6Col, reflectiveness6},
+      {2, 3, 7, material6},
+      {2, 7, 6, material6},
   };
 
   if (hasTransformFunction)
@@ -50,107 +46,43 @@ SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
 }
 
 SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         float3_L defaultRot,
-                         int face1Col,
-                         int face2Col,
-                         int face3Col,
-                         int face4Col,
-                         int face5Col,
-                         int face6Col,
-                         float reflectiveness)
+                                    float3_L defaultRot,
+                                    size_t material1, size_t material2, size_t material3,
+                                    size_t material4, size_t material5, size_t material6)
 {
   return generateCube(center, sideLenght,
                       defaultRot, nullptr, false,
-                      face1Col, reflectiveness,
-                      face2Col, reflectiveness,
-                      face3Col, reflectiveness,
-                      face4Col, reflectiveness,
-                      face5Col, reflectiveness,
-                      face6Col, reflectiveness);
+                      material1, material2, material3,
+                      material4, material5, material6);
 }
 
 SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         float3_L defaultRot,
-                         int face1Col, float reflectiveness1,
-                         int face2Col, float reflectiveness2,
-                         int face3Col, float reflectiveness3,
-                         int face4Col, float reflectiveness4,
-                         int face5Col, float reflectiveness5,
-                         int face6Col, float reflectiveness6)
+                                    TransformFunction trFunc,
+                                    size_t material1, size_t material2, size_t material3,
+                                    size_t material4, size_t material5, size_t material6)
+{
+  return generateCube(center, sideLenght,
+                      {}, trFunc, true,
+                      material1, material2, material3,
+                      material4, material5, material6);
+}
+
+SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
+                                    float3_L defaultRot,
+                                    size_t material)
 {
   return generateCube(center, sideLenght,
                       defaultRot, nullptr, false,
-                      face1Col, reflectiveness1,
-                      face2Col, reflectiveness2,
-                      face3Col, reflectiveness3,
-                      face4Col, reflectiveness4,
-                      face5Col, reflectiveness5,
-                      face6Col, reflectiveness6);
+                      material, material, material,
+                      material, material, material);
 }
 
 SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         TransformFunction trFunc,
-                         int face1Col,
-                         int face2Col,
-                         int face3Col,
-                         int face4Col,
-                         int face5Col,
-                         int face6Col,
-                         float reflectiveness)
+                                    TransformFunction trFunc,
+                                    size_t material)
 {
   return generateCube(center, sideLenght,
                       {}, trFunc, true,
-                      face1Col, reflectiveness,
-                      face2Col, reflectiveness,
-                      face3Col, reflectiveness,
-                      face4Col, reflectiveness,
-                      face5Col, reflectiveness,
-                      face6Col, reflectiveness);
-}
-
-SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         TransformFunction trFunc,
-                         int face1Col, float reflectiveness1,
-                         int face2Col, float reflectiveness2,
-                         int face3Col, float reflectiveness3,
-                         int face4Col, float reflectiveness4,
-                         int face5Col, float reflectiveness5,
-                         int face6Col, float reflectiveness6)
-{
-  return generateCube(center, sideLenght,
-                      {}, trFunc, true,
-                      face1Col, reflectiveness1,
-                      face2Col, reflectiveness2,
-                      face3Col, reflectiveness3,
-                      face4Col, reflectiveness4,
-                      face5Col, reflectiveness5,
-                      face6Col, reflectiveness6);
-}
-
-SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         float3_L defaultRot,
-                         int color, float reflectiveness)
-{
-  return generateCube(center, sideLenght,
-                      defaultRot, nullptr, false,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness);
-}
-
-SceneObjectPassthrough generateCube(float3_L center, float sideLenght,
-                         TransformFunction trFunc,
-                         int color, float reflectiveness)
-{
-  return generateCube(center, sideLenght,
-                      {}, trFunc, true,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness,
-                      color, reflectiveness);
+                      material, material, material,
+                      material, material, material);
 }

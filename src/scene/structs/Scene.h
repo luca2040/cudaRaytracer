@@ -18,18 +18,21 @@ struct Scene
   transformIndexPair *trIndexPairs; // Reference to sceneobject that also contains transform functions
   SceneObject *sceneobjects;
   mat4x4 *transformMatrices;
+  Material *materials;
 
   size_t pointsCount;
   size_t triangleNum;
   size_t trIndexPairCount;
   size_t sceneobjectsNum;
   // size_t matricesNum; // Same as sceneobjectsNum
+  size_t materialsNum;
 
   size_t pointsSize;
   size_t pointTableSize;
   size_t triangleSize;
   size_t sceneObjectsSize;
   size_t matricesSize;
+  size_t materialsSize;
 
   // Device pointers
   // ONLY FOR CUDA
@@ -39,6 +42,7 @@ struct Scene
   triangleidx *d_triangles;
   SceneObject *d_sceneobjects;
   mat4x4 *d_transformMatrices;
+  Material *d_materials;
 
   // Settings
 

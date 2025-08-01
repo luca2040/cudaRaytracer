@@ -127,18 +127,30 @@ struct mat4x4
   }
 };
 
+struct Material
+{
+  int col;
+  float reflectiveness; // 0.0f -> solid - 1.0f -> mirror
+
+  Material() = default;
+  Material(int col, float reflectiveness) : col(col), reflectiveness(reflectiveness) {}
+#ifndef __CUDACC__
+  bool operator==(const Material &) const = default;
+#endif
+};
+
+// Indicates a triangle based on its vertices indexes in the vert array
 struct triangleidx
 {
   size_t v1;
   size_t v2;
   size_t v3;
 
-  int col;
-  float reflectiveness; // 0.0f -> solid - 1.0f -> mirror
+  size_t materialIdx;
 
   float3_L normal;
 
   inline triangleidx() = default;
-  inline triangleidx(unsigned long v1, unsigned long v2, unsigned long v3, int col, float reflectiveness)
-      : v1(v1), v2(v2), v3(v3), col(col), reflectiveness(reflectiveness) {}
+  inline triangleidx(size_t v1, size_t v2, size_t v3, size_t materialIdx)
+      : v1(v1), v2(v2), v3(v3), materialIdx(materialIdx) {}
 };

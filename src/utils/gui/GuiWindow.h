@@ -134,6 +134,7 @@ public:
         ImGui::Text("Vertices: %zu", scene->pointsCount);
         ImGui::Text("Triangles: %zu", scene->triangleNum);
         ImGui::Text("Models: %zu", scene->sceneobjectsNum);
+        ImGui::Text("Materials: %zu", scene->materialsNum);
       }
 
       ImGui::End();

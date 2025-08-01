@@ -6,12 +6,12 @@ __device__ __forceinline__ bool onClosestHit(Scene *scene,
                                              ray &ray, RayData &rayData,
                                              triangleidx hitTriangle, float3_L hitPos)
 {
-  float reflectiveness = hitTriangle.reflectiveness;
+  Material currentMaterial = scene->d_materials[hitTriangle.materialIdx];
 
-  rayData.color = rayData.color + (intColToF3l(hitTriangle.col) * rayData.rayLight * (1.0f - reflectiveness));
-  rayData.rayLight *= reflectiveness;
+  rayData.color = rayData.color + (intColToF3l(currentMaterial.col) * rayData.rayLight * (1.0f - currentMaterial.reflectiveness));
+  rayData.rayLight *= currentMaterial.reflectiveness;
 
-  if (reflectiveness < EPSILON)
+  if (currentMaterial.reflectiveness < EPSILON)
     return true;
 
   ray.origin = hitPos;

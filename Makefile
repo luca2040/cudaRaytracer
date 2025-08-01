@@ -4,8 +4,8 @@ PROFILE ?= 0
 # === CONFIG ===
 CXX = g++
 NVCC = nvcc
-CXXFLAGS = -Wall -std=c++17
-NVCCFLAGS = -Xcompiler "-Wall -std=c++17"
+CXXFLAGS = -Wall -std=c++20
+NVCCFLAGS = -std=c++20 -Xcompiler "-Wall -std=c++20"
 LDFLAGS = -lSDL2 -lSDL2_ttf -lpthread
 LDFLAGS += -lGLEW -lGL
 

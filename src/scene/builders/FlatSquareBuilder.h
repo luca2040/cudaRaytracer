@@ -11,10 +11,9 @@ enum PlaneType
 };
 
 SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
-                               float3_L defaultRot,
-                               int sideDivisions,
-                               int col1, float reflectiveness1,
-                               int col2, float reflectiveness2)
+                                          float3_L defaultRot,
+                                          int sideDivisions,
+                                          size_t material1, size_t material2)
 {
   float3_L center = (firstCorner + secondCorner) * 0.5f;
 
@@ -66,8 +65,7 @@ SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondC
       float2_L nextPos = firstCornerPlane + (float2_L(divA, divB) + 1) * dt;
 
       bool useFirstColor = (divA % 2 == 0) ^ (divB % 2 == 1);
-      int actualColor = useFirstColor ? col1 : col2;
-      float actualReflectiveness = useFirstColor ? reflectiveness1 : reflectiveness2;
+      size_t actualMaterial = useFirstColor ? material1 : material2;
 
       float3_L startPos;
       float3_L endPos;
@@ -104,11 +102,11 @@ SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondC
       faceTriangles.push_back({2 + currentVertIdx,
                                3 + currentVertIdx,
                                0 + currentVertIdx,
-                               actualColor, actualReflectiveness});
+                               actualMaterial});
       faceTriangles.push_back({2 + currentVertIdx,
                                1 + currentVertIdx,
                                3 + currentVertIdx,
-                               actualColor, actualReflectiveness});
+                               actualMaterial});
 
       currentVertIdx += 4;
     }
@@ -118,33 +116,30 @@ SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondC
 }
 
 SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
-                               int sideDivisions,
-                               int col1, float reflectiveness1,
-                               int col2, float reflectiveness2)
+                                          int sideDivisions,
+                                          size_t material1,
+                                          size_t material2)
 {
   return generateFlatSquare(firstCorner, secondCorner,
                             {0, 0, 0},
                             sideDivisions,
-                            col1, reflectiveness1,
-                            col2, reflectiveness2);
+                            material1, material2);
 }
 
 SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
-                               int sideDivisions,
-                               int col, float reflectiveness)
+                                          int sideDivisions,
+                                          size_t material)
 {
   return generateFlatSquare(firstCorner, secondCorner,
                             {0, 0, 0},
                             sideDivisions,
-                            col, reflectiveness,
-                            col, reflectiveness);
+                            material, material);
 }
 
 SceneObjectPassthrough generateFlatSquare(float3_L firstCorner, float3_L secondCorner,
-                               int col, float reflectiveness)
+                                          size_t material)
 {
   return generateFlatSquare(firstCorner, secondCorner,
                             {0, 0, 0}, 1,
-                            col, reflectiveness,
-                            col, reflectiveness);
+                            material, material);
 }

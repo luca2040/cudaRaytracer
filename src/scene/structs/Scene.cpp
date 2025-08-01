@@ -1,6 +1,6 @@
 #include "Scene.h"
 
-Scene *scene = nullptr;
+Scene *scene = nullptr; // CPU scene
 
-Scene *d_scene;
-size_t sceneStructSize;
+Scene *d_scene; // GPU scene copy
+size_t sceneStructSize = sizeof(Scene);

@@ -14,14 +14,6 @@ inline float clamp(float val, float min, float max) noexcept
   return val < min ? min : (val > max ? max : val);
 }
 
-inline const mat4x4 make4x4IdentityMat()
-{
-  return {{{1.f, 0.f, 0.f, 0.f},
-           {0.f, 1.f, 0.f, 0.f},
-           {0.f, 0.f, 1.f, 0.f},
-           {0.f, 0.f, 0.f, 1.f}}};
-}
-
 inline int2_L operator+(const int2_L &a, const int2_L &b) noexcept
 {
   return {a.x + b.x, a.y + b.y};
@@ -124,11 +116,19 @@ inline float3_L normalize(float3_L v) noexcept
   return result;
 }
 
+inline const mat4x4 make4x4IdentityMat()
+{
+  return {{{1.f, 0.f, 0.f, 0.f},
+           {0.f, 1.f, 0.f, 0.f},
+           {0.f, 0.f, 1.f, 0.f},
+           {0.f, 0.f, 0.f, 1.f}}};
+}
+
 inline mat4x4 translation4x4mat(const float3_L &translation) noexcept
 {
   return {
-      float4_L(1.0f, 0.0f, 0.0f, translation.x),
-      float4_L(0.0f, 1.0f, 0.0f, translation.y),
-      float4_L(0.0f, 0.0f, 1.0f, translation.z),
-      float4_L(0.0f, 0.0f, 0.0f, 1.0f)};
+      float4_L(1.f, 0.f, 0.f, translation.x),
+      float4_L(0.f, 1.f, 0.f, translation.y),
+      float4_L(0.f, 0.f, 1.f, translation.z),
+      float4_L(0.f, 0.f, 0.f, 1.f)};
 }

@@ -13,8 +13,6 @@
 
 void cudaAllocateScene()
 {
-  sceneStructSize = sizeof(Scene);
-
   // Allocate all the memory needed - * means cudamemcpy'd each frame
   cudaMalloc(&scene->d_pointarray, scene->pointsSize);
   cudaMalloc(&scene->d_trsfrmdpoints, scene->pointsSize);
@@ -22,6 +20,7 @@ void cudaAllocateScene()
   cudaMalloc(&scene->d_triangles, scene->triangleSize);
   cudaMalloc(&scene->d_sceneobjects, scene->sceneObjectsSize);
   cudaMalloc(&d_scene, sceneStructSize); // *
+  cudaMalloc(&scene->d_materials, scene->materialsSize);
 
   // Initial cudamemcpy
   cudaMemcpy(scene->d_pointarray, scene->points, scene->pointsSize, cudaMemcpyHostToDevice);
@@ -29,6 +28,7 @@ void cudaAllocateScene()
   cudaMemcpy(scene->d_pointToObjIdxTable, scene->pointToObjIdxTable, scene->pointTableSize, cudaMemcpyHostToDevice);
   cudaMemcpy(scene->d_sceneobjects, scene->sceneobjects, scene->sceneObjectsSize, cudaMemcpyHostToDevice);
   cudaMemcpy(d_scene, scene, sceneStructSize, cudaMemcpyHostToDevice);
+  cudaMemcpy(scene->d_materials, scene->materials, scene->materialsSize, cudaMemcpyHostToDevice);
 }
 
 void cudaCleanup()
@@ -40,6 +40,7 @@ void cudaCleanup()
   cudaFree(scene->d_triangles);
   cudaFree(scene->d_sceneobjects);
   cudaFree(scene->d_transformMatrices);
+  cudaFree(scene->d_materials);
   cudaFree(d_scene);
 
   cudaFreeHost(scene);

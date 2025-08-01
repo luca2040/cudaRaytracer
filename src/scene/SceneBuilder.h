@@ -6,6 +6,7 @@
 #include "structs/transformIndexPair.h"
 #include "structs/SceneObject.h"
 #include "structs/Scene.h"
+#include "MaterialHandler.h"
 #include "../math/Operations.h"
 
 class SceneBuilder
@@ -19,6 +20,8 @@ public:
   std::vector<SceneObject> sceneObjects;
 
   std::vector<transformIndexPair> groupIndexRanges; // When adding some points, save here the corresponding index start and end; the index of the pair is returned.
+
+  MaterialHandler materials;
 
   size_t addObjectToScene(SceneObjectPassthrough objToAdd)
   {
@@ -99,5 +102,9 @@ public:
     scene->sceneobjectsNum = sceneObjects.size();
     scene->sceneobjects = new SceneObject[scene->sceneobjectsNum];
     std::copy(sceneObjects.begin(), sceneObjects.end(), scene->sceneobjects);
+
+    scene->materialsNum = materials.materials.size();
+    scene->materials = new Material[scene->materialsNum];
+    std::copy(materials.materials.begin(), materials.materials.end(), scene->materials);
   }
 };
