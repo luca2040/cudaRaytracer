@@ -3,7 +3,7 @@
 #include "TracingKernel.cuh"
 
 __device__ __forceinline__ bool onClosestHit(Scene *scene,
-                                             ray &ray, RayData &rayData,
+                                             Ray &ray, RayData &rayData,
                                              triangleidx hitTriangle, float3_L hitPos)
 {
   Material currentMaterial = scene->d_materials[hitTriangle.materialIdx];

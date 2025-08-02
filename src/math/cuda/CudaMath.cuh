@@ -4,16 +4,16 @@
 #include "../../utils/DrawValues.h"
 #include "../../scene/structs/AABB.h"
 
-struct ray
+struct Ray
 {
   float3_L origin;
   float3_L direction; // Normalized direction vector
 
   __host__ __device__ __forceinline__
-  ray() = default;
+  Ray() = default;
 
   __host__ __device__ __forceinline__
-  ray(float3_L origin, float3_L direction) : origin(origin), direction(direction) {}
+  Ray(float3_L origin, float3_L direction) : origin(origin), direction(direction) {}
 };
 
 __host__ __device__ __forceinline__ static float3_L make_float3_L(float x, float y, float z) noexcept
@@ -156,7 +156,7 @@ __device__ __forceinline__ float atomicMaxFloat(float *addr, float value)
 // Returns true if intersection occurs, false otherwise
 // t: distance along ray, u/v: barycentric coordinates, outHit: intersection point
 __device__ __forceinline__ bool rayTriangleIntersection(
-    const ray &r,
+    const Ray &r,
     const float3_L &v0,
     const float3_L &v1,
     const float3_L &v2,
@@ -200,7 +200,7 @@ __device__ __forceinline__ bool rayTriangleIntersection(
 
 // RETURNS TRUE WHEN RAY DOESNT INTERSECT THE BOX
 // NEEDS RAY WITH INVERTED DIRECTION (for optimizations in ray check loop)
-__device__ __forceinline__ bool rayBoxIntersection(ray testRay, AABB bb)
+__device__ __forceinline__ bool rayBoxIntersection(Ray testRay, AABB bb)
 {
   float3_L tLowComponents = (bb.l - testRay.origin) * testRay.direction;
   float3_L tHighComponents = (bb.h - testRay.origin) * testRay.direction;

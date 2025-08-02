@@ -6,7 +6,7 @@
 #include "debug/IndexToUniqueColor.cuh"
 
 __device__ __forceinline__ void traceRay(Scene *scene,
-                                         ray &currentRay, RayData &rayData)
+                                         Ray &currentRay, RayData &rayData)
 {
   for (int depth = 0; depth < scene->maxRayReflections; depth++)
   {
@@ -14,7 +14,7 @@ __device__ __forceinline__ void traceRay(Scene *scene,
     triangleidx hitTriangle;
     float3_L hitPos;
 
-    ray invertedDirRay = currentRay;
+    Ray invertedDirRay = currentRay;
     invertedDirRay.direction = inverse(currentRay.direction);
 
     for (size_t objNum = 0; objNum < scene->sceneobjectsNum; objNum++)

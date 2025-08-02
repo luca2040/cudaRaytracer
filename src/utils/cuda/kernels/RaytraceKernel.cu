@@ -20,7 +20,7 @@ __global__ void rayTraceKernel(
 
   float3_L rawDirection = cam.camViewOrigin + cam.imageX * (static_cast<float>(x) * cam.inverseWidthMinus) + cam.imageY * (static_cast<float>(y) * cam.inverseHeightMinus) - cam.camPos;
 
-  ray currentRay = ray(
+  Ray currentRay = Ray(
       cam.camPos,
       normalize3_cuda(rawDirection));
   RayData currentRayData;
