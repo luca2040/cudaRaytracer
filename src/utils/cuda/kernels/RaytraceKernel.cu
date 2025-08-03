@@ -24,15 +24,15 @@ __global__ void rayTraceKernel(
 
   for (int sample = 0; sample < scene->samplesPerPixel; sample++)
   {
-    float3_L xPercent = cam.imageX * ((static_cast<float>(x) + (randomValue(RNGState) * 2.0f - 1.0f) * scene->pixelSampleRange) * cam.inverseWidthMinus);
-    float3_L yPercent = cam.imageY * ((static_cast<float>(y) + (randomValue(RNGState) * 2.0f - 1.0f) * scene->pixelSampleRange) * cam.inverseHeightMinus);
+    float3_L xPercent = cam.imageX * ((static_cast<float>(x) + balancedRandomValue(RNGState) * scene->pixelSampleRange) * cam.inverseWidthMinus);
+    float3_L yPercent = cam.imageY * ((static_cast<float>(y) + balancedRandomValue(RNGState) * scene->pixelSampleRange) * cam.inverseHeightMinus);
 
     float3_L rawDirection = cam.camViewOrigin + xPercent + yPercent - cam.camPos;
 
     Ray currentRay = Ray(cam.camPos, normalize3_cuda(rawDirection));
     RayData currentRayData;
 
-    traceRay(scene,
+    traceRay(scene, RNGState,
              currentRay, currentRayData);
 
     accumulatedColor = accumulatedColor + (currentRayData.color / static_cast<float>(scene->samplesPerPixel));

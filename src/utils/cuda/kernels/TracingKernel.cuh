@@ -5,8 +5,9 @@
 #include "MissingHitKernel.cuh"
 #include "FinalizeKernel.cuh"
 #include "debug/IndexToUniqueColor.cuh"
+#include "../../../math/cuda/CudaGraphicsMath.cuh"
 
-__device__ __forceinline__ void traceRay(Scene *scene,
+__device__ __forceinline__ void traceRay(Scene *scene, uint &RNGstate,
                                          Ray &currentRay, RayData &rayData)
 {
   for (int depth = 0; depth < scene->maxRayReflections; depth++)
@@ -59,18 +60,18 @@ __device__ __forceinline__ void traceRay(Scene *scene,
 
     if (currentZbuf == INFINITY)
     {
-      onHitMissing(scene,
+      onHitMissing(scene, RNGstate,
                    currentRay, rayData);
       break;
     }
 
-    bool stopReflection = onClosestHit(scene,
+    bool stopReflection = onClosestHit(scene, RNGstate,
                                        currentRay, rayData, hitTriangle, hitPos);
     if (stopReflection)
       break;
   }
 
   // Apply lights, or whatever
-  finalizeColor(scene,
+  finalizeColor(scene, RNGstate,
                 currentRay, rayData);
 }

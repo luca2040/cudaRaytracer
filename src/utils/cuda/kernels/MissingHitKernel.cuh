@@ -2,7 +2,7 @@
 
 #include "TracingKernel.cuh"
 
-__device__ __forceinline__ void onHitMissing(Scene *scene,
+__device__ __forceinline__ void onHitMissing(Scene *scene, uint &RNGstate,
                                              Ray &ray, RayData &rayData)
 {
   float horizonStart = -0.2f;
