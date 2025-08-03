@@ -70,27 +70,28 @@ void drawFrame(GLuint tex, GLuint pbo)
   Uint32 time = SDL_GetTicks();
 
   // Rotate vertices and apply transforms
-  for (size_t indexPairI = 0; indexPairI < scene->trIndexPairCount; indexPairI++)
-  {
-    transformIndexPair currentPair = scene->trIndexPairs[indexPairI];
-    ObjTransform currentTransform = currentPair.transform;
-
-    mat4x4 &currentMatrix = scene->transformMatrices[currentPair.sceneObjectReference];
-
-    if (currentTransform.hasTransformFunction)
+  if (!scene->motionPause)
+    for (size_t indexPairI = 0; indexPairI < scene->trIndexPairCount; indexPairI++)
     {
-      currentTransform.trFunc(time, currentTransform.rotationAngles, currentTransform.relativePos);
+      transformIndexPair currentPair = scene->trIndexPairs[indexPairI];
+      ObjTransform currentTransform = currentPair.transform;
+
+      mat4x4 &currentMatrix = scene->transformMatrices[currentPair.sceneObjectReference];
+
+      if (currentTransform.hasTransformFunction)
+      {
+        currentTransform.trFunc(time, currentTransform.rotationAngles, currentTransform.relativePos);
+      }
+
+      float3_L rotCenter = currentTransform.rotationCenter;
+      float3_L totalTranslation = rotCenter + currentTransform.relativePos;
+
+      mat4x4 moveToCenterMat = translation4x4mat(0.0f - rotCenter);
+      mat4x4 rotateMat = currentTransform.getRotationMatrix4x4();
+      mat4x4 moveBackMat = translation4x4mat(totalTranslation);
+
+      currentMatrix = moveBackMat * rotateMat * moveToCenterMat;
     }
-
-    float3_L rotCenter = currentTransform.rotationCenter;
-    float3_L totalTranslation = rotCenter + currentTransform.relativePos;
-
-    mat4x4 moveToCenterMat = translation4x4mat(0.0f - rotCenter);
-    mat4x4 rotateMat = currentTransform.getRotationMatrix4x4();
-    mat4x4 moveBackMat = translation4x4mat(totalTranslation);
-
-    currentMatrix = moveBackMat * rotateMat * moveToCenterMat;
-  }
 
   TRACYCZONEEND(matRotateVerts);
 

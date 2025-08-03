@@ -49,6 +49,8 @@ struct Scene
   bool transformSync = false;
   bool afterTraceSync = true;
 
+  bool motionPause = false;
+
   float3_L backgroundColor = {0.4f, 0.5f, 0.9f};
   bool boundingBoxDebugView = false;
   int maxRayReflections = 15;

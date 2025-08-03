@@ -70,7 +70,7 @@ __device__ __forceinline__ void traceRay(Scene *scene,
       break;
   }
 
-  // Apply lights
+  // Apply lights, or whatever
   finalizeColor(scene,
                 currentRay, rayData);
 }

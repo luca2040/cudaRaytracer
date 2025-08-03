@@ -155,6 +155,7 @@ public:
       {
         ImGui::Checkbox("Cuda transform kernel sync", &scene->transformSync);
         ImGui::Checkbox("Cuda after trace sync", &scene->afterTraceSync);
+        ImGui::Separator();
         ImGui::Checkbox("Bounding box view mode", &scene->boundingBoxDebugView);
       }
 
@@ -168,6 +169,8 @@ public:
       ImGui::SetNextItemOpen(false, ImGuiCond_Once);
       if (ImGui::CollapsingHeader("Rendering"))
       {
+        ImGui::Checkbox("Pause motion", &scene->motionPause);
+        ImGui::Separator();
         ImGui::ColorEdit3("Background color", &scene->backgroundColor.x);
         MakeEditableSlider("Max ray reflections", scene->maxRayReflections, 0, 100);
       }
