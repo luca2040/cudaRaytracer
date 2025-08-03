@@ -44,16 +44,20 @@ struct Scene
   mat4x4 *d_transformMatrices;
   Material *d_materials;
 
-  // Settings
+  // Debug settings
 
   bool transformSync = false;
   bool afterTraceSync = true;
+  bool boundingBoxDebugView = false;
+
+  // Rendering settings
 
   bool motionPause = false;
 
   float3_L backgroundColor = {0.4f, 0.5f, 0.9f};
-  bool boundingBoxDebugView = false;
-  int maxRayReflections = 15;
+  int samplesPerPixel = 5;
+  float pixelSampleRange = 0.5; // In the same unit as pixels - 0.5 -> half pixel
+  int maxRayReflections = 5;
 
   Scene() = default;
 };

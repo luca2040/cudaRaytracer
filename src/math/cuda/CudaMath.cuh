@@ -71,6 +71,11 @@ __device__ __forceinline__ float3_L operator*(const float3_L &a, const float &b)
   return make_float3_L(a.x * b, a.y * b, a.z * b);
 };
 
+__device__ __forceinline__ float3_L operator/(const float3_L &a, const float &b) noexcept
+{
+  return make_float3_L(a.x / b, a.y / b, a.z / b);
+};
+
 __device__ __forceinline__ float3_L inverse(const float3_L &a) noexcept
 {
   return make_float3_L(1.0f / a.x, 1.0f / a.y, 1.0f / a.z);

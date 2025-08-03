@@ -172,6 +172,8 @@ public:
         ImGui::Checkbox("Pause motion", &scene->motionPause);
         ImGui::Separator();
         ImGui::ColorEdit3("Background color", &scene->backgroundColor.x);
+        MakeEditableSlider("Samples per pixel", scene->samplesPerPixel, 1, 100);
+        MakeEditableSlider("Sample range", scene->pixelSampleRange, 0.0f, 5.0f);
         MakeEditableSlider("Max ray reflections", scene->maxRayReflections, 0, 100);
       }
 
