@@ -43,6 +43,10 @@ struct float3_L
   inline float3_L() = default;
   inline float3_L(float x, float y, float z) : x(x), y(y), z(z) {}
 
+#ifndef __CUDACC__
+  bool operator==(const float3_L &) const = default;
+#endif
+
   inline float3_L &operator+=(const float3_L &rhs) noexcept
   {
     x += rhs.x;
@@ -127,13 +131,25 @@ struct mat4x4
   }
 };
 
+#define INT_TO_FLOAT3_COLOR(intColor, floatColor)                      \
+  floatColor.x = static_cast<float>((intColor >> 16) & 0xFF) / 255.0f; \
+  floatColor.y = static_cast<float>((intColor >> 8) & 0xFF) / 255.0f;  \
+  floatColor.z = static_cast<float>(intColor & 0xFF) / 255.0f
+
 struct Material
 {
-  int col;
-  float reflectiveness; // 0.0f -> solid - 1.0f -> mirror
+  float3_L col;
+  float reflectiveness;
+  float emissivity;
+  float3_L emissionColor;
 
   Material() = default;
-  Material(int col, float reflectiveness) : col(col), reflectiveness(reflectiveness) {}
+  Material(int matCol, float reflectiveness, float emissivity, int emissionCol) : reflectiveness(reflectiveness), emissivity(emissivity)
+  {
+    INT_TO_FLOAT3_COLOR(matCol, col);
+    INT_TO_FLOAT3_COLOR(emissionCol, emissionColor);
+  }
+
 #ifndef __CUDACC__
   bool operator==(const Material &) const = default;
 #endif

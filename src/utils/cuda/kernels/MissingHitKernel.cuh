@@ -18,5 +18,6 @@ __device__ __forceinline__ void onHitMissing(Scene *scene,
 
   float3_L color = (scene->backgroundColor * skyPercent) + (groundColor * groundPercent);
 
-  rayData.color = rayData.color + (color * rayData.rayLight);
+  rayData.rayLight = rayData.rayLight + color; // Always full light from environment
+  rayData.color = rayData.color + (color * rayData.reflReduction);
 }

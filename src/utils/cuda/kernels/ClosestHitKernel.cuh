@@ -2,16 +2,20 @@
 
 #include "TracingKernel.cuh"
 
+// Return true if there is no reflection
 __device__ __forceinline__ bool onClosestHit(Scene *scene,
                                              Ray &ray, RayData &rayData,
                                              triangleidx hitTriangle, float3_L hitPos)
 {
-  Material currentMaterial = scene->d_materials[hitTriangle.materialIdx];
+  Material mat = scene->d_materials[hitTriangle.materialIdx];
 
-  rayData.color = rayData.color + (intColToF3l(currentMaterial.col) * rayData.rayLight * (1.0f - currentMaterial.reflectiveness));
-  rayData.rayLight *= currentMaterial.reflectiveness;
+  float3_L emittedLight = mat.emissionColor * mat.emissivity;
+  rayData.rayLight = rayData.rayLight + (emittedLight * rayData.color);
 
-  if (currentMaterial.reflectiveness < EPSILON)
+  rayData.color = rayData.color + (mat.col * rayData.reflReduction * (1.0f - mat.reflectiveness));
+  rayData.reflReduction *= mat.reflectiveness;
+
+  if (mat.reflectiveness < EPSILON)
     return true;
 
   ray.origin = hitPos;

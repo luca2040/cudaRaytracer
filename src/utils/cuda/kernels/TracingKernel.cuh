@@ -3,6 +3,7 @@
 #include "../definitions/RenderingStructs.cuh"
 #include "ClosestHitKernel.cuh"
 #include "MissingHitKernel.cuh"
+#include "FinalizeKernel.cuh"
 #include "debug/IndexToUniqueColor.cuh"
 
 __device__ __forceinline__ void traceRay(Scene *scene,
@@ -68,4 +69,8 @@ __device__ __forceinline__ void traceRay(Scene *scene,
     if (stopReflection)
       break;
   }
+
+  // Apply lights
+  finalizeColor(scene,
+                currentRay, rayData);
 }
