@@ -27,42 +27,41 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
 // #####################################################
 
 // Yes this is bad for readability but whatever
-#define M(color, reflectiveness) materials.mat(Material(color, reflectiveness, 0.0f, 0x000000))
-#define M2(color, reflectiveness, emissivity, emissionColor) materials.mat(Material(color, reflectiveness, emissivity, emissionColor))
+#define M(color, diffuse) materials.mat(Material(color, diffuse))
 
 void composeScene()
 {
   SceneBuilder builder;
   MaterialHandler &materials = builder.materials;
 
-  builder.addObjectToScene(generateCube({1.0f, 0.0f, 2.0f}, 1.0f,
-                                        normalRotation,
-                                        M(0xFF0000, 0.8f), M(0x00FF00, 0.8f), M(0x0000FF, 0.8f), M(0xFFFF00, 0.8f), M(0xFF00FF, 0.8f), M(0x00FFFF, 0.8f)));
+  builder.addObjectToScene(generateCube({1.0f, 2.0f, 2.0f}, 1.0f,
+                                        {0, M_PI_4, 0},
+                                        M(0xFF0000, 0.5f)));
 
-  builder.addObjectToScene(generateCube({-1.0f, 0.0f, 2.0f}, 1.0f,
-                                        verticalShift,
-                                        M(0xFF0000, 0.5f), M(0x00FF00, 0.5f), M(0x0000FF, 0.5f), M(0xFFFF00, 0.5f), M(0xFF00FF, 0.5f), M(0x00FFFF, 0.5f)));
+  builder.addObjectToScene(generateCube({-1.0f, 1.63f, 2.0f}, 1.0f,
+                                        {M_PI_4, M_PI_4, 0},
+                                        M(0x00FF00, 0.5f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 3.5f}, // rear panel
                                               {2.5f, 2.5f, 3.5f},
-                                              M(0xFFFFFF, 0.5f)));
+                                              M(0xFFFFFF, 0.2f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // left panel
                                               {-2.5f, 2.5f, 3.5f},
-                                              M(0xFFFFFF, 0.95f)));
+                                              M(0xFFFFFF, 0.2f)));
 
   builder.addObjectToScene(generateFlatSquare({2.5f, -2.5f, 0.0f}, // right panel
                                               {2.5f, 2.5f, 3.5f},
-                                              M(0xFFFFFF, 0.95f)));
+                                              M(0xFFFFFF, 0.2f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f}, // floor
                                               {2.5f, 2.5f, 3.5f},
                                               5,
-                                              M(0xFFFFFF, 0.25f), M(0x000000, 0.2f)));
+                                              M(0xFFFFFF, 0.5f), M(0x000000, 0.5f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // top
                                               {2.5f, -2.5f, 3.5f},
-                                              M2(0x555555, 0.0f, 0.8f, 0xFFFFFF)));
+                                              M(0xAAAAAA, 0.5f)));
 
   builder.compile();
 }

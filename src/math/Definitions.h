@@ -139,15 +139,13 @@ struct mat4x4
 struct Material
 {
   float3_L col;
-  float reflectiveness;
-  float emissivity;
-  float3_L emissionColor;
+  float diffuse; // When a diffuse ray is sent, how much it affects the color.
 
   Material() = default;
-  Material(int matCol, float reflectiveness, float emissivity, int emissionCol) : reflectiveness(reflectiveness), emissivity(emissivity)
+  Material(int matCol, float diffuse)
+      : diffuse(diffuse)
   {
     INT_TO_FLOAT3_COLOR(matCol, col);
-    INT_TO_FLOAT3_COLOR(emissionCol, emissionColor);
   }
 
 #ifndef __CUDACC__

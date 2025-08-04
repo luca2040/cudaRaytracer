@@ -55,9 +55,9 @@ struct Scene
   bool motionPause = false;
 
   float3_L backgroundColor = {0.4f, 0.5f, 0.9f};
-  int samplesPerPixel = 5;
+  int samplesPerPixel = 20;
   float pixelSampleRange = 0.5; // In the same unit as pixels - 0.5 -> half pixel
-  int maxRayReflections = 5;
+  int maxRayReflections = 4;
 
   Scene() = default;
 };

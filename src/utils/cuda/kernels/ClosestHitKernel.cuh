@@ -10,10 +10,15 @@ __device__ __forceinline__ bool onClosestHit(Scene *scene, uint &RNGstate,
 {
   Material mat = scene->d_materials[hitTriangle.materialIdx];
 
-  rayData.color = rayData.color + (mat.col * 0.5f);
+  // lastDiffuse -> 1 => col = mat.col | lastDiffuse -> 0 => col = rayData.color
+  float3_L diffusedColor = mat.col * rayData.lastDiffuse + rayData.color * (1.0f - rayData.lastDiffuse);
+
+  rayData.color = rayData.color * diffusedColor;
 
   ray.origin = hitPos;
-  randomSemisphereVector(ray.direction, hitTriangle.normal, RNGstate);
+  lambertianVector(ray.direction, hitTriangle.normal, RNGstate);
+
+  rayData.lastDiffuse *= mat.diffuse;
 
   return false;
 }

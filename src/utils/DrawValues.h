@@ -3,7 +3,8 @@
 #include "../math/Definitions.h"
 #include <math.h>
 
-#define EPSILON 1.1920929e-05f
+// #define EPSILON 1.1920929e-05f
+#define EPSILON 0.001f
 
 #define RAYTRACE_BLOCK_SIDE 16
 #define VERT_THREADS_PER_BLOCK 256

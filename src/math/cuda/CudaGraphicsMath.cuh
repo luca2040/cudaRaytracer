@@ -96,3 +96,19 @@ __device__ __forceinline__ void randomSemisphereVector(float3_L &rayDir, float3_
 
   rayDir = ranVec;
 }
+
+__device__ __forceinline__ void lambertianVector(float3_L &rayDir, float3_L &normal, uint &RNGstate)
+{
+  // Check if normal is reversed
+  float d = dot3_cuda(rayDir, normal);
+  if (d > 0.0f)
+    normal = normal * -1.0f;
+
+  // Generate ray on semisphere
+  float3_L ranVec = randomVector(RNGstate);
+  float randDot = dot3_cuda(ranVec, normal);
+  if (randDot < 0.0f)
+    ranVec = ranVec * -1.0f;
+
+  rayDir = normalize3_cuda(ranVec + normal);
+}
