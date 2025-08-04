@@ -170,6 +170,9 @@ public:
       if (ImGui::CollapsingHeader("Rendering"))
       {
         ImGui::Checkbox("Pause motion", &scene->motionPause);
+        ImGui::Checkbox("Simplified render", &scene->simpleRender);
+        ImGui::Checkbox("Randomize RNG", &scene->randomize);
+        ImGui::Checkbox("Accumulate frames", &scene->accumulate);
         ImGui::Separator();
         ImGui::ColorEdit3("Background color", &scene->backgroundColor.x);
         MakeEditableSlider("Samples per pixel", scene->samplesPerPixel, 1, 100);

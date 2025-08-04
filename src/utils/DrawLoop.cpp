@@ -117,11 +117,21 @@ void drawFrame(GLuint tex, GLuint pbo)
 
   // Apply transforms to device objects
 
+  if (scene->accumulate)
+    scene->accumulatedFrames += 1.0f;
+  else
+    scene->accumulatedFrames = 1.0f;
+
+  // THIS ALSO COPIES THE SCENE STRUCT TO GPU
   computeDeviceTransforms();
 
   // Generate and trace rays
 
-  rayTrace(pxlsPtr, guiWindow.winDims.renderingWidth, guiWindow.winDims.renderingHeight);
+  uint rngFrame = scene->randomize ? static_cast<uint>(time) : 1;
+
+  rayTrace(pxlsPtr,
+           guiWindow.winDims.renderingWidth, guiWindow.winDims.renderingHeight,
+           rngFrame);
 
   // Unlock and render texture
 

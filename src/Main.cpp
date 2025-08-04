@@ -118,6 +118,8 @@ int main()
   onSceneComposition();
   onSetupFrame(renderingPbo);
 
+  guiWindow.resChanged = true;
+
   while (running)
   {
     ZONESCOPEDNC("Main SDL while cycle", PROFILER_ORANGE);
@@ -169,6 +171,13 @@ int main()
 
       glBindTexture(GL_TEXTURE_2D, tex);
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, guiWindow.winDims.renderingWidth, guiWindow.winDims.renderingHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+
+      size_t accumulationSize = guiWindow.winDims.renderingWidth * guiWindow.winDims.renderingHeight * sizeof(float3);
+
+      if (scene->d_accumulationBuffer)
+        cudaFree(scene->d_accumulationBuffer);
+      cudaMalloc(&scene->d_accumulationBuffer, accumulationSize);
+      cudaMemset(scene->d_accumulationBuffer, 0, accumulationSize); // Zero it, the value is not important since it'll get overwritten if scene->accumulate == false
     }
 
     checkForKeys();

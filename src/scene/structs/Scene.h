@@ -34,8 +34,12 @@ struct Scene
   size_t matricesSize;
   size_t materialsSize;
 
+  float accumulatedFrames;
+
   // Device pointers
   // ONLY FOR CUDA
+  float3_L *d_accumulationBuffer;
+
   float3_L *d_pointarray;
   float3_L *d_trsfrmdpoints;
   size_t *d_pointToObjIdxTable;
@@ -53,6 +57,9 @@ struct Scene
   // Rendering settings
 
   bool motionPause = false;
+  bool simpleRender = true;
+  bool randomize = false;
+  bool accumulate = false;
 
   float3_L backgroundColor = {0.4f, 0.5f, 0.9f};
   int samplesPerPixel = 20;

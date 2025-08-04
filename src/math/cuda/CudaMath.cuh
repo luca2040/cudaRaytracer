@@ -56,6 +56,17 @@ __host__ __device__ __forceinline__ uchar4 make_uchar4_from_f3l(const float3_L c
   return retVal;
 }
 
+__host__ __device__ __forceinline__ float3_L make_f3l_from_uchar4(const uchar4 c)
+{
+  float3_L retVal;
+
+  retVal.x = static_cast<float>(c.x) / 255.0f; // red
+  retVal.y = static_cast<float>(c.y) / 255.0f; // green
+  retVal.z = static_cast<float>(c.z) / 255.0f; // blue
+
+  return retVal;
+}
+
 __device__ __forceinline__ float3_L operator+(const float3_L &a, const float3_L &b) noexcept
 {
   return make_float3_L(a.x + b.x, a.y + b.y, a.z + b.z);

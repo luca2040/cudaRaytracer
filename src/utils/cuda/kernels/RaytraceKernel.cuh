@@ -12,4 +12,6 @@ __global__ void rayTraceKernel(
     Scene *scene,
 
     const int imageWidth,
-    const int imageHeight);
+    const int imageHeight,
+
+    uint frame);

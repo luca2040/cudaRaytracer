@@ -6,4 +6,4 @@
 
 void cudaAllocateScene();
 void cudaCleanup();
-void rayTrace(uchar4 *pixelBuffer, int renderWidth, int renderHeight);
+void rayTrace(uchar4 *pixelBuffer, int renderWidth, int renderHeight, uint frame);

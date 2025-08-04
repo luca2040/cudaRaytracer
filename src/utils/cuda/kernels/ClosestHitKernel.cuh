@@ -10,6 +10,13 @@ __device__ __forceinline__ bool onClosestHit(Scene *scene, uint &RNGstate,
 {
   Material mat = scene->d_materials[hitTriangle.materialIdx];
 
+  // Not used in actual rendering, just for the simplified one
+  if (scene->simpleRender)
+  {
+    rayData.color = mat.col;
+    return true;
+  }
+
   // lastDiffuse -> 1 => col = mat.col | lastDiffuse -> 0 => col = rayData.color
   float3_L diffusedColor = mat.col * rayData.lastDiffuse + rayData.color * (1.0f - rayData.lastDiffuse);
 

@@ -35,6 +35,8 @@ void cudaCleanup()
 {
   cudaFreeHost(scene->transformMatrices);
 
+  cudaFree(scene->d_accumulationBuffer);
+
   cudaFree(scene->d_pointarray);
   cudaFree(scene->d_trsfrmdpoints);
   cudaFree(scene->d_triangles);
@@ -46,7 +48,7 @@ void cudaCleanup()
   cudaFreeHost(scene);
 }
 
-void rayTrace(uchar4 *pixelBuffer, int renderWidth, int renderHeight)
+void rayTrace(uchar4 *pixelBuffer, int renderWidth, int renderHeight, uint frame)
 {
   ZONESCOPEDNC("rayTrace function", PROFILER_LIME_GREEN);
   TRACYCZONENC(cudaTrace, "Cuda trace", true, PROFILER_GOLD);
@@ -58,7 +60,8 @@ void rayTrace(uchar4 *pixelBuffer, int renderWidth, int renderHeight)
   rayTraceKernel<<<gridDim, blockDim>>>(
       pixelBuffer,
       d_scene,
-      renderWidth, renderHeight);
+      renderWidth, renderHeight,
+      frame);
 
   if (scene->afterTraceSync)
     cudaDeviceSynchronize();
