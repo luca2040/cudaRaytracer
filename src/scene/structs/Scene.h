@@ -62,6 +62,7 @@ struct Scene
   bool accumulate = false;
 
   float3_L backgroundColor = {0.4f, 0.5f, 0.9f};
+  float environmentLight = 1.0f;
   int samplesPerPixel = 20;
   float pixelSampleRange = 0.5; // In the same unit as pixels - 0.5 -> half pixel
   int maxRayReflections = 4;

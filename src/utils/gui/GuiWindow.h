@@ -175,6 +175,7 @@ public:
         ImGui::Checkbox("Accumulate frames", &scene->accumulate);
         ImGui::Separator();
         ImGui::ColorEdit3("Background color", &scene->backgroundColor.x);
+        MakeEditableSlider("Env light mult", scene->environmentLight, 0.0f, 10.0f);
         MakeEditableSlider("Samples per pixel", scene->samplesPerPixel, 1, 100);
         MakeEditableSlider("Sample range", scene->pixelSampleRange, 0.0f, 5.0f);
         MakeEditableSlider("Max ray reflections", scene->maxRayReflections, 0, 100);

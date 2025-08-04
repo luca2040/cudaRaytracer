@@ -27,7 +27,8 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
 // #####################################################
 
 // Yes this is bad for readability but whatever
-#define M(color, diffuse) materials.mat(Material(color, diffuse))
+#define M(color, diffuse) materials.mat(Material(color, diffuse, 0, 0.0f))
+#define M2(color, diffuse, emCol, emStren) materials.mat(Material(color, diffuse, emCol, emStren))
 
 void composeScene()
 {
@@ -62,6 +63,10 @@ void composeScene()
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // top
                                               {2.5f, -2.5f, 3.5f},
                                               M(0xAAAAAA, 0.5f)));
+
+  builder.addObjectToScene(generateFlatSquare({-1.0f, -2.25f, 1.5f}, // top ligth
+                                              {1.0f, -2.25f, 2.0f},
+                                              M2(0xFFFFFF, 0.5f, 0xFFFFFF, 10.0f)));
 
   builder.compile();
 }

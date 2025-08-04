@@ -25,6 +25,15 @@ __host__ __device__ __forceinline__ static float3_L make_float3_L(float x, float
   return v;
 };
 
+__host__ __device__ __forceinline__ static float3_L make_float3_L(float a) noexcept
+{
+  float3_L v;
+  v.x = a;
+  v.y = a;
+  v.z = a;
+  return v;
+};
+
 __host__ __device__ __forceinline__ static float4_L make_float4_L(float x, float y, float z, float k) noexcept
 {
   float4_L v;
@@ -103,6 +112,24 @@ __device__ __forceinline__ float3_L operator/(const float3_L &a, const float3_L 
 {
   return make_float3_L(a.x / b.x, a.y / b.y, a.z / b.z);
 };
+
+// Per-component multiplication assignment
+__device__ __forceinline__ float3_L& operator*=(float3_L &a, const float3_L &b) noexcept
+{
+  a.x *= b.x;
+  a.y *= b.y;
+  a.z *= b.z;
+  return a;
+}
+
+// Per-component division assignment
+__device__ __forceinline__ float3_L& operator/=(float3_L &a, const float3_L &b) noexcept
+{
+  a.x /= b.x;
+  a.y /= b.y;
+  a.z /= b.z;
+  return a;
+}
 
 __device__ __forceinline__ float dot3_cuda(const float3_L &a, const float3_L &b) noexcept
 {

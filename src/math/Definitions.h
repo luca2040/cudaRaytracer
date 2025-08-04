@@ -2,13 +2,19 @@
 
 #include <cmath>
 
+#ifdef __CUDACC__
+#define HOST_DEVICE_INLINE __host__ __device__ __forceinline__
+#else
+#define HOST_DEVICE_INLINE inline
+#endif
+
 struct int2_L
 {
   int x;
   int y;
 
-  inline int2_L() = default;
-  inline int2_L(int x, int y) : x(x), y(y) {}
+  HOST_DEVICE_INLINE int2_L() = default;
+  HOST_DEVICE_INLINE int2_L(int x, int y) : x(x), y(y) {}
 };
 
 struct float2_L
@@ -16,17 +22,17 @@ struct float2_L
   float x;
   float y;
 
-  inline float2_L() = default;
-  inline float2_L(float x, float y) : x(x), y(y) {}
+  HOST_DEVICE_INLINE float2_L() = default;
+  HOST_DEVICE_INLINE float2_L(float x, float y) : x(x), y(y) {}
 
-  inline float2_L &operator+=(const float2_L &rhs) noexcept
+  HOST_DEVICE_INLINE float2_L &operator+=(const float2_L &rhs) noexcept
   {
     x += rhs.x;
     y += rhs.y;
     return *this;
   }
 
-  inline float2_L &operator-=(const float2_L &rhs) noexcept
+  HOST_DEVICE_INLINE float2_L &operator-=(const float2_L &rhs) noexcept
   {
     x -= rhs.x;
     y -= rhs.y;
@@ -40,14 +46,14 @@ struct float3_L
   float y;
   float z;
 
-  inline float3_L() = default;
-  inline float3_L(float x, float y, float z) : x(x), y(y), z(z) {}
+  HOST_DEVICE_INLINE float3_L() = default;
+  HOST_DEVICE_INLINE float3_L(float x, float y, float z) : x(x), y(y), z(z) {}
 
 #ifndef __CUDACC__
   bool operator==(const float3_L &) const = default;
 #endif
 
-  inline float3_L &operator+=(const float3_L &rhs) noexcept
+  HOST_DEVICE_INLINE float3_L &operator+=(const float3_L &rhs) noexcept
   {
     x += rhs.x;
     y += rhs.y;
@@ -55,7 +61,7 @@ struct float3_L
     return *this;
   }
 
-  inline float3_L &operator-=(const float3_L &rhs) noexcept
+  HOST_DEVICE_INLINE float3_L &operator-=(const float3_L &rhs) noexcept
   {
     x -= rhs.x;
     y -= rhs.y;
@@ -63,7 +69,7 @@ struct float3_L
     return *this;
   }
 
-  inline operator float2_L() const
+  HOST_DEVICE_INLINE operator float2_L() const
   {
     return float2_L{x, y};
   }
@@ -76,18 +82,18 @@ struct float4_L
   float z;
   float k;
 
-  inline float4_L() = default;
-  inline float4_L(float x, float y, float z, float k) : x(x), y(y), z(z), k(k) {}
+  HOST_DEVICE_INLINE float4_L() = default;
+  HOST_DEVICE_INLINE float4_L(float x, float y, float z, float k) : x(x), y(y), z(z), k(k) {}
 };
 
 struct mat3x3
 {
   float3_L rows[3];
 
-  inline const float3_L &operator[](int i) const { return rows[i]; }
-  inline float3_L &operator[](int i) { return rows[i]; }
+  HOST_DEVICE_INLINE const float3_L &operator[](int i) const { return rows[i]; }
+  HOST_DEVICE_INLINE float3_L &operator[](int i) { return rows[i]; }
 
-  inline float3_L operator*(const float3_L &v) const
+  HOST_DEVICE_INLINE float3_L operator*(const float3_L &v) const
   {
     return {
         rows[0].x * v.x + rows[0].y * v.y + rows[0].z * v.z,
@@ -95,7 +101,7 @@ struct mat3x3
         rows[2].x * v.x + rows[2].y * v.y + rows[2].z * v.z};
   }
 
-  inline mat3x3 operator*(const mat3x3 &b) const
+  HOST_DEVICE_INLINE mat3x3 operator*(const mat3x3 &b) const
   {
     mat3x3 r;
     for (int i = 0; i < 3; ++i)
@@ -113,10 +119,10 @@ struct mat4x4
 {
   float4_L rows[4];
 
-  inline const float4_L &operator[](int i) const { return rows[i]; }
-  inline float4_L &operator[](int i) { return rows[i]; }
+  HOST_DEVICE_INLINE const float4_L &operator[](int i) const { return rows[i]; }
+  HOST_DEVICE_INLINE float4_L &operator[](int i) { return rows[i]; }
 
-  inline mat4x4 operator*(const mat4x4 &b) const
+  HOST_DEVICE_INLINE mat4x4 operator*(const mat4x4 &b) const
   {
     mat4x4 r;
     for (int i = 0; i < 4; ++i)
@@ -140,12 +146,15 @@ struct Material
 {
   float3_L col;
   float diffuse; // When a diffuse ray is sent, how much it affects the color.
+  float3_L emCol;
+  float emStren;
 
   Material() = default;
-  Material(int matCol, float diffuse)
-      : diffuse(diffuse)
+  Material(int matCol, float diffuse, int emColor, float emStren)
+      : diffuse(diffuse), emStren(emStren)
   {
     INT_TO_FLOAT3_COLOR(matCol, col);
+    INT_TO_FLOAT3_COLOR(emColor, emCol);
   }
 
 #ifndef __CUDACC__
@@ -164,7 +173,7 @@ struct triangleidx
 
   float3_L normal;
 
-  inline triangleidx() = default;
-  inline triangleidx(size_t v1, size_t v2, size_t v3, size_t materialIdx)
+  HOST_DEVICE_INLINE triangleidx() = default;
+  HOST_DEVICE_INLINE triangleidx(size_t v1, size_t v2, size_t v3, size_t materialIdx)
       : v1(v1), v2(v2), v3(v3), materialIdx(materialIdx) {}
 };
