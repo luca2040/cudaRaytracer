@@ -144,14 +144,15 @@ struct mat4x4
 
 struct Material
 {
-  float3_L col;
-  float diffuse; // When a diffuse ray is sent, how much it affects the color.
-  float3_L emCol;
-  float emStren;
+  float3_L col;         // Ray color
+  float diffuse;        // When a diffuse ray is sent, how much it affects the color.
+  float3_L emCol;       // Emission color
+  float emStren;        // Emission strenght
+  float reflectiveness; // Reflectiveness value. 1.0f means full mirror
 
   Material() = default;
-  Material(int matCol, float diffuse, int emColor, float emStren)
-      : diffuse(diffuse), emStren(emStren)
+  Material(int matCol, float diffuse, int emColor, float emStren, float reflectiveness)
+      : diffuse(diffuse), emStren(emStren), reflectiveness(reflectiveness)
   {
     INT_TO_FLOAT3_COLOR(matCol, col);
     INT_TO_FLOAT3_COLOR(emColor, emCol);

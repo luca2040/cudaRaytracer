@@ -19,7 +19,8 @@ __device__ __forceinline__ void onHitMissing(Scene *scene, uint &RNGstate,
   if (dotResult < horizonStart)
   {
     color = groundColor;
-    light = make_float3_L(0.0f);
+    // light = make_float3_L(0.0f);
+    light = groundColor * scene->environmentLight;
   }
   else
   {
@@ -30,12 +31,6 @@ __device__ __forceinline__ void onHitMissing(Scene *scene, uint &RNGstate,
 
     color = (scene->backgroundColor * skyPercent) + (horizonColor * groundPercent);
     light = color * scene->environmentLight; // More light from the top
-  }
-
-  if (!rayData.hasHit)
-  {
-    rayData.rayLight = color * scene->environmentLight;
-    return; // If the ray goes directly into the sky just apply the color
   }
 
   rayData.rayLight += light * rayData.color;

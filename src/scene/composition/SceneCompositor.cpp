@@ -27,8 +27,9 @@ inline void verticalShift(u_int32_t time, float3_L &rotationAngles, float3_L &re
 // #####################################################
 
 // Yes this is bad for readability but whatever
-#define M(color, diffuse) materials.mat(Material(color, diffuse, 0, 0.0f))
-#define M2(color, diffuse, emCol, emStren) materials.mat(Material(color, diffuse, emCol, emStren))
+#define M(color, diffuse) materials.mat(Material(color, diffuse, 0, 0.0f, 0.0f))
+#define MR(color, diffuse, reflectiveness) materials.mat(Material(color, diffuse, 0, 0.0f, reflectiveness))
+#define M2(color, diffuse, emCol, emStren) materials.mat(Material(color, diffuse, emCol, emStren, 0.0f))
 
 void composeScene()
 {
@@ -37,11 +38,11 @@ void composeScene()
 
   builder.addObjectToScene(generateCube({1.0f, 2.0f, 2.0f}, 1.0f,
                                         {0, M_PI_4, 0},
-                                        M(0xFF0000, 0.5f)));
+                                        MR(0xFF0000, 0.5f, 0.8f))); // Red cube (reflective)
 
   builder.addObjectToScene(generateCube({-1.0f, 1.63f, 2.0f}, 1.0f,
                                         {M_PI_4, M_PI_4, 0},
-                                        M(0x00FF00, 0.5f)));
+                                        M(0x00FF00, 0.5f))); // Green cube
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 3.5f}, // rear panel
                                               {2.5f, 2.5f, 3.5f},
@@ -49,11 +50,11 @@ void composeScene()
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // left panel
                                               {-2.5f, 2.5f, 3.5f},
-                                              M(0xFFFFFF, 0.2f)));
+                                              MR(0xFFFFFF, 1.0f, 0.8f)));
 
   builder.addObjectToScene(generateFlatSquare({2.5f, -2.5f, 0.0f}, // right panel
                                               {2.5f, 2.5f, 3.5f},
-                                              M(0xFFFFFF, 0.2f)));
+                                              MR(0xFFFFFF, 1.0f, 0.8f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f}, // floor
                                               {2.5f, 2.5f, 3.5f},
