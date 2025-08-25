@@ -2,6 +2,7 @@
 #include "../SceneBuilder.h"
 
 #include "../builders/CubeBuilder.h"
+#include "../builders/SphereBuilder.h"
 #include "../builders/FlatSquareBuilder.h"
 
 // ################ Transform functions ################
@@ -36,30 +37,38 @@ void composeScene()
   SceneBuilder builder;
   MaterialHandler &materials = builder.materials;
 
-  builder.addObjectToScene(generateCube({1.0f, 2.0f, 2.0f}, 1.0f,
-                                        {0, M_PI_4, 0},
-                                        MR(0xFF0000, 0.5f, 0.8f))); // Red cube (reflective)
+  // builder.addObjectToScene(generateCube({1.0f, 2.0f, 2.0f}, 1.0f,
+  //                                       {0, M_PI_4, 0},
+  //                                       MR(0xFF0000, 0.5f, 0.8f))); // Red cube (reflective)
 
-  builder.addObjectToScene(generateCube({-1.0f, 1.63f, 2.0f}, 1.0f,
-                                        {M_PI_4, M_PI_4, 0},
-                                        M(0x00FF00, 0.5f))); // Green cube
+  // builder.addObjectToScene(generateCube({-1.0f, 1.63f, 2.0f}, 1.0f,
+  //                                       {M_PI_4, M_PI_4, 0},
+  //                                       M(0x00FF00, 0.5f))); // Green cube
+
+  builder.addObjectToScene(generateSphere({-0.95f, 1.7f, 2.0f}, 0.8f,
+                                          {0, 0, 0},
+                                          MR(0xFFFFFF, 1.0f, 1.0f))); // Mirror sphere 1
+
+  builder.addObjectToScene(generateSphere({0.95f, 1.7f, 2.0f}, 0.8f,
+                                          {0, 0, 0},
+                                          MR(0xFFFFFF, 1.0f, 1.0f))); // Mirror sphere 2
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 3.5f}, // rear panel
                                               {2.5f, 2.5f, 3.5f},
-                                              M(0xFFFFFF, 0.2f)));
+                                              M(0xFFFFFF, 0.5f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // left panel
                                               {-2.5f, 2.5f, 3.5f},
-                                              MR(0xFFFFFF, 1.0f, 0.8f)));
+                                              M(0xDD0000, 0.5f)));
 
   builder.addObjectToScene(generateFlatSquare({2.5f, -2.5f, 0.0f}, // right panel
                                               {2.5f, 2.5f, 3.5f},
-                                              MR(0xFFFFFF, 1.0f, 0.8f)));
+                                              M(0x0000DD, 0.5f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, 2.5f, 0.0f}, // floor
                                               {2.5f, 2.5f, 3.5f},
                                               5,
-                                              M(0xFFFFFF, 0.5f), M(0x000000, 0.5f)));
+                                              M(0x4E794F, 0.5f), M(0x69AD5A, 0.5f)));
 
   builder.addObjectToScene(generateFlatSquare({-2.5f, -2.5f, 0.0f}, // top
                                               {2.5f, -2.5f, 3.5f},

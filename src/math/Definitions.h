@@ -177,4 +177,6 @@ struct triangleidx
   HOST_DEVICE_INLINE triangleidx() = default;
   HOST_DEVICE_INLINE triangleidx(size_t v1, size_t v2, size_t v3, size_t materialIdx)
       : v1(v1), v2(v2), v3(v3), materialIdx(materialIdx) {}
+  HOST_DEVICE_INLINE triangleidx(size_t materialIdx, float3_L normal)
+      : materialIdx(materialIdx), normal(normal) {}
 };

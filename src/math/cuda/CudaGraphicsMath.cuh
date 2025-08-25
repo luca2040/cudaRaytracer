@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CudaRNG.cuh"
+#include "../../scene/structs/Sphere.h"
 
 // Möller–Trumbore intersection algorithm for ray-triangle intersection
 // Returns true if intersection occurs, false otherwise
@@ -66,6 +67,28 @@ __device__ __forceinline__ bool rayBoxIntersection(Ray testRay, AABB bb)
   // return !(tClose < 0 ? false : tClose <= tFar);
   // return !(tClose <= tFar && tFar >= 0.0f);
   return tClose > tFar || tFar < 0.0f;
+}
+
+__device__ __forceinline__ bool raySphereIntersection(Ray testRay, Sphere sphere,
+                                                      float &t0, float3_L &hitPoint, float3_L &hitNormal)
+{
+  float3_L l = sphere.center - testRay.origin;
+  float tcenter = dot3_cuda(l, testRay.direction);
+
+  if (tcenter < 0) // Wrong direction, if it even collides
+    return false;
+
+  float d = sqrtf(dot3_cuda(l, l) - (tcenter * tcenter));
+
+  if (d > sphere.radius) // Ray doesnt intersect
+    return false;
+
+  float tinside = sqrtf((sphere.radius * sphere.radius) - (d * d));
+  t0 = tcenter - tinside;
+
+  hitPoint = testRay.origin + testRay.direction * t0;
+  hitNormal = normalize3_cuda(hitPoint - sphere.center);
+  return true;
 }
 
 __device__ __forceinline__ void reflectRay(float3_L &rayDir, float3_L &normal)

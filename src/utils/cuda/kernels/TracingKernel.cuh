@@ -23,37 +23,64 @@ __device__ __forceinline__ void traceRay(Scene *scene, uint &RNGstate,
     {
       SceneObject currentObj = scene->d_sceneobjects[objNum];
 
-      // rayBoxIntersection NEEDS a ray with inversed direction
-      bool rayDoesntIntersectObj = rayBoxIntersection(invertedDirRay, currentObj.boundingBox);
-
-      if (rayDoesntIntersectObj)
-        continue;
-
-      if (scene->boundingBoxDebugView)
+      if (currentObj.sphere.isValid)
       {
-        rayData.color = indexToColor(objNum, scene->sceneobjectsNum);
-        break;
-      }
+        float3_L sphereHitPoint;
+        float3_L sphereHitNormal;
+        float t0;
+        bool sphereIntersects = raySphereIntersection(currentRay, currentObj.sphere,
+                                                      t0, sphereHitPoint, sphereHitNormal);
 
-      for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleStartIdx + currentObj.triangleNum; i++)
-      {
-        triangleidx triangle = scene->d_triangles[i];
+        if (!sphereIntersects)
+          continue;
 
-        float t, u, v;
-        float3_L rayHit;
-
-        const float3_L *pointarray = scene->d_trsfrmdpoints;
-
-        bool hasIntersected = rayTriangleIntersection(currentRay,
-                                                      pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
-                                                      t, u, v,
-                                                      rayHit);
-
-        if (hasIntersected && (t < currentZbuf))
+        if (scene->boundingBoxDebugView)
         {
-          currentZbuf = t;
-          hitTriangle = triangle;
-          hitPos = rayHit;
+          rayData.color = indexToColor(objNum, scene->sceneobjectsNum);
+          break;
+        }
+
+        if (t0 < currentZbuf)
+        {
+          currentZbuf = t0;
+          hitTriangle = {currentObj.sphere.materialIdx, sphereHitNormal};
+          hitPos = sphereHitPoint;
+        }
+      }
+      else // Normal mesh object
+      {
+        // rayBoxIntersection NEEDS a ray with inversed direction
+        bool rayDoesntIntersectObj = rayBoxIntersection(invertedDirRay, currentObj.boundingBox);
+
+        if (rayDoesntIntersectObj)
+          continue;
+
+        if (scene->boundingBoxDebugView)
+        {
+          rayData.color = indexToColor(objNum, scene->sceneobjectsNum);
+          break;
+        }
+
+        for (size_t i = currentObj.triangleStartIdx; i < currentObj.triangleStartIdx + currentObj.triangleNum; i++)
+        {
+          triangleidx triangle = scene->d_triangles[i];
+
+          float t, u, v;
+          float3_L rayHit;
+
+          const float3_L *pointarray = scene->d_trsfrmdpoints;
+
+          bool hasIntersected = rayTriangleIntersection(currentRay,
+                                                        pointarray[triangle.v1], pointarray[triangle.v2], pointarray[triangle.v3],
+                                                        t, u, v,
+                                                        rayHit);
+
+          if (hasIntersected && (t < currentZbuf))
+          {
+            currentZbuf = t;
+            hitTriangle = triangle;
+            hitPos = rayHit;
+          }
         }
       }
     }

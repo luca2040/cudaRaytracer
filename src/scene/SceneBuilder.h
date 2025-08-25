@@ -71,9 +71,17 @@ public:
       growBBtoInclude(objBB, currentVertex);
     }
 
-    SceneObject newSceneObj = {currentTriangleIndex, objToAdd.triangles.size(),
-                               currentPointIndex, objToAdd.points.size(),
-                               objBB};
+    SceneObject newSceneObj;
+    if (objToAdd.sphere.isValid) // Add sphere
+    {
+      newSceneObj = {objToAdd.sphere};
+    }
+    else // Add mesh
+    {
+      newSceneObj = {currentTriangleIndex, objToAdd.triangles.size(),
+                     currentPointIndex, objToAdd.points.size(),
+                     objBB};
+    }
     sceneObjects.push_back(newSceneObj);
 
     transformIndexPair toAddTransformPair = {objTransform, currentSceneObjIdx};

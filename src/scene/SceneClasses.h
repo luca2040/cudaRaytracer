@@ -4,6 +4,7 @@
 #include <cmath>
 
 #include "../math/Definitions.h"
+#include "structs/Sphere.h"
 
 // Time, rotationAngles, relativePos
 typedef void (*TransformFunction)(u_int32_t, float3_L &, float3_L &);
@@ -20,6 +21,10 @@ public:
   std::vector<float3_L> points;
   std::vector<triangleidx> triangles;
 
+  Sphere sphere;
+
+  // Mesh
+
   SceneObjectPassthrough(float3_L rotationCenter_, float3_L defaultRot_,
                          std::vector<float3_L> points_, std::vector<triangleidx> triangles_)
   {
@@ -34,6 +39,25 @@ public:
     rotationCenter = rotationCenter_;
     points = points_;
     triangles = triangles_;
+
+    trFunc = trFunc_;
+    hasTransformFunction = true;
+  }
+
+  // Sphere
+
+  SceneObjectPassthrough(float3_L rotationCenter_, float3_L defaultRot_,
+                         Sphere sphere_)
+  {
+    rotationCenter = rotationCenter_;
+    defaultRot = defaultRot_;
+    sphere = sphere_;
+  }
+  SceneObjectPassthrough(float3_L rotationCenter_, TransformFunction trFunc_,
+                         Sphere sphere_)
+  {
+    rotationCenter = rotationCenter_;
+    sphere = sphere_;
 
     trFunc = trFunc_;
     hasTransformFunction = true;

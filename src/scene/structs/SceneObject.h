@@ -2,6 +2,7 @@
 
 #include "../../math/Definitions.h"
 #include "AABB.h"
+#include "Sphere.h"
 
 struct SceneObject
 {
@@ -14,9 +15,10 @@ struct SceneObject
   // size_t matrixIdx; // Dont need, mat idx is the same as the object's one
 
   AABB boundingBox;
+  Sphere sphere;
 
   SceneObject() = default;
-  SceneObject(size_t triangleStartIdx, size_t triangleNum,
+  SceneObject(size_t triangleStartIdx, size_t triangleNum, // Mesh
               size_t vertStartIdx, size_t vertNum,
               // size_t matrixIdx,
               AABB boundingBox)
@@ -25,5 +27,10 @@ struct SceneObject
         vertStartIdx(vertStartIdx),
         vertNum(vertNum),
         // matrixIdx(matrixIdx),
-        boundingBox(boundingBox) {}
+        boundingBox(boundingBox)
+  {
+  }
+  SceneObject(Sphere sphere) : sphere(sphere) // Sphere
+  {
+  }
 };
