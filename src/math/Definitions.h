@@ -149,10 +149,11 @@ struct Material
   float3_L emCol;       // Emission color
   float emStren;        // Emission strenght
   float reflectiveness; // Reflectiveness value. 1.0f means full mirror
+  bool isMetal;
 
   Material() = default;
-  Material(int matCol, float diffuse, int emColor, float emStren, float reflectiveness)
-      : diffuse(diffuse), emStren(emStren), reflectiveness(reflectiveness)
+  Material(int matCol, float diffuse, int emColor, float emStren, float reflectiveness, bool isMetal)
+      : diffuse(diffuse), emStren(emStren), reflectiveness(reflectiveness), isMetal(isMetal)
   {
     INT_TO_FLOAT3_COLOR(matCol, col);
     INT_TO_FLOAT3_COLOR(emColor, emCol);

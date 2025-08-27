@@ -75,7 +75,10 @@ __device__ __forceinline__ bool raySphereIntersection(Ray testRay, Sphere sphere
   float3_L l = sphere.center - testRay.origin;
   float tcenter = dot3_cuda(l, testRay.direction);
 
-  if (tcenter < 0) // Wrong direction, if it even collides
+  float vc = sqrtf(dot3_cuda(l, l)); // distance from vector start to center of sphere
+  bool inside = vc < sphere.radius;
+
+  if (tcenter < 0 && !inside) // Wrong direction, if it even collides
     return false;
 
   float d = sqrtf(dot3_cuda(l, l) - (tcenter * tcenter));
@@ -84,7 +87,10 @@ __device__ __forceinline__ bool raySphereIntersection(Ray testRay, Sphere sphere
     return false;
 
   float tinside = sqrtf((sphere.radius * sphere.radius) - (d * d));
-  t0 = tcenter - tinside;
+  t0 = inside ? tcenter + tinside : tcenter - tinside; // actually use t1 if inside
+
+  if (t0 < EPSILON)
+    return false;
 
   hitPoint = testRay.origin + testRay.direction * t0;
   hitNormal = normalize3_cuda(hitPoint - sphere.center);
@@ -134,4 +140,14 @@ __device__ __forceinline__ void lambertianVector(float3_L &rayDir, float3_L &nor
     ranVec = ranVec * -1.0f;
 
   rayDir = normalize3_cuda(ranVec + normal);
+}
+
+__device__ __forceinline__ void refractRay(float3_L &rayDir, float3_L &normal)
+{
+  // Check if normal is reversed
+  float d = dot3_cuda(rayDir, normal);
+  if (d > 0.0f)
+    normal = normal * -1.0f;
+
+  rayDir = rayDir - normal * (2.0f * d);
 }

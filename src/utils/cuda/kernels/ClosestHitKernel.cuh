@@ -26,15 +26,20 @@ __device__ __forceinline__ bool onClosestHit(Scene *scene, uint &RNGstate,
   float3_L emittedLight = mat.emCol * mat.emStren;
 
   rayData.rayLight += emittedLight * rayData.color;
-  rayData.color *= diffusedColor;
 
   ray.origin = hitPos;
   if (doReflect)
   {
+    if (mat.isMetal)
+      rayData.color *= diffusedColor;
+    else
+      rayData.color *= make_float3_L(mat.reflectiveness);
+
     reflectRay(ray.direction, hitTriangle.normal);
   }
   else
   {
+    rayData.color *= diffusedColor;
     lambertianVector(ray.direction, hitTriangle.normal, RNGstate);
   }
 
