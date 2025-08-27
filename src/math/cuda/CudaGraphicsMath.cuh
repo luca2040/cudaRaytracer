@@ -70,30 +70,37 @@ __device__ __forceinline__ bool rayBoxIntersection(Ray testRay, AABB bb)
 }
 
 __device__ __forceinline__ bool raySphereIntersection(Ray testRay, Sphere sphere,
-                                                      float &t0, float3_L &hitPoint, float3_L &hitNormal)
+                                                      float &tRes, float3_L &hitPoint, float3_L &hitNormal)
 {
   float3_L l = sphere.center - testRay.origin;
-  float tcenter = dot3_cuda(l, testRay.direction);
+  float3_L d = testRay.direction;
+  float r = sphere.radius;
+  float a = dot3_cuda(d, d);
+  float d1 = dot3_cuda(d * 2, l);
 
-  float vc = sqrtf(dot3_cuda(l, l)); // distance from vector start to center of sphere
-  bool inside = vc < sphere.radius;
-
-  if (tcenter < 0 && !inside) // Wrong direction, if it even collides
+  float det = d1 * d1 - 4 * a * (dot3_cuda(l, l) - r * r);
+  if (det < 0)
     return false;
 
-  float d = sqrtf(dot3_cuda(l, l) - (tcenter * tcenter));
+  float d2 = 2 * a;
+  float sqrdet = sqrtf(det);
 
-  if (d > sphere.radius) // Ray doesnt intersect
+  float t0 = (d1 + sqrdet) / d2;
+  float t1 = (d1 - sqrdet) / d2;
+
+  if (t0 < EPSILON && t1 < EPSILON)
     return false;
-
-  float tinside = sqrtf((sphere.radius * sphere.radius) - (d * d));
-  t0 = inside ? tcenter + tinside : tcenter - tinside; // actually use t1 if inside
 
   if (t0 < EPSILON)
-    return false;
+    tRes = t1;
+  else if (t1 < EPSILON)
+    tRes = t0;
+  else
+    tRes = fminf(t0, t1);
 
-  hitPoint = testRay.origin + testRay.direction * t0;
+  hitPoint = testRay.origin + d * tRes;
   hitNormal = normalize3_cuda(hitPoint - sphere.center);
+
   return true;
 }
 
